@@ -1,13 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
-/* @import "@syncfusion/ej2-base/styles/material.css";
-@import "@syncfusion/ej2-react-buttons/styles/material.css";
-@import "@syncfusion/ej2-react-grids/styles/material.css";
-@import "@syncfusion/ej2-react-navigations/styles/material.css";
-@import "@syncfusion/ej2-react-splitbuttons/styles/material.css";
-@import "@syncfusion/ej2-react-dropdowns/styles/material.css"; */
+
 @import "@syncfusion/ej2-material-theme/styles/customized/material.css";
 @import "tailwindcss";
+
 
 @theme {
   --font-figtree: "Figtree", sans-serif;
@@ -621,4 +617,24 @@ body {
   position: absolute;
   top: 45px;
   right: 40px;
+}
+
+.nav-footer {
+  @apply mt-auto flex items-center gap-2.5 pb-8;
+
+  img {
+    @apply size-10 rounded-full aspect-square;
+  }
+
+  article {
+    @apply flex flex-col gap-[2px] max-w-[115px];
+
+    h2 {
+      @apply text-sm md:text-base font-semibold text-dark-200 truncate;
+    }
+
+    p {
+      @apply text-gray-100 text-xs md:text-sm font-normal truncate;
+    }
+  }
 }

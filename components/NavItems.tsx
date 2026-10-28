@@ -25,7 +25,7 @@ const NavItems = ({ handleClick }: { handleClick?: () => void }) => {
                         <NavLink to={href} key={id}>
                             {({ isActive }: { isActive: boolean }) => (
                                 <div className={cn('group nav-item', {
-                                    'bg-red-100 text-white': isActive
+                                    'bg-primary-100 text-white': isActive
                                 })} onClick={handleClick}>
                                     <img
                                         src={icon}
@@ -39,8 +39,8 @@ const NavItems = ({ handleClick }: { handleClick?: () => void }) => {
                     ))}
                 </nav>
 
-                <footer className="nav-footer">
-                    <img src={user?.imageUrl || '/assets/images/david.webp'} alt={user?.name || 'David'} referrerPolicy="no-referrer" />
+                <footer className="nav-footer mt-auto">
+                    <img src={user?.imageUrl} alt={user?.name} />
 
                     <article>
                         <h2>{user?.name}</h2>
