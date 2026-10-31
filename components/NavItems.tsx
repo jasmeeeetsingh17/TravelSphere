@@ -1,22 +1,22 @@
-import { Link, NavLink } from "react-router"
-import { sidebarItems } from "~/constants"
-import { cn } from "~/lib/utils"
+import { Link, NavLink, useLoaderData, useNavigate } from "react-router";
+import { sidebarItems } from "~/constants";
+import { cn } from "~/lib/utils";
+import { logoutUser } from "~/appwrite/auth";
 
 const NavItems = ({ handleClick }: { handleClick?: () => void }) => {
-    const user = {
-        name: 'Jasmeet',
-        email: 'jasmeet@gmail.com',
-        imageUrl: '/assets/images/james.webp'
+    const user = useLoaderData();
+    const navigate = useNavigate();
+
+    const handleLogout = async () => {
+        await logoutUser();
+        navigate('/sign-in')
     }
 
-    const handleLogout = () => {
-
-    }
     return (
         <section className="nav-items">
-            <Link to='/' className="link-logo" >
+            <Link to='/' className="link-logo">
                 <img src="/assets/icons/logo.svg" alt="logo" className="size-7.5" />
-                <h1> TravelSphere</h1>
+                <h1>TravelSphere</h1>
             </Link>
 
             <div className="container">
@@ -39,8 +39,8 @@ const NavItems = ({ handleClick }: { handleClick?: () => void }) => {
                     ))}
                 </nav>
 
-                <footer className="nav-footer mt-auto">
-                    <img src={user?.imageUrl} alt={user?.name} />
+                <footer className="nav-footer">
+                    <img src={user?.imageUrl} alt={user?.name || 'N/A'} referrerPolicy="no-referrer" />
 
                     <article>
                         <h2>{user?.name}</h2>
@@ -60,8 +60,6 @@ const NavItems = ({ handleClick }: { handleClick?: () => void }) => {
                 </footer>
             </div>
         </section>
-
-
     )
 }
 
