@@ -20,6 +20,7 @@
     "@syncfusion/ej2-react-maps": "^35.1.37",
     "@syncfusion/ej2-react-navigations": "^35.1.40",
     "@syncfusion/ej2-react-splitbuttons": "^35.1.37",
+    "appwrite": "^29.2.0",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.23",
     "isbot": "^5.1.36",

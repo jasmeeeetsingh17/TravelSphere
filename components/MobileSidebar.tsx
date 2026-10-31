@@ -18,7 +18,7 @@ const MobileSidebar = () => {
                     <img
                         src="/assets/icons/logo.svg"
                         alt="Logo"
-                        className="size-[30px]"
+                        className="size-7.5"
                     />
 
                     <h1>Tourvisto</h1>
