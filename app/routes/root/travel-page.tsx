@@ -7,22 +7,64 @@ import { cn } from "~/lib/utils";
 const TRIPS_PER_PAGE = 8;
 
 const featuredDestinations = [
-    { id: 1, name: "Hawa Mahal", places: 196, image: "/assets/images/card-img-1.png", rating: 4.2 },
-    { id: 2, name: "Taj Mahal ", places: 150, image: "/assets/images/card-img-2.png", rating: 4.5 },
-    { id: 3, name: "Australia Tour", places: 150, image: "/assets/images/card-img-3.png", rating: 4.3 },
-    { id: 4, name: "Australia Tour", places: 150, image: "/assets/images/card-img-4.png", rating: 4.1 },
-    { id: 5, name: "Japan Tour", places: 150, image: "/assets/images/card-img-5.png", rating: 4.6 },
-
+    {
+        id: 1,
+        name: "Hawa Mahal",
+        location: "Jaipur, Rajasthan",
+        image: "/assets/images/2.jpg",
+        rating: 4.8,
+    },
+    {
+        id: 2,
+        name: "Taj Mahal",
+        location: "Agra, Uttar Pradesh",
+        image: "/assets/images/card-img-2.png",
+        rating: 4.9,
+    },
+    {
+        id: 3,
+        name: "Gateway of India",
+        location: "Mumbai, Maharashtra",
+        image: "/assets/images/3.jpg",
+        rating: 4.7,
+    },
+    {
+        id: 4,
+        name: "Golden Temple",
+        location: "Amritsar, Punjab",
+        image: "/assets/images/7.jpg",
+        rating: 4.9,
+    },
+    {
+        id: 5,
+        name: "Dal Lake",
+        location: "Srinagar, Kashmir",
+        image: "/assets/images/10.jpg",
+        rating: 4.8,
+    },
+    {
+        id: 6,
+        name: "Andaman Island",
+        location: "Port Blair",
+        image: "/assets/images/13.jpg",
+        rating: 4.7,
+    }
 ];
 
-type FeaturedProps = (typeof featuredDestinations)[number] & { className?: string; large?: boolean };
-
-const FeaturedCard = ({ id, name, places, image, rating, className, large }: FeaturedProps) => (
+type FeaturedProps = (typeof featuredDestinations)[number] & {
+    className?: string;
+    large?: boolean;
+};
+const FeaturedCard = ({ id, name, location, image, rating, className, large }: FeaturedProps) => (
     <Link
         to={`/travel/${id}`}
-        className={cn("relative rounded-[20px] overflow-hidden bg-cover bg-center group", className)}
-        style={{ backgroundImage: `url(${image})` }}
-    >
+        className={cn(
+            "relative rounded-20 overflow-hidden bg-cover bg-no-repeat group",
+            className
+        )} style={{
+            backgroundImage: `url(${image})`,
+            backgroundPosition: large ? "center 30%" : "center center",
+        }}>
         <div className="absolute inset-0 bg-linear200" />
         <span className="price-pill absolute top-3 left-3 flex items-center gap-1">
             <img src="/assets/icons/star.svg" alt="" className="size-3.5" />
@@ -32,7 +74,7 @@ const FeaturedCard = ({ id, name, places, image, rating, className, large }: Fea
             <h2 className={cn("font-semibold", large ? "text-xl md:text-3xl" : "text-sm md:text-lg")}>{name}</h2>
             <figure className="flex items-center gap-1.5">
                 <img src="/assets/icons/location-mark.svg" alt="" className="size-4 invert brightness-0" />
-                <figcaption className="text-xs md:text-sm">{places} Places</figcaption>
+                <figcaption className="text-xs md:text-sm">{location}</figcaption>
             </figure>
         </article>
     </Link>
@@ -40,7 +82,6 @@ const FeaturedCard = ({ id, name, places, image, rating, className, large }: Fea
 
 const TravelPage = () => {
     const [page, setPage] = useState(1);
-    // Repeat the sample trips so pagination has something to show until real trips come from Appwrite
     const trips = Array.from({ length: 16 }, (_, i) => {
         const t = allTrips[i % allTrips.length];
         return { ...t, key: `${t.id}-${i}` };
@@ -63,7 +104,7 @@ const TravelPage = () => {
                         </article>
                         <Link
                             to="#trips"
-                            className="bg-primary-100 hover:bg-primary-500 text-white font-semibold rounded-lg px-8 py-3 md:w-[240px] w-full text-center transition-colors"
+                            className="bg-primary-100 hover:bg-primary-500 text-white font-semibold rounded-lg px-8 py-3 md:w-60 w-full text-center transition-colors"
                         >
                             Get Started
                         </Link>
@@ -75,15 +116,35 @@ const TravelPage = () => {
             <section id="featured" className="wrapper pt-20 flex flex-col gap-10">
                 <Header
                     title="Featured Travel Destinations"
-                    description="Check out some of the best places you can visit around the India."
+                    description="Discover some of the best places you can visit across India."
                 />
 
-                <div className="grid grid-cols-1 lg:grid-cols-4 lg:grid-rows-2 gap-5 lg:h-[560px]">
-                    <FeaturedCard {...featuredDestinations[0]} large className="lg:col-span-3 lg:row-span-1 min-h-[260px]" />
-                    <FeaturedCard {...featuredDestinations[3]} className="lg:col-span-1 lg:row-span-1 min-h-[200px]" />
-                    <FeaturedCard {...featuredDestinations[1]} className="lg:col-span-1 min-h-[200px]" />
-                    <FeaturedCard {...featuredDestinations[2]} className="lg:col-span-2 min-h-[200px]" />
-                    <FeaturedCard {...featuredDestinations[4]} className="lg:col-span-1 min-h-[200px]" />
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 lg:h-130">
+
+                    {/* Row 1: Large + Small */}
+                    <FeaturedCard
+                        {...featuredDestinations[0]}
+                        large
+                        className="lg:col-span-2 min-h-65 lg:h-full"
+                    />
+
+                    <FeaturedCard
+                        {...featuredDestinations[1]}
+                        className="lg:col-span-1 min-h-65 lg:h-full"
+                    />
+
+                    {/* Row 2: Small + Large */}
+                    <FeaturedCard
+                        {...featuredDestinations[2]}
+                        className="lg:col-span-1 min-h-65 lg:h-full"
+                    />
+
+                    <FeaturedCard
+                        {...featuredDestinations[3]}
+                        large
+                        className="lg:col-span-2 min-h-65 lg:h-full"
+                    />
+
                 </div>
             </section>
 
@@ -95,16 +156,14 @@ const TravelPage = () => {
                 />
 
                 <div className="trip-grid">
-                    {visible.map(({ key, id, name, imageUrls, itinerary, tags, estimatedPrice }) => (
+                    {visible.map(({ key, id, name, imageUrls, itinerary, tags }) => (
                         <TripCard
                             key={key}
                             id={id.toString()}
                             name={name}
                             imageUrl={imageUrls[0]}
                             location={itinerary?.[0]?.location ?? ""}
-                            tags={tags}
-                            price={estimatedPrice}
-                        />
+                            tags={tags} price={""} />
                     ))}
                 </div>
 
@@ -116,19 +175,6 @@ const TravelPage = () => {
                     >
                         Previous
                     </button>
-
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
-                        <button
-                            key={n}
-                            onClick={() => setPage(n)}
-                            className={cn(
-                                "size-10 rounded-lg text-sm font-medium cursor-pointer",
-                                n === page ? "bg-primary-100 text-white" : "bg-white border border-light-400 text-dark-100"
-                            )}
-                        >
-                            {n}
-                        </button>
-                    ))}
 
                     <button
                         onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
