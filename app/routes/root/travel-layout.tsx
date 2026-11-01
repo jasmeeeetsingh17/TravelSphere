@@ -1,14 +1,21 @@
+import { useEffect, useState } from "react";
 import { Link, Outlet, useLoaderData, useNavigate } from "react-router";
-import { Mail, MapPin, Plane, Compass, ArrowUp } from "lucide-react";
 import {
+    ArrowUp,
     Camera,
-    Users,
+    Compass,
+    LayoutDashboard,
+    LogOut,
+    Mail,
+    MapPin,
+    Plane,
     Play,
+    Users,
 } from "lucide-react";
 
-
-
 import { getUser, logoutUser } from "~/appwrite/auth";
+import { cn } from "~/lib/utils";
+import AiAssistant from "../../../components/AiAssistant";
 
 export const clientLoader = async () => {
     try {
@@ -18,9 +25,28 @@ export const clientLoader = async () => {
     }
 };
 
+const navLinks = [
+    { label: "Home", href: "/#hero" },
+    { label: "Destinations", href: "/#featured" },
+    { label: "Trips", href: "/#trips" },
+];
+
 const TravelLayout = () => {
     const user = useLoaderData() as User | null;
     const navigate = useNavigate();
+    const [scrolled, setScrolled] = useState(false);
+
+    useEffect(() => {
+        document.documentElement.style.scrollBehavior = "smooth";
+        const onScroll = () => setScrolled(window.scrollY > 24);
+        onScroll();
+        window.addEventListener("scroll", onScroll, { passive: true });
+        return () => {
+            window.removeEventListener("scroll", onScroll);
+            document.documentElement.style.scrollBehavior = "";
+        };
+    }, []);
+
 
     const handleLogout = async () => {
         await logoutUser();
@@ -30,54 +56,76 @@ const TravelLayout = () => {
         <div className="bg-light-200 min-h-screen">
 
             {/* Header */}
-            <header className="absolute top-0 left-0 w-full z-20">
+            <header
+                className={cn(
+                    "fixed top-0 left-0 w-full z-30 transition-all duration-300",
+                    scrolled ? "bg-white/80 backdrop-blur-md shadow-sm" : "bg-transparent"
+                )}
+            >
                 <div className="wrapper">
-                    <nav className="root-nav">
-                        <Link to="/">
-                            <img
-                                src="/assets/icons/logo.svg"
-                                alt="logo"
-                                className="size-7.5"
-                            />
-                            <h1>TravelSphere</h1>
+                    <nav className="flex items-center justify-between gap-4 h-18">
+                        <Link to="/" className="flex items-center gap-1.5">
+                            <img src="/assets/icons/logo.svg" alt="logo" className="size-7.5" />
+                            <span className="text-base md:text-2xl font-bold text-dark-100">TravelSphere</span>
                         </Link>
 
-                        <aside>
+                        <ul className="hidden md:flex items-center gap-8">
+                            {navLinks.map((l) => (
+                                <li key={l.label}>
+                                    <a
+                                        href={l.href}
+                                        className="text-sm font-medium text-dark-100 hover:text-primary-100 transition-colors"
+                                    >
+                                        {l.label}
+                                    </a>
+                                </li>
+                            ))}
+                        </ul>
+
+                        <div className="flex items-center gap-2 sm:gap-3">
                             {user ? (
                                 <>
+                                    <Link
+                                        to="/dashboard"
+                                        className="flex items-center gap-2 bg-primary-100 hover:bg-primary-500 text-white text-sm font-semibold rounded-full px-4 py-2.5 transition-colors"
+                                    >
+                                        <LayoutDashboard size={16} />
+                                        <span className="hidden sm:inline">Dashboard</span>
+                                    </Link>
+
                                     <img
                                         src={user.imageUrl || "/assets/images/david.webp"}
                                         alt={user.name}
                                         referrerPolicy="no-referrer"
+                                        className="size-10 rounded-full aspect-square object-cover border-2 border-white shadow"
                                     />
 
                                     <button
                                         onClick={handleLogout}
-                                        className="cursor-pointer"
                                         aria-label="Log out"
+                                        className="size-10 rounded-full bg-white/80 hover:bg-white shadow flex items-center justify-center text-dark-100 cursor-pointer transition-colors"
                                     >
-                                        <img
-                                            src="/assets/icons/logout.svg"
-                                            alt="logout"
-                                            className="size-6 rounded-none"
-                                        />
+                                        <LogOut size={18} />
                                     </button>
                                 </>
                             ) : (
                                 <Link
                                     to="/sign-in"
-                                    className="bg-primary-100 text-white text-sm md:text-base font-semibold rounded-lg px-4 py-2.5"
+                                    className="bg-primary-100 hover:bg-primary-500 text-white text-sm md:text-base font-semibold rounded-full px-5 py-2.5 transition-colors"
                                 >
                                     Sign in
                                 </Link>
                             )}
-                        </aside>
+                        </div>
                     </nav>
                 </div>
             </header>
 
             {/* Page Content */}
             <Outlet />
+
+            {/* AI mode popup (slides up / down) */}
+            <AiAssistant />
 
             {/* Footer */}
             <footer className="bg-dark-300 text-white">

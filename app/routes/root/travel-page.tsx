@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router";
+import { Compass, Sparkles, Wallet } from "lucide-react";
 import { Header, TripCard } from "../../../components";
 import { allTrips } from "~/constants";
 import { cn } from "~/lib/utils";
@@ -102,14 +103,40 @@ const TravelPage = () => {
                                 set your preferences, and explore with confidence.
                             </p>
                         </article>
-                        <Link
-                            to="#trips"
-                            className="bg-primary-100 hover:bg-primary-500 text-white font-semibold rounded-lg px-8 py-3 md:w-60 w-full text-center transition-colors"
-                        >
-                            Get Started
-                        </Link>
+                        <aside className="flex flex-wrap items-center gap-3 w-full">
+                            <a
+                                href="#trips"
+                                className="bg-primary-100 hover:bg-primary-500 text-white font-semibold rounded-full px-8 py-3 text-center transition-colors"
+                            >
+                                Get Started
+                            </a>
+                            <button
+                                onClick={() => window.dispatchEvent(new Event("open-ai-mode"))}
+                                className="flex items-center gap-2 bg-white/90 hover:bg-white text-dark-100 font-semibold rounded-full px-6 py-3 shadow transition-colors cursor-pointer"
+                            >
+                                <Sparkles size={18} className="text-primary-100" />
+                                Ask AI
+                            </button>
+                        </aside>
                     </section>
                 </div>
+            </section>
+
+            {/* Stats strip */}
+            <section className="wrapper -mt-12 relative z-10">
+                <ul className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white rounded-3xl shadow-xl border border-light-400 p-6 md:p-8">
+                    {[
+                        ["120+", "Destinations"],
+                        ["5K+", "Trips planned"],
+                        ["4.8", "Average rating"],
+                        ["24/7", "AI help"],
+                    ].map(([value, label]) => (
+                        <li key={label} className="flex flex-col items-center text-center gap-1">
+                            <strong className="text-2xl md:text-3xl font-bold text-primary-100">{value}</strong>
+                            <span className="text-sm text-gray-100">{label}</span>
+                        </li>
+                    ))}
+                </ul>
             </section>
 
             {/* Featured destinations */}
@@ -149,7 +176,7 @@ const TravelPage = () => {
             </section>
 
             {/* Handpicked trips */}
-            <section id="trips" className="wrapper py-20 flex flex-col gap-10">
+            <section id="trips" className="wrapper pt-20 pb-16 flex flex-col gap-10">
                 <Header
                     title="Handpicked Trips"
                     description="Browse well-planned trips designed for different travel styles and interests."
@@ -185,6 +212,46 @@ const TravelPage = () => {
                     </button>
                 </nav>
             </section>
+
+            {/* Why TravelSphere */}
+            <section className="wrapper pb-20 flex flex-col gap-10">
+                <Header
+                    title="Why TravelSphere"
+                    description="Everything you need to plan a trip you will remember."
+                />
+                <ul className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {[
+                        { Icon: Sparkles, title: "AI-powered planning", text: "Describe your budget and style and get a tailored itinerary in minutes." },
+                        { Icon: Compass, title: "Handpicked trips", text: "Curated experiences for solo travellers, couples, families and friends." },
+                        { Icon: Wallet, title: "Clear budgets", text: "See estimated prices upfront so there are no surprises later." },
+                    ].map(({ Icon, title, text }) => (
+                        <li key={title} className="bg-white rounded-3xl border border-light-400 p-6 flex flex-col gap-3 hover:shadow-lg hover:-translate-y-1 transition-all">
+                            <span className="size-12 rounded-2xl bg-primary-50 text-primary-100 flex items-center justify-center">
+                                <Icon size={24} />
+                            </span>
+                            <h3 className="text-lg font-semibold text-dark-100">{title}</h3>
+                            <p className="text-sm leading-6 text-gray-100">{text}</p>
+                        </li>
+                    ))}
+                </ul>
+            </section>
+
+            {/* CTA */}
+            {/* <section className="wrapper pb-20">
+                <article className="rounded-3xl bg-gradient-to-r from-primary-100 to-violet-600 text-white p-8 md:p-14 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                    <span className="flex flex-col gap-2 max-w-xl">
+                        <h2 className="text-2xl md:text-4xl font-bold">Ready for your next adventure?</h2>
+                        <p className="text-white/80">Ask our AI for ideas, or jump straight into the handpicked trips above.</p>
+                    </span>
+                    <button
+                        onClick={() => window.dispatchEvent(new Event("open-ai-mode"))}
+                        className="flex items-center gap-2 bg-white text-primary-100 font-semibold rounded-full px-7 py-3.5 hover:scale-105 transition-transform cursor-pointer"
+                    >
+                        <Sparkles size={18} />
+                        Try AI mode
+                    </button>
+                </article>
+            </section> */}
         </main>
     );
 };
