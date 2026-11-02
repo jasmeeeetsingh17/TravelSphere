@@ -38,8 +38,8 @@ TravelSphere is a travel web app where visitors can explore featured destination
 | Frontend | React, TypeScript |
 | UI Components | Syncfusion |
 | Icons | lucide-react |
-| Styling | <!-- e.g. Tailwind CSS --> |
-| Backend / Auth | <!-- e.g. Appwrite / Firebase --> |
+| Styling | Tailwind CSS  |
+| Backend / Auth |  Appwrite |
 | AI | <!-- e.g. Gemini API --> |
 | Deployment | <!-- e.g. Vercel --> |
 
