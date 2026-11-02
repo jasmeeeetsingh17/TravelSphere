@@ -43,14 +43,6 @@ TravelSphere is a travel web app where visitors can explore featured destination
 | AI | <!-- e.g. Gemini API --> |
 | Deployment | <!-- e.g. Vercel --> |
 
-## 📸 Screenshots
-
-| Landing Page | Dashboard |
-| --- | --- |
-| ![Landing](./screenshots/landing.png) | ![Dashboard](./screenshots/dashboard.png) |
-
-> Add your screenshots to a `screenshots/` folder and update the paths above.
-
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -112,16 +104,6 @@ TravelSphere/
 
 > Adjust this tree to match your actual folders.
 
-## 🗺️ Roadmap
-
-- [x] Landing page with hero, destinations and trips
-- [x] Dashboard button for signed-in users
-- [x] Custom dark footer
-- [ ] AI mode popup (slide up/down)
-- [ ] Full admin dashboard polish
-- [ ] Trip booking flow
-- [ ] Search and filters for destinations
-- [ ] Dark mode
 
 ## 🤝 Contributing
 
@@ -142,8 +124,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 **Jasmeet Singh**
 
 - GitHub: [@jasmeeeetsingh17](https://github.com/jasmeeeetsingh17)
-- Twitter/X: [@JasmeetSingh_17](https://twitter.com/JasmeetSingh_17)
-- LinkedIn: <!-- add your LinkedIn URL -->
+
 
 ## 🙏 Acknowledgements
 
