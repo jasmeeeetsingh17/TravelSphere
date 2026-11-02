@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router";
 import { Compass, Sparkles, Wallet } from "lucide-react";
+import { PagerComponent } from "@syncfusion/ej2-react-grids";
 import { Header, TripCard } from "../../../components";
 import { allTrips } from "~/constants";
 import { cn } from "~/lib/utils";
@@ -87,7 +88,6 @@ const TravelPage = () => {
         const t = allTrips[i % allTrips.length];
         return { ...t, key: `${t.id}-${i}` };
     });
-    const totalPages = Math.ceil(trips.length / TRIPS_PER_PAGE);
     const visible = trips.slice((page - 1) * TRIPS_PER_PAGE, page * TRIPS_PER_PAGE);
 
     return (
@@ -194,23 +194,16 @@ const TravelPage = () => {
                     ))}
                 </div>
 
-                <nav className="flex items-center justify-center gap-2" aria-label="Pagination">
-                    <button
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                        disabled={page === 1}
-                        className="px-4 py-2 rounded-lg border border-light-400 bg-white text-sm font-medium text-dark-100 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
-                    >
-                        Previous
-                    </button>
+                <PagerComponent
+                    totalRecordsCount={trips.length}
+                    pageSize={TRIPS_PER_PAGE}
+                    currentPage={page}
+                    click={(args: { currentPage: number }) => setPage(args.currentPage)}
+                />
 
-                    <button
-                        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                        disabled={page === totalPages}
-                        className="px-4 py-2 rounded-lg border border-light-400 bg-white text-sm font-medium text-dark-100 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
-                    >
-                        Next
-                    </button>
-                </nav>
+                <Link to="/travel" className="self-center text-primary-100 font-semibold hover:underline">
+                    View all trips
+                </Link>
             </section>
 
             {/* Why TravelSphere */}

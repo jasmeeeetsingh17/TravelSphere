@@ -17,27 +17,16 @@ export const sidebarItems = [
   {
     id: 4,
     icon: "/assets/icons/itinerary.svg",
-    label: "AI Assit",
+    label: "All Trips",
     href: "/trips",
   },
   {
     id: 5,
     icon: "/assets/icons/calendar.svg",
-    label: "Bookings",
+    label: "All Bookings",
     href: "/bookings",
   },
-  {
-    id: 6,
-    icon: "/assets/icons/chart-bar.svg",
-    label: "Analytics",
-    href: "/analytics",
-  },
-  {
-    id: 7,
-    icon: "/assets/icons/credit-card.svg",
-    label: "Billing",
-    href: "/billing",
-  },
+
 ];
 
 export const chartOneData: object[] = [

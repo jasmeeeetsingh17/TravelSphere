@@ -29,6 +29,7 @@ const navLinks = [
     { label: "Home", href: "/#hero" },
     { label: "Destinations", href: "/#featured" },
     { label: "Trips", href: "/#trips" },
+    { label: "All Trips", href: "/travel" },
 ];
 
 const TravelLayout = () => {

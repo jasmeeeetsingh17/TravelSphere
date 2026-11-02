@@ -21,7 +21,7 @@ const StatsCard = ({
     const isDecrement = trend === "decrement";
 
     return (
-        <article className="group relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-5 shadow-[0_1px_3px_0_rgb(0_0_0_/_0.04),0_1px_2px_-1px_rgb(0_0_0_/_0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_10px_25px_-5px_rgb(0_0_0_/_0.05),0_8px_10px_-6px_rgb(0_0_0_/_0.04)] sm:p-6">
+        <article className="group relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-5 shadow-[0_1px_3px_0_rgb(0_0_0/0.04),0_1px_2px_-1px_rgb(0_0_0/0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_10px_25px_-5px_rgb(0_0_0/0.05),0_8px_10px_-6px_rgb(0_0_0/0.04)] sm:p-6">
             {/* Subtle contextual ambient glow in corner */}
             <div
                 className={cn(
