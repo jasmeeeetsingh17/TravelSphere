@@ -11,7 +11,6 @@ A modern travel platform with a public landing page, curated trips, an AI trip a
 ![Syncfusion](https://img.shields.io/badge/UI-Syncfusion-F37021)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-[Live Demo](#) · [Report Bug](https://github.com/jasmeeeetsingh17/TravelSphere/issues) · [Request Feature](https://github.com/jasmeeeetsingh17/TravelSphere/issues)
 
 </div>
 
