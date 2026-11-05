@@ -30,6 +30,7 @@ const navLinks = [
     { label: "Destinations", href: "/#featured" },
     { label: "Trips", href: "/#trips" },
     { label: "All Trips", href: "/travel" },
+    { label: "Plan a Trip", href: "/plan" },
 ];
 
 const TravelLayout = () => {
@@ -73,12 +74,15 @@ const TravelLayout = () => {
                         <ul className="hidden md:flex items-center gap-8">
                             {navLinks.map((l) => (
                                 <li key={l.label}>
-                                    <a
-                                        href={l.href}
-                                        className="text-sm font-medium text-dark-100 hover:text-primary-100 transition-colors"
-                                    >
-                                        {l.label}
-                                    </a>
+                                    {l.href.includes("#") ? (
+                                        <a href={l.href} className="text-sm font-medium text-dark-100 hover:text-primary-100 transition-colors">
+                                            {l.label}
+                                        </a>
+                                    ) : (
+                                        <Link to={l.href} className="text-sm font-medium text-dark-100 hover:text-primary-100 transition-colors">
+                                            {l.label}
+                                        </Link>
+                                    )}
                                 </li>
                             ))}
                         </ul>
@@ -94,12 +98,14 @@ const TravelLayout = () => {
                                         <span className="hidden sm:inline">Dashboard</span>
                                     </Link>
 
-                                    <img
-                                        src={user.imageUrl || "/assets/images/david.webp"}
-                                        alt={user.name}
-                                        referrerPolicy="no-referrer"
-                                        className="size-10 rounded-full aspect-square object-cover border-2 border-white shadow"
-                                    />
+                                    <Link to="/account" aria-label="My account" title="My account">
+                                        <img
+                                            src={user.imageUrl || "/assets/images/david.webp"}
+                                            alt={user.name}
+                                            referrerPolicy="no-referrer"
+                                            className="size-10 rounded-full aspect-square object-cover border-2 border-white shadow hover:ring-2 hover:ring-primary-100 transition-shadow"
+                                        />
+                                    </Link>
 
                                     <button
                                         onClick={handleLogout}

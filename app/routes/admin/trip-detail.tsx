@@ -1,13 +1,13 @@
-import { useParams } from "react-router";
 import TripDetail from "../../../components/TripDetail";
+import { resolveTrip } from "~/appwrite/trips";
+import type { Route } from "./+types/trip-detail";
 
-const AdminTripDetail = () => {
-    const { tripId } = useParams();
-    return (
-        <main className="dashboard wrapper">
-            <TripDetail tripId={tripId} />
-        </main>
-    );
-};
+export const clientLoader = async ({ params }: Route.ClientLoaderArgs) => await resolveTrip(params.tripId);
+
+const AdminTripDetail = ({ loaderData }: Route.ComponentProps) => (
+    <main className="dashboard wrapper">
+        <TripDetail trip={loaderData} backTo="/trips" />
+    </main>
+);
 
 export default AdminTripDetail;

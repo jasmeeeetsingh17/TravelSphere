@@ -1,5 +1,5 @@
 import { Link, NavLink, useLoaderData, useNavigate } from "react-router";
-import { sidebarItems } from "~/constants";
+import { sidebarItems } from "~/constants/sidebar";
 import { cn } from "~/lib/utils";
 import { logoutUser } from "~/appwrite/auth";
 
@@ -40,12 +40,14 @@ const NavItems = ({ handleClick }: { handleClick?: () => void }) => {
                 </nav>
 
                 <footer className="nav-footer">
-                    <img src={user?.imageUrl} alt={user?.name || 'N/A'} referrerPolicy="no-referrer" />
+                    <Link to="/account" onClick={handleClick} className="flex items-center gap-2.5">
+                        <img src={user?.imageUrl} alt={user?.name || 'N/A'} referrerPolicy="no-referrer" />
 
-                    <article>
-                        <h2>{user?.name}</h2>
-                        <p>{user?.email}</p>
-                    </article>
+                        <article>
+                            <h2>{user?.name}</h2>
+                            <p>{user?.email}</p>
+                        </article>
+                    </Link>
 
                     <button
                         onClick={handleLogout}
