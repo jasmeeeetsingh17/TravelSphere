@@ -1,29 +1,40 @@
 import { useMemo, useState } from "react";
 import { AutoCompleteComponent, DropDownListComponent } from "@syncfusion/ej2-react-dropdowns";
 import { PagerComponent } from "@syncfusion/ej2-react-grids";
-import { allTrips } from "~/constants";
+import { Link } from "react-router";
+import { indianStates } from "~/constants/indiaStates";
+import type { TripView } from "~/lib/trip-view";
 import TripCard from "./TripCard";
 
 const PAGE_SIZE = 8;
-const STYLES = ["All styles", "Solo", "Couple", "Family", "Friends"];
-const names = allTrips.map((t) => t.name);
+const GROUPS = ["All groups", "Solo", "Couple", "Family", "Friends", "Business"];
 
 // The app.css rule for .e-input-group-icon is made for forms, so reset it inside this toolbar.
 const resetIcon = "[&_.e-input-group-icon]:!static";
 
-const TripsExplorer = () => {
-    const [query, setQuery] = useState("");
-    const [style, setStyle] = useState("All styles");
+type Props = {
+    trips: TripView[];
+    /** Where a trip card links to, e.g. "/travel" or "/trips" */
+    basePath: string;
+    /** Search text to start with (e.g. from ?q= in the address) */
+    initialQuery?: string;
+};
+
+const TripsExplorer = ({ trips, basePath, initialQuery = "" }: Props) => {
+    const [query, setQuery] = useState(initialQuery);
+    const [group, setGroup] = useState("All groups");
     const [page, setPage] = useState(1);
+
+    const names = useMemo(() => trips.map((t) => t.name), [trips]);
 
     const filtered = useMemo(() => {
         const q = query.trim().toLowerCase();
-        return allTrips.filter((t) => {
-            const matchesStyle = style === "All styles" || t.travelStyle === style;
-            const text = [t.name, t.itinerary?.[0]?.location, ...t.tags].join(" ").toLowerCase();
-            return matchesStyle && (!q || text.includes(q));
+        return trips.filter((t) => {
+            const matchesGroup = group === "All groups" || t.group === group;
+            const text = [t.name, t.location, ...t.tags].join(" ").toLowerCase();
+            return matchesGroup && (!q || text.includes(q));
         });
-    }, [query, style]);
+    }, [trips, query, group]);
 
     const visible = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
@@ -35,6 +46,7 @@ const TripsExplorer = () => {
                         id="trip-search"
                         dataSource={names}
                         placeholder="Search trips, places or interests"
+                        value={initialQuery}
                         showClearButton
                         filtering={(e) => {
                             setQuery(e.text ?? "");
@@ -48,11 +60,11 @@ const TripsExplorer = () => {
                 </div>
                 <div className={`md:w-60 ${resetIcon}`}>
                     <DropDownListComponent
-                        id="trip-style"
-                        dataSource={STYLES}
-                        value={style}
+                        id="trip-group"
+                        dataSource={GROUPS}
+                        value={group}
                         change={(e) => {
-                            setStyle((e.value as string) ?? "All styles");
+                            setGroup((e.value as string) ?? "All groups");
                             setPage(1);
                         }}
                     />
@@ -61,22 +73,33 @@ const TripsExplorer = () => {
 
             {visible.length ? (
                 <div className="trip-grid">
-                    {visible.map(({ id, name, imageUrls, itinerary, tags }) => (
+                    {visible.map((t) => (
                         <TripCard
-                            key={id}
-                            id={id.toString()}
-                            name={name}
-                            imageUrl={imageUrls[0]}
-                            location={itinerary?.[0]?.location ?? ""}
-                            tags={tags}
+                            key={t.id}
+                            id={t.id}
+                            name={t.name}
+                            imageUrl={t.imageUrl}
+                            location={t.location}
+                            tags={t.tags}
                             price=""
+                            href={`${basePath}/${t.id}`}
                         />
                     ))}
                 </div>
             ) : (
-                <p className="text-center text-gray-100 py-16">
-                    No trips match your search. Try a different word or style.
-                </p>
+                <div className="flex flex-col items-center gap-3 text-center py-16">
+                    <p className="text-gray-100">
+                        {trips.length ? "No trips match your search. Try a different word or group." : "There are no trips yet."}
+                    </p>
+                    {basePath === "/travel" && (
+                        <Link
+                            to={`/plan${indianStates.find((s) => s.toLowerCase() === query.trim().toLowerCase()) ? `?state=${encodeURIComponent(query.trim())}` : ""}`}
+                            className="bg-primary-100 hover:bg-primary-500 text-white text-sm font-semibold rounded-full px-6 py-2.5 transition-colors"
+                        >
+                            Plan a trip
+                        </Link>
+                    )}
+                </div>
             )}
 
             {filtered.length > PAGE_SIZE && (

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Bot, ChevronDown, Send, Sparkles } from "lucide-react";
-import { allTrips } from "~/constants";
+import { getSavedTrips } from "~/appwrite/trips";
+import { priceToNumber } from "~/lib/booking";
+import type { TripView } from "~/lib/trip-view";
 import { cn } from "~/lib/utils";
 
 type Message = { id: number; role: "user" | "ai"; text: string };
@@ -29,45 +31,41 @@ const STYLE_WORDS: Record<string, string> = {
     friends: "friends",
 };
 
-const toNumber = (price: string) => Number(price.replace(/[^0-9.]/g, "")) || 0;
-
 /**
- * Local, rule-based replies so the UI works without a backend.
- * TODO: replace with a call to your own API route (e.g. Gemini / OpenAI)
- * that receives `input` and returns the model's answer.
+ * Rule-based replies over the trips saved in the database, so the popup works without an AI service.
+ * To use a real model, send `input` and the trips to a server route and return its answer here.
  */
-function getReply(input: string): string {
+function getReply(input: string, allTrips: TripView[]): string {
+    if (!allTrips.length) {
+        return "There are no trips yet. Plan the first one from the Plan a Trip page and I will be able to suggest it.";
+    }
+
     const q = input.toLowerCase();
     let trips = [...allTrips];
 
     const budget = q.match(/(?:under|below|less than|within)\s*\$?\s*([\d,]+)/);
     if (budget) {
         const max = Number(budget[1].replace(/,/g, ""));
-        trips = trips.filter((t) => toNumber(t.estimatedPrice) <= max);
+        trips = trips.filter((t) => priceToNumber(t.price) <= max);
     }
 
     const style = Object.keys(STYLE_WORDS).find((w) => q.includes(w));
     if (style) {
-        trips = trips.filter((t) => t.travelStyle.toLowerCase() === STYLE_WORDS[style]);
+        trips = trips.filter((t) => t.group.toLowerCase() === STYLE_WORDS[style]);
     }
 
     const words = q.split(/[^a-z']+/).filter((w) => w.length > 3);
     const keywordHits = allTrips.filter((t) =>
-        words.some((w) =>
-            [t.name, t.itinerary?.[0]?.location ?? "", ...t.tags].join(" ").toLowerCase().includes(w)
-        )
+        words.some((w) => [t.name, t.location, t.style ?? "", ...t.tags].join(" ").toLowerCase().includes(w))
     );
     if (!budget && !style && keywordHits.length) trips = keywordHits;
 
     if (!trips.length) {
-        return "I couldn't find an exact match. Try a different budget, or a style like solo, family or couple.";
+        return "I couldn't find an exact match. Try a different budget, or a group like solo, family or couple.";
     }
 
-    const list = trips
-        .slice(0, 3)
-        .map((t) => `• ${t.name} (${t.itinerary?.[0]?.location}) `)
-        .join("\n");
-    return `Here are some trips you might like:\n${list}\n\nScroll to Handpicked Trips to see them all.`;
+    const list = trips.slice(0, 3).map((t) => `• ${t.name} (${t.location}) - ${t.price}`).join("\n");
+    return `Here are some trips you might like:\n${list}\n\nOpen All Trips to see more.`;
 }
 
 const AiAssistant = () => {
@@ -75,6 +73,7 @@ const AiAssistant = () => {
     const [typing, setTyping] = useState(false);
     const [input, setInput] = useState("");
     const [messages, setMessages] = useState<Message[]>([GREETING]);
+    const [trips, setTrips] = useState<TripView[] | null>(null);
     const listRef = useRef<HTMLDivElement>(null);
     const nextId = useRef(1);
 
@@ -90,6 +89,11 @@ const AiAssistant = () => {
         };
     }, []);
 
+    // Load the real trips the first time the panel opens
+    useEffect(() => {
+        if (open && trips === null) getSavedTrips(60).then(setTrips);
+    }, [open, trips]);
+
     // Keep the newest message in view
     useEffect(() => {
         listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
@@ -102,7 +106,7 @@ const AiAssistant = () => {
         setInput("");
         setTyping(true);
         setTimeout(() => {
-            setMessages((m) => [...m, { id: nextId.current++, role: "ai", text: getReply(value) }]);
+            setMessages((m) => [...m, { id: nextId.current++, role: "ai", text: getReply(value, trips ?? []) }]);
             setTyping(false);
         }, 700);
     };

@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import {
     Category,
     ChartComponent,
@@ -10,156 +11,114 @@ import {
     SplineAreaSeries,
     Tooltip,
 } from "@syncfusion/ej2-react-charts";
-import { Link } from "react-router";
 import { ColumnDirective, ColumnsDirective, GridComponent } from "@syncfusion/ej2-react-grids";
 import { Plus } from "lucide-react";
 import { Header, StatsCard, TripCard } from "../../../components";
+import ChartCard from "../../../components/ChartCard";
 import { nameCell } from "../../../components/UserCells";
-import { dashboardStats, chartOneData, tripXAxis, tripyAxis, userXAxis, useryAxis, users as sampleUsers } from "~/constants";
+import { loadAllBookings } from "~/appwrite/admin";
 import { getUser } from "~/appwrite/auth";
-import { getAllUsers, type UserRow } from "~/appwrite/users";
 import { getSavedTrips } from "~/appwrite/trips";
-import { sampleTripViews, type TripView } from "~/lib/trip-view";
-import type { Route } from './+types/dashboard';
-
-const { totalUsers, usersJoined, totalTrips, tripsCreated, userRole } = dashboardStats;
+import { getAllUsers } from "~/appwrite/users";
+import { categoryAxis, chartArea, COLORS, legend, tooltip, valueAxis } from "~/lib/chart-theme";
+import { bucket, countBy, lastMonths, monthLabel, thisVsLast } from "~/lib/stats";
+import type { Route } from "./+types/dashboard";
 
 export const clientLoader = async () => {
-    const [user, users, savedTrips] = await Promise.all([getUser(), getAllUsers(5), getSavedTrips(100)]);
-    // Falls back to sample users when the collection is empty or can't be read.
-    return { user, users: users.length ? users : (sampleUsers as unknown as UserRow[]), savedTrips };
+    const [user, users, trips, { bookings }] = await Promise.all([
+        getUser(),
+        getAllUsers(500),
+        getSavedTrips(500),
+        loadAllBookings(),
+    ]);
+    return { user, users, trips, bookings };
 };
 
-// Number of trips per group type, from saved and sample trips
-const countByGroup = (trips: TripView[]) =>
-    Object.entries(
-        trips.reduce<Record<string, number>>((acc, t) => {
-            acc[t.group] = (acc[t.group] ?? 0) + 1;
-            return acc;
-        }, {})
-    ).map(([x, y]) => ({ x, y }));
-
-const cardClass = "bg-white rounded-20 shadow-400 p-6 flex flex-col gap-4";
-
 const Dashboard = ({ loaderData }: Route.ComponentProps) => {
-    const { user, users, savedTrips } = loaderData as { user: User | null; users: UserRow[]; savedTrips: TripView[] };
-    const tripsByStyle = countByGroup([...savedTrips, ...sampleTripViews]);
-    const latestTrips = [...savedTrips, ...sampleTripViews].slice(0, 4);
+    const { user, users, trips, bookings } = loaderData;
+    const name = user && !(user instanceof Response) ? user.name : "Guest";
+
+    const userDates = users.map((u) => ({ date: u.joinedAt }));
+    const tripDates = trips.map((t) => ({ date: t.createdAt ?? "" }));
+    const bookingDates = bookings.map((b) => ({ date: b.createdAt }));
+
+    const months = lastMonths(6);
+    const growth = months.map((m, i) => ({
+        month: monthLabel(m),
+        users: bucket(userDates, months)[i],
+        trips: bucket(tripDates, months)[i],
+        bookings: bucket(bookingDates, months)[i],
+    }));
+    const byGroup = countBy(trips, (t) => t.group);
+
+    const cards = [
+        { title: "Total Users", total: users.length, ...thisVsLast(userDates) },
+        { title: "Total Trips", total: trips.length, ...thisVsLast(tripDates) },
+        { title: "Total Bookings", total: bookings.length, ...thisVsLast(bookingDates) },
+    ];
 
     return (
         <main className="dashboard wrapper">
-            <Header
-                title={`Welcome ${user?.name ?? 'Guest'} 👋`}
-                description="Track activity, trends and popular destinations in real time"
-            />
+            <Header title={`Welcome ${name} 👋`} description="Track activity, trends and popular destinations in real time" />
 
-            <section className="flex flex-col gap-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
-                    <StatsCard
-                        headerTitle="Total Users"
-                        total={totalUsers}
-                        currentMonthCount={usersJoined.currentMonth}
-                        lastMonthCount={usersJoined.lastMonth}
-                    />
-                    <StatsCard
-                        headerTitle="Total Trips"
-                        total={totalTrips}
-                        currentMonthCount={tripsCreated.currentMonth}
-                        lastMonthCount={tripsCreated.lastMonth}
-                    />
-                    <StatsCard
-                        headerTitle="Active Users"
-                        total={userRole.total}
-                        currentMonthCount={userRole.currentMonth}
-                        lastMonthCount={userRole.lastMonth}
-                    />
-                </div>
+            <section className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+                {cards.map((c) => (
+                    <StatsCard key={c.title} headerTitle={c.title} total={c.total} currentMonthCount={c.current} lastMonthCount={c.last} />
+                ))}
             </section>
 
-            {/* Charts */}
             <section className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                <article className={cardClass}>
-                    <h2 className="text-lg font-semibold text-dark-100">Growth overview</h2>
-                    <ChartComponent
-                        id="growth-chart"
-                        dataSource={chartOneData}
-                        primaryXAxis={{ ...userXAxis, title: "Month" }}
-                        primaryYAxis={useryAxis}
-                        tooltip={{ enable: true }}
-                        legendSettings={{ visible: true }}
-                        height="300px"
-                    >
+                <ChartCard title="Growth overview" subtitle="New users, trips and bookings over the last 6 months" empty={!users.length && !trips.length && !bookings.length ? "Nothing to show yet." : undefined}>
+                    <ChartComponent id="dash-growth" dataSource={growth} primaryXAxis={categoryAxis} primaryYAxis={valueAxis({ minimum: 0, interval: 1 })} chartArea={chartArea} tooltip={tooltip} legendSettings={legend} background="transparent" height="300px">
                         <ChartInject services={[SplineAreaSeries, Category, Tooltip, Legend]} />
                         <SeriesCollectionDirective>
-                            <SeriesDirective dataSource={chartOneData} xName="x" yName="y1" name="Users" type="SplineArea" opacity={0.4} />
-                            <SeriesDirective dataSource={chartOneData} xName="x" yName="y2" name="Trips" type="SplineArea" opacity={0.4} />
-                            <SeriesDirective dataSource={chartOneData} xName="x" yName="y3" name="Bookings" type="SplineArea" opacity={0.4} />
+                            <SeriesDirective dataSource={growth} xName="month" yName="users" name="Users" type="SplineArea" fill={COLORS.blue} opacity={0.15} border={{ width: 3, color: COLORS.blue }} />
+                            <SeriesDirective dataSource={growth} xName="month" yName="trips" name="Trips" type="SplineArea" fill={COLORS.green} opacity={0.15} border={{ width: 3, color: COLORS.green }} />
+                            <SeriesDirective dataSource={growth} xName="month" yName="bookings" name="Bookings" type="SplineArea" fill={COLORS.amber} opacity={0.15} border={{ width: 3, color: COLORS.amber }} />
                         </SeriesCollectionDirective>
                     </ChartComponent>
-                </article>
+                </ChartCard>
 
-                <article className={cardClass}>
-                    <h2 className="text-lg font-semibold text-dark-100">Trips by group type</h2>
-                    <ChartComponent
-                        id="style-chart"
-                        dataSource={tripsByStyle}
-                        primaryXAxis={tripXAxis}
-                        primaryYAxis={tripyAxis}
-                        tooltip={{ enable: true }}
-                        height="300px"
-                    >
+                <ChartCard title="Trips by group type" subtitle="Who the trips are planned for" empty={!trips.length ? "No trips yet. Create one to see this chart." : undefined}>
+                    <ChartComponent id="dash-groups" dataSource={byGroup} primaryXAxis={categoryAxis} primaryYAxis={valueAxis({ minimum: 0, interval: 1 })} chartArea={chartArea} tooltip={{ enable: true }} background="transparent" height="300px">
                         <ChartInject services={[ColumnSeries, Category, Tooltip, DataLabel]} />
                         <SeriesCollectionDirective>
-                            <SeriesDirective
-                                dataSource={tripsByStyle}
-                                xName="x"
-                                yName="y"
-                                type="Column"
-                                name="Trips"
-                                columnWidth={0.5}
-                                cornerRadius={{ topLeft: 8, topRight: 8 }}
-                                marker={{ dataLabel: { visible: true, position: "Top" } }}
-                            />
+                            <SeriesDirective dataSource={byGroup} xName="x" yName="y" name="Trips" type="Column" fill={COLORS.blue} columnWidth={0.45} cornerRadius={{ topLeft: 10, topRight: 10 }} marker={{ dataLabel: { visible: true, position: "Top", font: { fontWeight: "600", color: "#374151" } } }} />
                         </SeriesCollectionDirective>
                     </ChartComponent>
-                </article>
+                </ChartCard>
             </section>
 
-            {/* Latest signups */}
-            <section className={cardClass}>
-                <h2 className="text-lg font-semibold text-dark-100">Latest user signups</h2>
-                <GridComponent dataSource={users} gridLines="None">
+            <ChartCard title="Latest user signups" subtitle="The five most recent people to join" empty={!users.length ? "No users yet." : undefined}>
+                <GridComponent dataSource={users.slice(0, 5)} gridLines="None">
                     <ColumnsDirective>
                         <ColumnDirective field="name" headerText="Name" width="220" template={nameCell} />
                         <ColumnDirective field="email" headerText="Email" width="240" />
                         <ColumnDirective field="dateJoined" headerText="Date Joined" width="150" />
                     </ColumnsDirective>
                 </GridComponent>
-            </section>
+            </ChartCard>
 
             <section className="container">
                 <span className="flex items-center justify-between gap-4">
-                    <h1 className="text-xl font-semibold text-dark-100">{savedTrips.length ? "Latest Trips" : "Sample Trips"}</h1>
+                    <h1 className="text-xl font-semibold text-dark-100">Latest Trips</h1>
                     <Link to="/trips/create" className="flex items-center gap-2 bg-primary-100 hover:bg-primary-500 text-white text-sm font-semibold rounded-full px-5 py-2.5 transition-colors">
                         <Plus size={16} /> Create trip
                     </Link>
                 </span>
 
-                <div className='trip-grid'>
-                    {latestTrips.map((t) => (
-                        <TripCard
-                            key={t.id}
-                            id={t.id}
-                            name={t.name}
-                            imageUrl={t.imageUrl}
-                            location={t.location}
-                            tags={t.tags}
-                            price={t.price}
-                        />
-                    ))}
-                </div>
+                {trips.length ? (
+                    <div className="trip-grid">
+                        {trips.slice(0, 4).map((t) => (
+                            <TripCard key={t.id} id={t.id} name={t.name} imageUrl={t.imageUrl} location={t.location} tags={t.tags} price={t.price} />
+                        ))}
+                    </div>
+                ) : (
+                    <p className="bg-white rounded-3xl border border-light-400 text-center text-gray-100 py-12">No trips yet.</p>
+                )}
             </section>
         </main>
-    )
-}
-export default Dashboard
+    );
+};
+
+export default Dashboard;

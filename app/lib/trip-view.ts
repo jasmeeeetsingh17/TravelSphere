@@ -1,6 +1,3 @@
-import { allTrips } from "~/constants";
-import { getTripDetails } from "~/constants/tripDetails";
-
 /** One shape for every trip in the UI, whether it is a sample trip or one saved in Appwrite. */
 export type TripView = {
     id: string;
@@ -12,6 +9,7 @@ export type TripView = {
     group: string; // Solo, Couple, Family...
     style?: string; // Relaxed, Adventure... (generated trips only)
     country?: string;
+    state?: string;
     description: string;
     duration: string;
     bestTime: string;
@@ -21,25 +19,6 @@ export type TripView = {
     userId?: string;
     saved: boolean;
 };
-
-export const sampleTripViews: TripView[] = allTrips.map((t) => {
-    const d = getTripDetails(t);
-    return {
-        id: String(t.id),
-        name: t.name,
-        location: d.place,
-        imageUrl: t.imageUrls[0],
-        tags: t.tags,
-        price: t.estimatedPrice,
-        group: t.travelStyle,
-        description: d.description,
-        duration: d.duration,
-        bestTime: d.bestTime,
-        days: d.days,
-        weather: [],
-        saved: false,
-    };
-});
 
 export const generatedToView = (
     trip: Trip,
@@ -54,6 +33,7 @@ export const generatedToView = (
     group: trip.groupType,
     style: trip.travelStyle,
     country: trip.country,
+    state: (trip as Trip & { state?: string }).state,
     description: trip.description,
     duration: `${trip.duration} ${trip.duration === 1 ? "day" : "days"}`,
     bestTime: (trip.bestTimeToVisit ?? []).join(" · "),

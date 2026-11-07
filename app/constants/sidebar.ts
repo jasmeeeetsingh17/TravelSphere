@@ -5,5 +5,4 @@ export const sidebarItems = [
     { id: 4, icon: "/assets/icons/itinerary.svg", label: "All Trips", href: "/trips" },
     { id: 5, icon: "/assets/icons/plus.svg", label: "Create Trip", href: "/trips/create" },
     { id: 6, icon: "/assets/icons/calendar.svg", label: "All Bookings", href: "/bookings" },
-    { id: 7, icon: "/assets/icons/destination.svg", label: "My Account", href: "/account" },
 ];

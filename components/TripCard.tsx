@@ -2,11 +2,15 @@ import { Link, useLocation } from "react-router";
 import { ChipDirective, ChipListComponent, ChipsDirective } from "@syncfusion/ej2-react-buttons";
 import { cn, getFirstWord } from "~/lib/utils";
 
-const TripCard = ({ id, name, location, imageUrl, tags }: TripCardProps) => {
+type Props = TripCardProps & { href?: string };
+
+const TripCard = ({ id, name, location, imageUrl, tags, href }: Props) => {
     const path = useLocation();
+    // Public pages link to /travel/:id, admin pages to /trips/:id. Pass `href` to override.
+    const publicPage = path.pathname === '/' || path.pathname.startsWith('/travel') || path.pathname.startsWith('/account');
 
     return (
-        <Link to={path.pathname === '/' || path.pathname.startsWith('/travel') ? `/travel/${id}` : `/trips/${id}`} className="trip-card">
+        <Link to={href ?? (publicPage ? `/travel/${id}` : `/trips/${id}`)} className="trip-card">
             <img src={imageUrl} alt={name} />
 
             <article>
@@ -21,7 +25,7 @@ const TripCard = ({ id, name, location, imageUrl, tags }: TripCardProps) => {
             </article>
 
             <div className="mt-5 pl-4.5 pr-3.5 pb-5">
-                <ChipListComponent id="travel-chip">
+                <ChipListComponent id={`travel-chip-${id}`}>
                     <ChipsDirective>
                         {tags.map((tag, index) => (
                             <ChipDirective

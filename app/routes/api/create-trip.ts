@@ -20,7 +20,7 @@ async function isSignedIn(jwt: string | null) {
     }
 }
 
-const buildPrompt = (f: TripFormData) => `Generate a ${f.duration}-day travel itinerary for ${f.country}.
+const buildPrompt = (f: TripFormData) => `Generate a ${f.duration}-day travel itinerary for ${f.country}, India (an Indian state or union territory).
 Travel style: ${f.travelStyle}. Interests: ${f.interest}. Budget: ${f.budget}. Group type: ${f.groupType}.
 Return ONLY valid JSON (no markdown) in exactly this shape:
 {
@@ -29,7 +29,7 @@ Return ONLY valid JSON (no markdown) in exactly this shape:
   "estimatedPrice": "$1,200",
   "bestTimeToVisit": ["Season or months and why"],
   "weatherInfo": ["Season: temperature range"],
-  "location": { "city": "Main city", "coordinates": [latitude, longitude], "openStreetMap": "https://www.openstreetmap.org/..." },
+  "location": { "city": "Main city or region", "coordinates": [latitude, longitude], "openStreetMap": "https://www.openstreetmap.org/..." },
   "itinerary": [
     { "day": 1, "location": "City or area", "activities": [ { "time": "09:00 AM", "description": "What to do" } ] }
   ]
@@ -52,8 +52,9 @@ export async function action({ request }: Route.ActionArgs) {
         return Response.json({ error: "Invalid request." }, { status: 400 });
     }
 
+    // The destination is an Indian state or union territory. It is sent as "state".
     const form: TripFormData = {
-        country: clean(body.country),
+        country: clean(body.state ?? body.country),
         travelStyle: clean(body.travelStyle),
         interest: clean(body.interest, 300),
         budget: clean(body.budget),
@@ -64,7 +65,14 @@ export async function action({ request }: Route.ActionArgs) {
         return Response.json({ error: "Please fill in every field." }, { status: 400 });
     }
 
-    const template = generateTripTemplate(form);
+    // Every trip is in India: keep the state in the location and set the country to India.
+    const finalize = (trip: Trip): Trip & { state: string } => {
+        const city = String(trip.location?.city ?? "").trim();
+        const place = !city ? form.country : city.toLowerCase().includes(form.country.toLowerCase()) ? city : `${city}, ${form.country}`;
+        return { ...trip, country: "India", state: form.country, location: { ...trip.location, city: place } as unknown as Location };
+    };
+
+    const template = finalize(generateTripTemplate(form));
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) return Response.json({ trip: template, source: "template" });
 
@@ -82,7 +90,7 @@ export async function action({ request }: Route.ActionArgs) {
         const data = await res.json();
         const text: string = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
         const parsed = JSON.parse(text.replace(/```json|```/g, "").trim());
-        return Response.json({ trip: normalizeTrip(parsed, template), source: "gemini" });
+        return Response.json({ trip: finalize(normalizeTrip(parsed, template)), source: "gemini" });
     } catch (error) {
         console.error("AI trip generation failed, using template:", error);
         return Response.json({ trip: template, source: "template" });

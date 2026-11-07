@@ -2,10 +2,10 @@ import { Link } from "react-router";
 import { Plus } from "lucide-react";
 import { Header } from "../../../components";
 import TripsExplorer from "../../../components/TripsExplorer";
-import { getAllTripViews } from "~/appwrite/trips";
+import { getSavedTrips } from "~/appwrite/trips";
 import type { Route } from "./+types/trips";
 
-export const clientLoader = async () => await getAllTripViews();
+export const clientLoader = async () => await getSavedTrips(200);
 
 const Trips = ({ loaderData }: Route.ComponentProps) => (
     <main className="dashboard wrapper">

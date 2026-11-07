@@ -1,6 +1,6 @@
 import { ID, Query } from "appwrite";
 import { account, database, appwriteConfig } from "~/appwrite/client";
-import { generatedToView, sampleTripViews, type TripView } from "~/lib/trip-view";
+import { generatedToView, type TripView } from "~/lib/trip-view";
 
 /*
  * Trips collection attributes used here (create them in Appwrite):
@@ -24,20 +24,38 @@ const docToView = (doc: any): TripView | null => {
     }
 };
 
-/** Saves a generated trip and returns the new document id. */
+/**
+ * Saves a generated trip and returns the new document id.
+ * `tripDetail` and `userId` are required. `imageUrls` and `createdAt` are dropped
+ * automatically if your collection does not have those attributes.
+ */
 export const saveTrip = async (trip: Trip, userId: string) => {
-    const doc = await database.createDocument(
-        appwriteConfig.databaseId,
-        appwriteConfig.tripCollectionId,
-        ID.unique(),
-        {
-            tripDetail: JSON.stringify(trip),
-            imageUrls: trip.imageUrls,
-            userId,
-            createdAt: new Date().toISOString(),
+    const data: Record<string, unknown> = {
+        tripDetail: JSON.stringify(trip),
+        imageUrls: trip.imageUrls,
+        userId,
+        createdAt: new Date().toISOString(),
+    };
+
+    for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+            const doc = await database.createDocument(
+                appwriteConfig.databaseId,
+                appwriteConfig.tripCollectionId,
+                ID.unique(),
+                data
+            );
+            return doc.$id as string;
+        } catch (error) {
+            const unknown = /Unknown attribute:?\s*"?([A-Za-z0-9_$]+)"?/.exec(error instanceof Error ? error.message : "")?.[1];
+            if (unknown && (unknown === "imageUrls" || unknown === "createdAt") && unknown in data) {
+                delete data[unknown];
+                continue;
+            }
+            throw error;
         }
-    );
-    return doc.$id as string;
+    }
+    throw new Error("Could not save the trip.");
 };
 
 /** Reads saved trips (newest first). Returns [] if the collection can't be read. */
@@ -57,14 +75,9 @@ export const getSavedTrips = async (limit = 100, userId?: string): Promise<TripV
     }
 };
 
-/** Saved trips first, then the sample trips. */
-export const getAllTripViews = async (limit = 100) => [...(await getSavedTrips(limit)), ...sampleTripViews];
-
-/** Finds a sample trip by number or a saved trip by Appwrite document id. */
+/** Finds a saved trip by its Appwrite document id. */
 export const resolveTrip = async (id?: string): Promise<TripView | null> => {
     if (!id) return null;
-    const sample = sampleTripViews.find((t) => t.id === id);
-    if (sample) return sample;
     try {
         const doc = await database.getDocument(appwriteConfig.databaseId, appwriteConfig.tripCollectionId, id);
         return docToView(doc);

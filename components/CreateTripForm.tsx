@@ -1,13 +1,14 @@
 import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import { ButtonComponent } from "@syncfusion/ej2-react-buttons";
 import { ComboBoxComponent, DropDownListComponent, MultiSelectComponent } from "@syncfusion/ej2-react-dropdowns";
 import { Loader2, Sparkles } from "lucide-react";
 import { account } from "~/appwrite/client";
 import { getAuthToken, saveTrip } from "~/appwrite/trips";
 import { budgetOptions, groupTypes, interests, travelStyles } from "~/constants";
-import { countries } from "~/constants/countries";
+import { indianStates } from "~/constants/indiaStates";
 import { generatedToView, type TripView } from "~/lib/trip-view";
+import TripDetail from "./TripDetail";
 
 // The app.css rule for .e-input-group-icon is made for another layout, so reset it inside this form.
 const field = "flex flex-col gap-2 [&_.e-input-group-icon]:!static";
@@ -20,7 +21,9 @@ type Props = {
 
 const CreateTripForm = ({ basePath }: Props) => {
     const navigate = useNavigate();
-    const [country, setCountry] = useState("");
+    const [params] = useSearchParams();
+    const presetState = indianStates.find((s) => s.toLowerCase() === (params.get("state") ?? "").toLowerCase()) ?? "";
+    const [state, setState] = useState(presetState);
     const [travelStyle, setTravelStyle] = useState("");
     const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
     const [budget, setBudget] = useState("");
@@ -36,7 +39,7 @@ const CreateTripForm = ({ basePath }: Props) => {
         setError("");
         setPreview(null);
 
-        if (!country || !travelStyle || !selectedInterests.length || !budget || !groupType) {
+        if (!state || !travelStyle || !selectedInterests.length || !budget || !groupType) {
             setError("Please fill in every field before generating a trip.");
             return;
         }
@@ -51,7 +54,7 @@ const CreateTripForm = ({ basePath }: Props) => {
             const res = await fetch("/api/create-trip", {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "x-appwrite-jwt": jwt },
-                body: JSON.stringify({ country, travelStyle, interest: selectedInterests.join(", "), budget, groupType, duration }),
+                body: JSON.stringify({ state, travelStyle, interest: selectedInterests.join(", "), budget, groupType, duration }),
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error ?? "Could not generate the trip.");
@@ -64,7 +67,8 @@ const CreateTripForm = ({ basePath }: Props) => {
             } catch (saveError) {
                 console.error("Error saving trip:", saveError);
                 setPreview(generatedToView(trip, { id: "preview", saved: false }));
-                setError("Your trip was generated but could not be saved. Check that the trips collection in Appwrite has the attributes listed in the README.");
+                const reason = saveError instanceof Error ? saveError.message : "Unknown error";
+                setError(`Your trip was generated but could not be saved. Appwrite said: "${reason}"`);
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
@@ -77,13 +81,14 @@ const CreateTripForm = ({ basePath }: Props) => {
         <div className="flex flex-col gap-10">
             <form onSubmit={onSubmit} className="bg-white rounded-3xl border border-light-400 shadow-sm p-6 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className={field}>
-                    <label htmlFor="country" className={labelClass}>City</label>
+                    <label htmlFor="state" className={labelClass}>State or union territory (India)</label>
                     <ComboBoxComponent
-                        id="country"
-                        dataSource={countries}
-                        placeholder="Choose City"
+                        id="state"
+                        dataSource={indianStates}
+                        placeholder="Choose or type a state"
+                        value={presetState || undefined}
                         allowFiltering
-                        change={(e) => setCountry((e.value as string) ?? "")}
+                        change={(e) => setState((e.value as string) ?? "")}
                     />
                 </div>
 
@@ -150,11 +155,7 @@ const CreateTripForm = ({ basePath }: Props) => {
                 </div>
             </form>
 
-            {preview && (
-                <pre className="overflow-x-auto rounded-3xl border border-light-400 bg-white p-6 text-sm text-dark-100 shadow-sm">
-                    {JSON.stringify(preview, null, 2)}
-                </pre>
-            )}
+            {preview && <TripDetail trip={preview} backTo={basePath} />}
         </div>
     );
 };

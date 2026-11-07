@@ -1,6 +1,5 @@
 import { redirect } from "react-router";
 import { Header } from "../../../components";
-
 import CreateTripForm from "../../../components/CreateTripForm";
 import { getUser } from "~/appwrite/auth";
 

@@ -3,63 +3,68 @@ import { Link } from "react-router";
 import { Compass, Sparkles, Wallet } from "lucide-react";
 import { PagerComponent } from "@syncfusion/ej2-react-grids";
 import { Header, TripCard } from "../../../components";
-import { allTrips } from "~/constants";
+import { getSavedTrips } from "~/appwrite/trips";
+import type { TripView } from "~/lib/trip-view";
 import { cn } from "~/lib/utils";
+import type { Route } from "./+types/travel-page";
 
 const TRIPS_PER_PAGE = 8;
+
+export const clientLoader = async () => await getSavedTrips(200);
 
 const featuredDestinations = [
     {
         id: 1,
         name: "Hawa Mahal",
+        search: "Rajasthan",
         location: "Jaipur, Rajasthan",
         image: "/assets/images/2.jpg",
-        rating: 4.8,
     },
     {
         id: 2,
         name: "Taj Mahal",
+        search: "Uttar Pradesh",
         location: "Agra, Uttar Pradesh",
         image: "/assets/images/card-img-2.png",
-        rating: 4.9,
     },
     {
         id: 3,
         name: "Gateway of India",
+        search: "Maharashtra",
         location: "Mumbai, Maharashtra",
         image: "/assets/images/3.jpg",
-        rating: 4.7,
     },
     {
         id: 4,
         name: "Golden Temple",
+        search: "Punjab",
         location: "Amritsar, Punjab",
         image: "/assets/images/7.jpg",
-        rating: 4.9,
     },
     {
         id: 5,
         name: "Dal Lake",
+        search: "Kashmir",
         location: "Srinagar, Kashmir",
         image: "/assets/images/10.jpg",
-        rating: 4.8,
     },
     {
         id: 6,
         name: "Andaman Island",
+        search: "Andaman",
         location: "Port Blair",
         image: "/assets/images/13.jpg",
-        rating: 4.7,
     }
 ];
 
 type FeaturedProps = (typeof featuredDestinations)[number] & {
     className?: string;
     large?: boolean;
+    tripCount: number;
 };
-const FeaturedCard = ({ id, name, location, image, rating, className, large }: FeaturedProps) => (
+const FeaturedCard = ({ name, search, location, image, className, large, tripCount }: FeaturedProps) => (
     <Link
-        to={`/travel/${id}`}
+        to={`/travel?q=${encodeURIComponent(search)}`}
         className={cn(
             "relative rounded-20 overflow-hidden bg-cover bg-no-repeat group",
             className
@@ -69,8 +74,7 @@ const FeaturedCard = ({ id, name, location, image, rating, className, large }: F
         }}>
         <div className="absolute inset-0 bg-linear200" />
         <span className="price-pill absolute top-3 left-3 flex items-center gap-1">
-            <img src="/assets/icons/star.svg" alt="" className="size-3.5" />
-            {rating}
+            {tripCount} {tripCount === 1 ? "trip" : "trips"}
         </span>
         <article className="absolute bottom-0 left-0 p-4 md:p-6 text-white flex flex-col gap-1">
             <h2 className={cn("font-semibold", large ? "text-xl md:text-3xl" : "text-sm md:text-lg")}>{name}</h2>
@@ -82,13 +86,20 @@ const FeaturedCard = ({ id, name, location, image, rating, className, large }: F
     </Link>
 );
 
-const TravelPage = () => {
+const TravelPage = ({ loaderData }: Route.ComponentProps) => {
+    const trips: TripView[] = loaderData;
     const [page, setPage] = useState(1);
-    const trips = Array.from({ length: 16 }, (_, i) => {
-        const t = allTrips[i % allTrips.length];
-        return { ...t, key: `${t.id}-${i}` };
-    });
     const visible = trips.slice((page - 1) * TRIPS_PER_PAGE, page * TRIPS_PER_PAGE);
+
+    const countFor = (search: string) =>
+        trips.filter((t) => `${t.name} ${t.location}`.toLowerCase().includes(search.toLowerCase())).length;
+    const featuredWithCount = featuredDestinations.map((d) => ({ ...d, tripCount: countFor(d.search) }));
+
+    const stats = [
+        [trips.length, "Trips planned"],
+        [new Set(trips.map((t) => t.state).filter(Boolean)).size, "States covered"],
+        [new Set(trips.map((t) => t.style).filter(Boolean)).size, "Travel styles"],
+    ];
 
     return (
         <main className="flex flex-col">
@@ -124,13 +135,8 @@ const TravelPage = () => {
 
             {/* Stats strip */}
             <section className="wrapper -mt-12 relative z-10">
-                <ul className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white rounded-3xl shadow-xl border border-light-400 p-6 md:p-8">
-                    {[
-                        ["120+", "Destinations"],
-                        ["5K+", "Trips planned"],
-                        ["4.8", "Average rating"],
-                        ["24/7", "AI help"],
-                    ].map(([value, label]) => (
+                <ul className="grid grid-cols-3 gap-4 bg-white rounded-3xl shadow-xl border border-light-400 p-6 md:p-8">
+                    {stats.map(([value, label]) => (
                         <li key={label} className="flex flex-col items-center text-center gap-1">
                             <strong className="text-2xl md:text-3xl font-bold text-primary-100">{value}</strong>
                             <span className="text-sm text-gray-100">{label}</span>
@@ -150,24 +156,24 @@ const TravelPage = () => {
 
                     {/* Row 1: Large + Small */}
                     <FeaturedCard
-                        {...featuredDestinations[0]}
+                        {...featuredWithCount[0]}
                         large
                         className="lg:col-span-2 min-h-65 lg:h-full"
                     />
 
                     <FeaturedCard
-                        {...featuredDestinations[1]}
+                        {...featuredWithCount[1]}
                         className="lg:col-span-1 min-h-65 lg:h-full"
                     />
 
                     {/* Row 2: Small + Large */}
                     <FeaturedCard
-                        {...featuredDestinations[2]}
+                        {...featuredWithCount[2]}
                         className="lg:col-span-1 min-h-65 lg:h-full"
                     />
 
                     <FeaturedCard
-                        {...featuredDestinations[3]}
+                        {...featuredWithCount[3]}
                         large
                         className="lg:col-span-2 min-h-65 lg:h-full"
                     />
@@ -182,24 +188,29 @@ const TravelPage = () => {
                     description="Browse well-planned trips designed for different travel styles and interests."
                 />
 
-                <div className="trip-grid">
-                    {visible.map(({ key, id, name, imageUrls, itinerary, tags }) => (
-                        <TripCard
-                            key={key}
-                            id={id.toString()}
-                            name={name}
-                            imageUrl={imageUrls[0]}
-                            location={itinerary?.[0]?.location ?? ""}
-                            tags={tags} price={""} />
-                    ))}
-                </div>
+                {visible.length ? (
+                    <div className="trip-grid">
+                        {visible.map((t) => (
+                            <TripCard key={t.id} id={t.id} name={t.name} imageUrl={t.imageUrl} location={t.location} tags={t.tags} price="" />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="flex flex-col items-center gap-3 text-center py-12">
+                        <p className="text-gray-100">No trips yet. Be the first to plan one.</p>
+                        <Link to="/plan" className="bg-primary-100 hover:bg-primary-500 text-white text-sm font-semibold rounded-full px-6 py-2.5 transition-colors">
+                            Plan a trip
+                        </Link>
+                    </div>
+                )}
 
-                <PagerComponent
-                    totalRecordsCount={trips.length}
-                    pageSize={TRIPS_PER_PAGE}
-                    currentPage={page}
-                    click={(args: { currentPage: number }) => setPage(args.currentPage)}
-                />
+                {trips.length > TRIPS_PER_PAGE && (
+                    <PagerComponent
+                        totalRecordsCount={trips.length}
+                        pageSize={TRIPS_PER_PAGE}
+                        currentPage={page}
+                        click={(args: { currentPage: number }) => setPage(args.currentPage)}
+                    />
+                )}
 
                 <Link to="/travel" className="self-center text-primary-100 font-semibold hover:underline">
                     View all trips

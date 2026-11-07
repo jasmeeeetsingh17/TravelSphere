@@ -3,17 +3,20 @@ import { ButtonComponent } from "@syncfusion/ej2-react-buttons";
 import { CalendarDays, LayoutDashboard, LogOut, Mail, Plus, ShieldCheck } from "lucide-react";
 import { Header, TripCard } from "../../../components";
 import { getExistingUser, getUser, logoutUser } from "~/appwrite/auth";
+import { getMyBookings } from "~/appwrite/bookings";
 import { getSavedTrips } from "~/appwrite/trips";
-import { formatDate } from "~/lib/utils";
+import { money, type BookingStatus } from "~/lib/booking";
+import { cn, formatDate } from "~/lib/utils";
 import type { Route } from "./+types/account";
 
 export const clientLoader = async () => {
     const user = await getUser();
     if (!user || user instanceof Response) return redirect("/sign-in");
 
-    const [existing, trips] = await Promise.all([
+    const [existing, trips, bookings] = await Promise.all([
         getExistingUser(user.accountId),
         getSavedTrips(24, user.accountId),
+        getMyBookings(user.accountId),
     ]);
 
     return {
@@ -23,13 +26,20 @@ export const clientLoader = async () => {
         joinedAt: user.joinedAt as string,
         isAdmin: existing?.status === "admin",
         trips,
+        bookings,
     };
+};
+
+const statusStyles: Record<BookingStatus, string> = {
+    Confirmed: "bg-success-50 text-success-700",
+    Pending: "bg-amber-50 text-amber-600",
+    Cancelled: "bg-light-300 text-gray-500",
 };
 
 type Data = Exclude<Awaited<ReturnType<typeof clientLoader>>, Response>;
 
 const Account = ({ loaderData }: Route.ComponentProps) => {
-    const { name, email, imageUrl, joinedAt, isAdmin, trips } = loaderData as Data;
+    const { name, email, imageUrl, joinedAt, isAdmin, trips, bookings } = loaderData as Data;
     const navigate = useNavigate();
 
     const signOut = async () => {
@@ -66,6 +76,9 @@ const Account = ({ loaderData }: Route.ComponentProps) => {
                             <LayoutDashboard size={16} /> Open dashboard
                         </Link>
                     )}
+                    <ButtonComponent type="button" className="h-11 px-6" onClick={signOut}>
+                        <LogOut size={16} className="mr-2" /> Sign out
+                    </ButtonComponent>
                 </div>
             </section>
 
@@ -75,10 +88,34 @@ const Account = ({ loaderData }: Route.ComponentProps) => {
                     <strong className="text-3xl font-bold text-dark-100">{trips.length}</strong>
                 </li>
                 <li className="bg-white rounded-20 shadow-400 p-6 flex flex-col gap-1">
-                    <span className="text-sm text-gray-100">Account type</span>
-                    <strong className="text-3xl font-bold text-dark-100">{isAdmin ? "Admin" : "Traveller"}</strong>
+                    <span className="text-sm text-gray-100">Bookings made</span>
+                    <strong className="text-3xl font-bold text-dark-100">{bookings.length}</strong>
                 </li>
             </ul>
+
+            <section className="flex flex-col gap-6">
+                <h2 className="text-xl font-semibold text-dark-100">My bookings</h2>
+
+                {bookings.length ? (
+                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {bookings.map((b) => (
+                            <li key={b.id} className="bg-white rounded-2xl border border-light-400 p-5 flex flex-col gap-3">
+                                <span className="flex items-start justify-between gap-3">
+                                    <Link to={`/travel/${b.tripId}`} className="font-semibold text-dark-100 hover:text-primary-100">{b.tripName}</Link>
+                                    <span className={cn("px-3 py-1 rounded-full text-xs font-medium shrink-0", statusStyles[b.status])}>{b.status}</span>
+                                </span>
+                                <span className="text-sm text-gray-100">
+                                    {formatDate(b.travelDate)} · {b.guests} {b.guests === 1 ? "guest" : "guests"} · <strong className="text-dark-100">{money(b.amount)}</strong>
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p className="bg-white rounded-3xl border border-light-400 text-center text-gray-100 py-10">
+                        No bookings yet. Open a trip and press <strong>Book this trip</strong>.
+                    </p>
+                )}
+            </section>
 
             <section className="flex flex-col gap-6">
                 <span className="flex items-center justify-between gap-4">
