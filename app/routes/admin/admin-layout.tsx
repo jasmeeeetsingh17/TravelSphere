@@ -1,26 +1,14 @@
 import { Outlet, redirect } from "react-router";
 import { SidebarComponent } from "@syncfusion/ej2-react-navigations";
 import { MobileSidebar, NavItems } from "../../../components";
-import { account } from "~/appwrite/client";
-import { getExistingUser, storeUserData } from "~/appwrite/auth";
+import { getUser, isAdmin } from "~/appwrite/auth";
 
+/** Only admins may open the dashboard. Guests go to sign-in, travellers go home. */
 export async function clientLoader() {
-  try {
-    const user = await account.get();
-
-    if (!user.$id) return redirect('/sign-in');
-
-    const existingUser = await getExistingUser(user.$id);
-
-    if (existingUser?.status === 'user') {
-      return redirect('/');
-    }
-
-    return existingUser?.$id ? existingUser : await storeUserData();
-  } catch (e) {
-    console.log('Error in clientLoader', e)
-    return redirect('/sign-in')
-  }
+  const user = await getUser();
+  if (!user) return redirect("/sign-in");
+  if (!isAdmin(user)) return redirect("/");
+  return user;
 }
 
 const AdminLayout = () => {

@@ -39,8 +39,8 @@ TravelSphere is a travel web app where visitors can explore featured destination
 | Icons | lucide-react |
 | Styling | Tailwind CSS  |
 | Backend / Auth |  Appwrite |
-| AI | <!-- e.g. Gemini API --> |
-| Deployment | <!-- e.g. Vercel --> |
+| AI | Google Gemini (optional) |
+| Deployment | Docker (`Dockerfile` included) |
 
 ## 🚀 Getting Started
 
@@ -63,7 +63,7 @@ cd TravelSphere
 npm install
 
 # 4. Set up environment variables (see below)
-cp .env.example .env
+cp .env.example .env.local
 
 # 5. Start the development server
 npm run dev
@@ -73,36 +73,44 @@ The app will be available at `http://localhost:5173` (or the port shown in your 
 
 ### Environment Variables
 
-Create a `.env` file in the project root:
+Copy `.env.example` to `.env.local` and fill in the values:
 
-```env
-VITE_SYNCFUSION_LICENSE_KEY=your_syncfusion_license_key
+| Variable | Where it is used |
+| --- | --- |
+| `VITE_SYNCFUSION_LICENSE_KEY` | Syncfusion UI components |
+| `VITE_APPWRITE_API_ENDPOINT`, `VITE_APPWRITE_PROJECT_ID` | Appwrite client |
+| `VITE_APPWRITE_DATABASE_ID` | Database holding the collections below |
+| `VITE_APPWRITE_USERS_COLLECTION_ID` | User profiles (`accountId`, `name`, `email`, `imageUrl`, `joinedAt`, `status`) |
+| `VITE_APPWRITE_TRIPS_COLLECTION_ID` | Saved trips (`tripDetail`, `imageUrls`, `userId`, `createdAt`) |
+| `VITE_APPWRITE_BOOKINGS_COLLECTION_ID` | Bookings (see `app/appwrite/bookings.ts` for attributes) |
+| `APPWRITE_API_KEY` | **Server only.** Admin actions: list bookings, change status, delete users |
+| `GEMINI_API_KEY` | **Server only, optional.** AI itineraries; falls back to a template without it |
 
-# Add the keys your project uses, for example:
-# VITE_API_URL=
-# VITE_AUTH_PROJECT_ID=
-# VITE_AI_API_KEY=
-```
+> ⚠️ Never commit your `.env.local` file. It is listed in `.gitignore`.
 
-> ⚠️ Never commit your `.env` file. Make sure it is listed in `.gitignore`.
+### Making yourself an admin
+
+Sign in once with Google, then in the Appwrite console open the users collection and set your document's `status` to `admin`. The **Dashboard** button then appears in the navbar.
 
 ## 📂 Project Structure
 
 ```
 TravelSphere/
-├── public/            # Static assets
-├── src/
-│   ├── components/    # Reusable UI components (Navbar, Footer, Cards...)
-│   ├── pages/         # Landing page, dashboard, auth pages
-│   ├── assets/        # Images and icons
-│   └── ...
+├── app/
+│   ├── appwrite/      # Browser-side Appwrite calls (auth, trips, bookings, users)
+│   ├── constants/     # Dropdown options, states, map data
+│   ├── lib/           # Shared helpers, trip generator, server-only Appwrite client
+│   ├── routes/
+│   │   ├── root/      # Public site: landing, trips, trip detail, plan, account, sign-in
+│   │   ├── admin/     # Dashboard, analytics, users, trips, bookings
+│   │   └── api/       # Server routes: create-trip (AI), admin actions
+│   ├── root.tsx
+│   └── routes.ts
+├── components/        # Reusable UI (TripCard, TripDetail, AiAssistant, BookTrip...)
+├── public/assets/     # Icons and images
 ├── .env.example
-├── package.json
-└── README.md
+└── package.json
 ```
-
-> Adjust this tree to match your actual folders.
-
 
 ## 🤝 Contributing
 

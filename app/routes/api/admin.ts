@@ -24,6 +24,7 @@ export async function action({ request }: Route.ActionArgs) {
 
         switch (body.op) {
             case "listBookings": {
+                if (!ids.bookings) throw new HttpError(503, "Bookings are not set up yet. Add VITE_APPWRITE_BOOKINGS_COLLECTION_ID to .env.local.");
                 const docs = await listDocs(ids.bookings, [q.orderDesc("$createdAt"), q.limit(500)]);
                 return Response.json({ bookings: docs.map(bookingFromDoc) });
             }
@@ -47,7 +48,7 @@ export async function action({ request }: Route.ActionArgs) {
 
                 // Remove what the user created, then their profile, then the login itself
                 await deleteWhere(ids.trips, "userId", accountId);
-                await deleteWhere(ids.bookings, "userId", accountId);
+                if (ids.bookings) await deleteWhere(ids.bookings, "userId", accountId);
                 await deleteWhere(ids.users, "accountId", accountId);
                 try {
                     await asServer(`/users/${accountId}`, { method: "DELETE" });
