@@ -33,7 +33,8 @@ async function call(path: string, headers: Record<string, string>, init: Request
 
 /** Calls Appwrite as the server (full access). */
 export const asServer = (path: string, init: RequestInit = {}) => {
-    const key = process.env.APPWRITE_API_KEY;
+    // VITE_APPWRITE_API_KEY is accepted for older setups; prefer APPWRITE_API_KEY so the name makes clear it is server-only.
+    const key = process.env.APPWRITE_API_KEY || process.env.VITE_APPWRITE_API_KEY;
     if (!key) throw new HttpError(503, "APPWRITE_API_KEY is not set on the server. Add it to .env.local and restart.");
     return call(path, { "X-Appwrite-Key": key }, init);
 };

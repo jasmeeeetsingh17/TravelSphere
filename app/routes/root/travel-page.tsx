@@ -6,6 +6,7 @@ import { Header, TripCard } from "../../../components";
 import { getSavedTrips } from "~/appwrite/trips";
 import type { TripView } from "~/lib/trip-view";
 import { cn } from "~/lib/utils";
+import { indianStates } from "~/constants/indiaStates";
 import type { Route } from "./+types/travel-page";
 
 const TRIPS_PER_PAGE = 8;
@@ -97,7 +98,7 @@ const TravelPage = ({ loaderData }: Route.ComponentProps) => {
 
     const stats = [
         [trips.length, "Trips planned"],
-        [new Set(trips.map((t) => t.state).filter(Boolean)).size, "States covered"],
+        [new Set(trips.map((t) => t.state || indianStates.find((s) => t.location.includes(s))).filter(Boolean)).size, "States covered"],
         [new Set(trips.map((t) => t.style).filter(Boolean)).size, "Travel styles"],
     ];
 
@@ -152,7 +153,7 @@ const TravelPage = ({ loaderData }: Route.ComponentProps) => {
                     description="Discover some of the best places you can visit across India."
                 />
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 lg:h-130">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 lg:grid-rows-[260px_260px_auto]">
 
                     {/* Row 1: Large + Small */}
                     <FeaturedCard
@@ -177,6 +178,12 @@ const TravelPage = ({ loaderData }: Route.ComponentProps) => {
                         large
                         className="lg:col-span-2 min-h-65 lg:h-full"
                     />
+
+                    {/* Row 3: two equal cards */}
+                    <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <FeaturedCard {...featuredWithCount[4]} className="min-h-65" />
+                        <FeaturedCard {...featuredWithCount[5]} className="min-h-65" />
+                    </div>
 
                 </div>
             </section>

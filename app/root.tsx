@@ -5,6 +5,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useNavigation,
 } from "react-router";
 
 import type { Route } from "./+types/root";
@@ -23,6 +24,11 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
+export const meta: Route.MetaFunction = () => [
+  { title: "TravelSphere | Plan smarter. Travel further." },
+  { name: "description", content: "Discover handpicked trips across India and build a day-by-day itinerary with AI." },
+];
+
 import { registerLicense } from "@syncfusion/ej2-base";
 registerLicense(import.meta.env.VITE_SYNCFUSION_LICENSE_KEY);
 
@@ -32,6 +38,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/assets/icons/logo.svg" type="image/svg+xml" />
         <Meta />
         <Links />
       </head>
@@ -44,20 +51,39 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
+/** Thin bar at the top of the page while the next route's data loads. */
+function NavigationProgress() {
+  const navigation = useNavigation();
+  const busy = navigation.state !== "idle";
+  return (
+    <div
+      aria-hidden
+      className={`fixed top-0 left-0 z-[100] h-0.5 bg-gradient-to-r from-primary-100 to-violet-600 transition-all ease-out ${
+        busy ? "w-4/5 opacity-100 duration-[2500ms]" : "w-full opacity-0 duration-300"
+      }`}
+    />
+  );
+}
+
 export default function App() {
-  return <Outlet />;
+  return (
+    <>
+      <NavigationProgress />
+      <Outlet />
+    </>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let message = "Oops!";
-  let details = "An unexpected error occurred.";
+  let message = "Something went wrong";
+  let details = "An unexpected error occurred. Please try again.";
   let stack: string | undefined;
 
   if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? "404" : "Error";
+    message = error.status === 404 ? "Page not found" : `Error ${error.status}`;
     details =
       error.status === 404
-        ? "The requested page could not be found."
+        ? "The page you are looking for does not exist or has moved."
         : error.statusText || details;
   } else if (import.meta.env.DEV && error && error instanceof Error) {
     details = error.message;
@@ -65,14 +91,23 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   }
 
   return (
-    <main className="pt-16 p-4 container mx-auto">
-      <h1>{message}</h1>
-      <p>{details}</p>
-      {stack && (
-        <pre className="w-full p-4 overflow-x-auto">
-          <code>{stack}</code>
-        </pre>
-      )}
+    <main className="min-h-screen bg-light-200 flex items-center justify-center px-4 py-16">
+      <section className="w-full max-w-xl bg-white rounded-3xl border border-light-400 shadow-sm p-8 md:p-12 flex flex-col items-center gap-5 text-center">
+        <img src="/assets/icons/logo.svg" alt="" className="size-12" />
+        <h1 className="text-3xl font-bold text-dark-100">{message}</h1>
+        <p className="text-gray-100 leading-7">{details}</p>
+        <a
+          href="/"
+          className="bg-primary-100 hover:bg-primary-500 text-white font-semibold rounded-full px-6 py-3 transition-colors"
+        >
+          Back to home
+        </a>
+        {stack && (
+          <pre className="w-full text-left text-xs bg-light-200 rounded-xl p-4 overflow-x-auto">
+            <code>{stack}</code>
+          </pre>
+        )}
+      </section>
     </main>
   );
 }

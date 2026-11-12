@@ -1,6 +1,5 @@
 import { ID, OAuthProvider, Query } from "appwrite";
 import { account, database, appwriteConfig } from "~/appwrite/client";
-import { redirect } from "react-router";
 
 export const getExistingUser = async (id: string) => {
     try {
@@ -40,9 +39,10 @@ export const storeUserData = async () => {
             }
         );
 
-        if (!createdUser.$id) redirect("/sign-in");
+        return createdUser;
     } catch (error) {
         console.error("Error storing user data:", error);
+        return null;
     }
 };
 
@@ -67,7 +67,7 @@ export const loginWithGoogle = async () => {
         account.createOAuth2Session({
             provider: OAuthProvider.Google,
             success: `${window.location.origin}/`,
-            failure: `${window.location.origin}/404`
+            failure: `${window.location.origin}/sign-in?error=oauth`
         });
     } catch (error) {
         console.error("Error during OAuth2 session creation:", error);
@@ -82,23 +82,30 @@ export const logoutUser = async () => {
     }
 };
 
+/**
+ * The signed-in user's profile document, or null for guests.
+ * The first time someone signs in, their profile is created here, so every
+ * signed-in user (not only admins) gets a row in the users collection.
+ */
 export const getUser = async () => {
+    let accountId: string;
     try {
-        const user = await account.get();
-        if (!user) return redirect("/sign-in");
+        accountId = (await account.get()).$id;
+    } catch {
+        return null; // not signed in
+    }
 
+    try {
         const { documents } = await database.listDocuments(
             appwriteConfig.databaseId,
             appwriteConfig.userCollectionId,
-            [
-                Query.equal("accountId", user.$id),
-                Query.select(["name", "email", "imageUrl", "joinedAt", "accountId"]),
-            ]
+            [Query.equal("accountId", accountId), Query.limit(1)]
         );
-
-        return documents.length > 0 ? documents[0] : redirect("/sign-in");
+        return documents[0] ?? (await storeUserData());
     } catch (error) {
         console.error("Error fetching user:", error);
         return null;
     }
 };
+
+export const isAdmin = (user: object | null | undefined) => (user as { status?: string } | null)?.status === "admin";

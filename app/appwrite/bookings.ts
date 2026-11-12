@@ -13,6 +13,9 @@ import { bookingFromDoc, type Booking } from "~/lib/booking";
 type NewBooking = Pick<Booking, "tripId" | "tripName" | "userId" | "userName" | "userEmail" | "travelDate" | "guests" | "amount">;
 
 export const createBooking = async (b: NewBooking) => {
+    if (!appwriteConfig.bookingCollectionId) {
+        throw new Error("Bookings are not set up yet. Add VITE_APPWRITE_BOOKINGS_COLLECTION_ID to .env.local and restart the app.");
+    }
     const doc = await database.createDocument(
         appwriteConfig.databaseId,
         appwriteConfig.bookingCollectionId,
@@ -25,6 +28,7 @@ export const createBooking = async (b: NewBooking) => {
 
 /** The signed-in user's own bookings, newest first. */
 export const getMyBookings = async (userId: string): Promise<Booking[]> => {
+    if (!appwriteConfig.bookingCollectionId) return [];
     try {
         const { documents } = await database.listDocuments(
             appwriteConfig.databaseId,
