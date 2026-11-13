@@ -1,5 +1,5 @@
 import { Link, NavLink, useNavigate, useRouteLoaderData } from "react-router";
-import { BarChart3, ExternalLink, LayoutDashboard, LogOut, Map, PlusCircle, Users, type LucideIcon } from "lucide-react";
+import { BarChart3, ExternalLink, LayoutDashboard, LogOut, Map, PlusCircle, UserCircle, Users, type LucideIcon } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { logoutUser } from "~/appwrite/auth";
 
@@ -20,6 +20,10 @@ const sections: { title: string; links: NavLinkItem[] }[] = [
             { href: "/trips/create", label: "Create Trip", Icon: PlusCircle },
             { href: "/all-users", label: "Users", Icon: Users },
         ],
+    },
+    {
+        title: "You",
+        links: [{ href: "/account", label: "My Account", Icon: UserCircle }],
     },
 ];
 
@@ -82,6 +86,7 @@ const NavItems = ({ handleClick }: { handleClick?: () => void }) => {
             </nav>
 
             <footer className="flex items-center gap-3 py-5 border-t border-light-400">
+                <Link to="/account" onClick={handleClick} title="My account" className="flex flex-1 min-w-0 items-center gap-3 rounded-xl hover:bg-light-200 -m-1.5 p-1.5 transition-colors">
                 <img
                     src={user?.imageUrl || "/assets/images/david.webp"}
                     alt=""
@@ -92,6 +97,7 @@ const NavItems = ({ handleClick }: { handleClick?: () => void }) => {
                     <strong className="text-sm font-semibold text-dark-100 truncate">{user?.name ?? "Admin"}</strong>
                     <small className="text-xs text-gray-100 truncate">{user?.email}</small>
                 </span>
+                </Link>
                 <button
                     onClick={handleLogout}
                     aria-label="Log out"

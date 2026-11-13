@@ -21,7 +21,7 @@ import {
     Tooltip,
 } from "@syncfusion/ej2-react-charts";
 import { Link } from "react-router";
-import { Award, CalendarRange, Clock, Lightbulb, MapPinned, Percent, PiggyBank, Plus, Sparkles, TrendingUp, Users, Wallet } from "lucide-react";
+import { Award, CalendarRange, Clock, Lightbulb, MapPinned, Percent, PiggyBank, Plus, Sparkles, TrendingUp, Users } from "lucide-react";
 import { Header } from "../../../components";
 import ChartCard from "../../../components/ChartCard";
 import KpiCard from "../../../components/KpiCard";
@@ -30,7 +30,7 @@ import { getAllUsers } from "~/appwrite/users";
 import { categoryAxis, chartArea, COLORS, legend, PALETTE, tooltip, valueAxis } from "~/lib/chart-theme";
 import { bucket, countBy, lastMonths, monthLabel, pctChange, thisVsLast } from "~/lib/stats";
 import { MARGINS, profitBy, rankTrips, recommend } from "~/lib/profit";
-import { cn, money, moneyShort, priceToNumber } from "~/lib/utils";
+import { cn, money, moneyShort } from "~/lib/utils";
 import type { Route } from "./+types/analytics";
 
 export const meta = () => [{ title: "Analytics | TravelSphere Admin" }];
@@ -61,31 +61,13 @@ const Analytics = ({ loaderData }: Route.ComponentProps) => {
 
         const tripDates = trips.map((t) => ({ date: t.createdAt ?? "" }));
         const userDates = users.map((u) => ({ date: u.joinedAt }));
-        const priceItems = trips.map((t) => ({ date: t.createdAt ?? "", value: priceToNumber(t.price) }));
 
         const tripsSeries = bucket(tripDates, months);
         const usersSeries = bucket(userDates, months);
-        const valueSeries = bucket(priceItems, months);
 
         const inRange = trips.filter((t) => t.createdAt && !start.isAfter(t.createdAt, "month"));
-        const prices = trips.map((t) => priceToNumber(t.price)).filter(Boolean);
-
-        // Average estimated price per travel style
-        const styleTotals = trips.reduce<Record<string, number[]>>((acc, t) => {
-            const k = t.style || "Other";
-            (acc[k] ??= []).push(priceToNumber(t.price));
-            return acc;
-        }, {});
-        const priceByStyle = Object.entries(styleTotals)
-            .map(([x, list]) => ({ x, y: Math.round(avg(list)) }))
-            .sort((a, b) => b.y - a.y);
 
         const interests = countBy(trips.flatMap((t) => (t.interests ?? []).map((i) => ({ i }))), (o) => o.i).slice(0, 6);
-
-        // 1..14 days, trimmed to the shortest and longest trip so the chart has no empty edges
-        const dayCounts = Array.from({ length: 14 }, (_, i) => ({ x: `${i + 1}d`, y: trips.filter((t) => t.dayCount === i + 1).length }));
-        const used = dayCounts.map((r, i) => (r.y ? i : -1)).filter((i) => i >= 0);
-        const durations = used.length ? dayCounts.slice(used[0], used[used.length - 1] + 1) : [];
 
         const budgets = BUDGET_ORDER.map((b, i) => ({ x: b, y: trips.filter((t) => t.budget === b).length, color: PALETTE[i] })).filter((b) => b.y);
 
@@ -95,17 +77,12 @@ const Analytics = ({ loaderData }: Route.ComponentProps) => {
 
         return {
             overview: labels.map((month, i) => ({ month, trips: tripsSeries[i], users: usersSeries[i] })),
-            value: labels.map((month, i) => ({ month, value: valueSeries[i] })),
             byGroup: countBy(trips, (t) => t.group).map((g, i) => ({ ...g, color: PALETTE[i % PALETTE.length] })),
             byState: countBy(trips, (t) => t.state ?? "").slice(0, 8),
-            priceByStyle,
             interests,
-            durations,
             budgets,
             inRange: inRange.length,
             avgDays: avg(trips.map((t) => t.dayCount).filter(Boolean)),
-            avgPrice: avg(prices),
-            totalValue: prices.reduce((a, b) => a + b, 0),
             topState: topState?.x ?? "-",
             topStateCount: topState?.y ?? 0,
             tripsDelta: pctChange(tTrend.current, tTrend.last),
@@ -162,12 +139,10 @@ const Analytics = ({ loaderData }: Route.ComponentProps) => {
                 </div>
             </span>
 
-            <ul className="grid grid-cols-2 xl:grid-cols-3 gap-5">
+            <ul className="grid grid-cols-2 xl:grid-cols-4 gap-5">
                 <KpiCard label="Trips in range" value={d.inRange} note={`${trips.length} all time`} delta={d.tripsDelta} Icon={Sparkles} tone="bg-primary-50 text-primary-100" />
                 <KpiCard label="Users" value={users.length} note="Signed-in accounts" delta={d.usersDelta} Icon={Users} tone="bg-pink-50 text-pink-500" />
                 <KpiCard label="Average trip length" value={`${d.avgDays.toFixed(1)} days`} note="Across all trips" Icon={Clock} tone="bg-sky-50 text-sky-600" />
-                <KpiCard label="Average estimated price" value={money(d.avgPrice)} note="Per trip" Icon={Wallet} tone="bg-success-50 text-success-700" />
-                <KpiCard label="Total itinerary value" value={money(d.totalValue)} note="Sum of estimated prices" Icon={Wallet} tone="bg-violet-50 text-violet-600" />
                 <KpiCard label="Most popular state" value={d.topState} note={d.topStateCount ? `${d.topStateCount} trips` : "No trips yet"} Icon={MapPinned} tone="bg-amber-50 text-amber-600" />
             </ul>
 
@@ -331,15 +306,6 @@ const Analytics = ({ loaderData }: Route.ComponentProps) => {
                     </ChartComponent>
                 </ChartCard>
 
-                <ChartCard title="Itinerary value by month" subtitle="Sum of estimated trip prices" empty={noTrips}>
-                    <ChartComponent id="an-value" dataSource={d.value} primaryXAxis={categoryAxis} primaryYAxis={valueAxis({ minimum: 0, labelFormat: "₹{value}" })} chartArea={chartArea} tooltip={{ enable: true, format: "${point.x}: <b>₹${point.y}</b>" }} background="transparent" height="300px">
-                        <ChartInject services={[ColumnSeries, Category, Tooltip]} />
-                        <SeriesCollectionDirective>
-                            <SeriesDirective dataSource={d.value} xName="month" yName="value" name="Value" type="Column" fill={COLORS.green} columnWidth={0.55} cornerRadius={{ topLeft: 8, topRight: 8 }} />
-                        </SeriesCollectionDirective>
-                    </ChartComponent>
-                </ChartCard>
-
                 <ChartCard title="Budget mix" subtitle="How trips split across budget levels" empty={!d.budgets.length ? noTrips ?? "No budget data yet." : undefined}>
                     <AccumulationChartComponent id="an-budget" legendSettings={{ visible: true, position: "Bottom" }} tooltip={{ enable: true, format: "${point.x}: <b>${point.y}</b>" }} background="transparent" height="300px">
                         <ChartInject services={[PieSeries, AccumulationLegend, AccumulationTooltip, AccumulationDataLabel]} />
@@ -358,15 +324,6 @@ const Analytics = ({ loaderData }: Route.ComponentProps) => {
                     </ChartComponent>
                 </ChartCard>
 
-                <ChartCard title="Average price by style" subtitle="Estimated price per trip" empty={noTrips}>
-                    <ChartComponent id="an-style-price" dataSource={d.priceByStyle} primaryXAxis={{ ...categoryAxis, isInversed: true }} primaryYAxis={valueAxis({ minimum: 0, labelFormat: "₹{value}" })} chartArea={chartArea} tooltip={{ enable: true }} background="transparent" height="300px">
-                        <ChartInject services={[BarSeries, Category, Tooltip, DataLabel]} />
-                        <SeriesCollectionDirective>
-                            <SeriesDirective dataSource={d.priceByStyle} xName="x" yName="y" name="Avg price" type="Bar" fill={COLORS.amber} columnWidth={0.5} cornerRadius={{ topRight: 8, bottomRight: 8 }} marker={{ dataLabel: { visible: true, position: "Outer", format: "₹${point.y}", font: { fontWeight: "600", color: "#374151" } } }} />
-                        </SeriesCollectionDirective>
-                    </ChartComponent>
-                </ChartCard>
-
                 <ChartCard title="Top interests" subtitle="What travellers want to do" empty={!d.interests.length ? noTrips ?? "No interest data yet." : undefined}>
                     <ChartComponent id="an-interests" dataSource={d.interests} primaryXAxis={{ ...categoryAxis, isInversed: true }} primaryYAxis={valueAxis({ minimum: 0, interval: 1 })} chartArea={chartArea} tooltip={{ enable: true }} background="transparent" height="300px">
                         <ChartInject services={[BarSeries, Category, Tooltip, DataLabel]} />
@@ -376,16 +333,7 @@ const Analytics = ({ loaderData }: Route.ComponentProps) => {
                     </ChartComponent>
                 </ChartCard>
 
-                <ChartCard title="Trip length" subtitle="Number of trips by duration in days" empty={noTrips}>
-                    <ChartComponent id="an-duration" dataSource={d.durations} primaryXAxis={categoryAxis} primaryYAxis={valueAxis({ minimum: 0, interval: 1 })} chartArea={chartArea} tooltip={{ enable: true }} background="transparent" height="300px">
-                        <ChartInject services={[ColumnSeries, Category, Tooltip]} />
-                        <SeriesCollectionDirective>
-                            <SeriesDirective dataSource={d.durations} xName="x" yName="y" name="Trips" type="Column" fill={COLORS.blue} columnWidth={0.6} cornerRadius={{ topLeft: 8, topRight: 8 }} />
-                        </SeriesCollectionDirective>
-                    </ChartComponent>
-                </ChartCard>
-
-                <ChartCard className="xl:col-span-2" title="Popular states" subtitle="Where trips are being planned" empty={noTrips}>
+                <ChartCard title="Popular states" subtitle="Where trips are being planned" empty={noTrips}>
                     <ChartComponent id="an-states" dataSource={d.byState} primaryXAxis={categoryAxis} primaryYAxis={valueAxis({ minimum: 0, interval: 1 })} chartArea={chartArea} tooltip={{ enable: true }} background="transparent" height="300px">
                         <ChartInject services={[ColumnSeries, Category, Tooltip, DataLabel]} />
                         <SeriesCollectionDirective>
