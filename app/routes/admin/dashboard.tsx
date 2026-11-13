@@ -10,7 +10,7 @@ import {
     SplineAreaSeries,
     Tooltip,
 } from "@syncfusion/ej2-react-charts";
-import { ArrowRight, BarChart3, MapPinned, Plus, ShieldCheck, Sparkles, Users } from "lucide-react";
+import { ArrowRight, BarChart3, MapPinned, Plus, Sparkles, Ticket, Users } from "lucide-react";
 import { TripCard } from "../../../components";
 import ChartCard from "../../../components/ChartCard";
 import KpiCard from "../../../components/KpiCard";
@@ -47,7 +47,10 @@ const Dashboard = ({ loaderData }: Route.ComponentProps) => {
     const growth = months.map((m, i) => ({ month: monthLabel(m), trips: tripSeries[i], users: userSeries[i] }));
 
     const states = new Set(trips.map((t) => t.state).filter(Boolean)).size;
-    const admins = users.filter((u) => u.status === "admin").length;
+    const totalBookings = trips.reduce((s, t) => s + t.bookings, 0);
+    const booked = trips.filter((t) => t.bookings > 0).length;
+    const mostBooked = [...trips].filter((t) => t.bookings > 0).sort((a, b) => b.bookings - a.bookings).slice(0, 5);
+    const topCount = mostBooked[0]?.bookings ?? 1;
 
     return (
         <main className="dashboard wrapper">
@@ -78,7 +81,7 @@ const Dashboard = ({ loaderData }: Route.ComponentProps) => {
             <ul className="grid grid-cols-2 xl:grid-cols-4 gap-5">
                 <KpiCard label="Total trips" value={trips.length} note={`${tripTrend.current} this month`} delta={pctChange(tripTrend.current, tripTrend.last)} Icon={Sparkles} tone="bg-primary-50 text-primary-100" />
                 <KpiCard label="Users" value={users.length} note={`${userTrend.current} joined this month`} delta={pctChange(userTrend.current, userTrend.last)} Icon={Users} tone="bg-pink-50 text-pink-500" />
-                <KpiCard label="Admins" value={admins} note="People with panel access" Icon={ShieldCheck} tone="bg-success-50 text-success-700" />
+                <KpiCard label="Total bookings" value={totalBookings.toLocaleString("en-IN")} note={`Across ${booked} of ${trips.length} trips`} Icon={Ticket} tone="bg-success-50 text-success-700" />
                 <KpiCard label="States covered" value={states} note="Across all trips" Icon={MapPinned} tone="bg-amber-50 text-amber-600" />
             </ul>
 
@@ -102,28 +105,36 @@ const Dashboard = ({ loaderData }: Route.ComponentProps) => {
                 <article className="bg-white rounded-3xl border border-light-400 shadow-sm p-6 flex flex-col gap-4">
                     <header className="flex items-center justify-between">
                         <span className="flex flex-col gap-0.5">
-                            <h2 className="text-lg font-semibold text-dark-100">Recent users</h2>
-                            <p className="text-sm text-gray-100">Latest people to sign in</p>
+                            <h2 className="text-lg font-semibold text-dark-100">Most booked trips</h2>
+                            <p className="text-sm text-gray-100">Where travellers are signing up</p>
                         </span>
-                        <Link to="/all-users" className="text-sm font-semibold text-primary-100 hover:underline">See all</Link>
+                        <Link to="/analytics" className="text-sm font-semibold text-primary-100 hover:underline">Details</Link>
                     </header>
-                    {users.length ? (
-                        <ul className="flex flex-col divide-y divide-light-400">
-                            {users.slice(0, 6).map((u) => (
-                                <li key={u.id} className="flex items-center gap-3 py-3">
-                                    <img src={u.imageUrl} alt="" referrerPolicy="no-referrer" className="size-10 rounded-full object-cover" />
-                                    <span className="flex-1 min-w-0 flex flex-col leading-tight">
-                                        <strong className="text-sm font-semibold text-dark-100 truncate">{u.name}</strong>
-                                        <small className="text-xs text-gray-100 truncate">{u.email}</small>
-                                    </span>
-                                    <span className={u.status === "admin" ? "text-[11px] font-semibold rounded-full px-2.5 py-1 bg-success-50 text-success-700" : "text-[11px] font-semibold rounded-full px-2.5 py-1 bg-light-300 text-gray-500"}>
-                                        {u.status}
-                                    </span>
+                    {mostBooked.length ? (
+                        <ol className="flex flex-col gap-3.5">
+                            {mostBooked.map((t, i) => (
+                                <li key={t.id}>
+                                    <Link to={`/trips/${t.id}`} className="group flex items-center gap-3">
+                                        <span className="w-4 text-sm font-bold text-gray-100 tabular-nums">{i + 1}</span>
+                                        <img src={t.imageUrl} alt="" className="size-11 rounded-xl object-cover" />
+                                        <span className="flex-1 min-w-0 flex flex-col gap-1.5">
+                                            <span className="flex items-center justify-between gap-2">
+                                                <strong className="text-sm font-semibold text-dark-100 truncate group-hover:text-primary-100">{t.name}</strong>
+                                                <small className="shrink-0 text-xs font-semibold text-dark-100 tabular-nums">{t.bookings}</small>
+                                            </span>
+                                            <span className="h-1.5 rounded-full bg-light-300 overflow-hidden">
+                                                <span className="block h-full rounded-full bg-linear-to-r from-primary-100 to-violet-600" style={{ width: `${(t.bookings / topCount) * 100}%` }} />
+                                            </span>
+                                        </span>
+                                    </Link>
                                 </li>
                             ))}
-                        </ul>
+                        </ol>
                     ) : (
-                        <p className="flex-1 flex items-center justify-center text-sm text-gray-100 bg-light-200 rounded-2xl py-10">No users yet.</p>
+                        <p className="flex-1 flex flex-col items-center justify-center gap-2 text-center text-sm text-gray-100 bg-light-200 rounded-2xl px-4 py-10">
+                            No bookings entered yet.
+                            <span className="text-xs">Open a trip, click <strong className="text-dark-100">Edit trip</strong> and set its bookings.</span>
+                        </p>
                     )}
                 </article>
             </section>
@@ -143,7 +154,7 @@ const Dashboard = ({ loaderData }: Route.ComponentProps) => {
                 {trips.length ? (
                     <div className="trip-grid">
                         {trips.slice(0, 4).map((t) => (
-                            <TripCard key={t.id} id={t.id} name={t.name} imageUrl={t.imageUrl} location={t.location} tags={t.tags} price={t.price} />
+                            <TripCard key={t.id} id={t.id} name={t.name} imageUrl={t.imageUrl} location={t.location} tags={t.tags} price={t.price} bookings={t.bookings} />
                         ))}
                     </div>
                 ) : (

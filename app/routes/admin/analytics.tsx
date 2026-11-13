@@ -21,7 +21,7 @@ import {
     Tooltip,
 } from "@syncfusion/ej2-react-charts";
 import { Link } from "react-router";
-import { Award, CalendarRange, Clock, Lightbulb, MapPinned, Percent, PiggyBank, Plus, Sparkles, TrendingUp, Users } from "lucide-react";
+import { Award, CalendarRange, Ticket, Clock, Lightbulb, MapPinned, Percent, PiggyBank, Plus, Sparkles, TrendingUp, Users } from "lucide-react";
 import { Header } from "../../../components";
 import ChartCard from "../../../components/ChartCard";
 import KpiCard from "../../../components/KpiCard";
@@ -94,16 +94,25 @@ const Analytics = ({ loaderData }: Route.ComponentProps) => {
 
     const p = useMemo(() => {
         const ranked = rankTrips(trips);
-        const totalProfit = ranked.reduce((s, r) => s + r.profit, 0);
-        const totalRevenue = ranked.reduce((s, r) => s + r.revenue, 0);
+        const sum = (f: (r: (typeof ranked)[number]) => number) => ranked.reduce((s, r) => s + f(r), 0);
+        const short = (name: string) => (name.length > 26 ? name.slice(0, 24) + "…" : name);
+        const priceTotal = sum((r) => r.price);
+        const withBookings = ranked.filter((r) => r.bookings > 0);
         return {
             ranked,
-            best: ranked[0],
-            totalProfit,
-            avgMargin: totalRevenue ? Math.round((totalProfit / totalRevenue) * 100) : 0,
-            top: ranked
+            totalProfit: sum((r) => r.profit),
+            totalRevenue: sum((r) => r.revenue),
+            totalBookings: sum((r) => r.bookings),
+            bookedTrips: withBookings.length,
+            avgMargin: priceTotal ? Math.round((sum((r) => r.unitProfit) / priceTotal) * 100) : 0,
+            top: [...withBookings]
+                .sort((a, b) => b.profit - a.profit)
                 .slice(0, 8)
-                .map((r) => ({ x: r.name.length > 26 ? r.name.slice(0, 24) + "…" : r.name, cost: r.cost, profit: r.profit })),
+                .map((r) => ({ x: short(r.name), cost: r.cost, profit: r.profit })),
+            mostBooked: [...withBookings]
+                .sort((a, b) => b.bookings - a.bookings)
+                .slice(0, 8)
+                .map((r) => ({ x: short(r.name), y: r.bookings })),
             byStyle: profitBy(ranked, (r) => r.style),
             byState: profitBy(ranked, (r) => r.state).slice(0, 8),
             ideas: recommend(ranked),
@@ -163,11 +172,18 @@ const Analytics = ({ loaderData }: Route.ComponentProps) => {
                     </p>
                 </span>
 
-                <ul className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                    <KpiCard label="Estimated total profit" value={money(p.totalProfit)} note={`From ${p.ranked.length} priced trips`} Icon={TrendingUp} tone="bg-success-50 text-success-700" />
+                <ul className="grid grid-cols-2 xl:grid-cols-4 gap-5">
+                    <KpiCard label="Total bookings" value={p.totalBookings.toLocaleString("en-IN")} note={`On ${p.bookedTrips} of ${p.ranked.length} trips`} Icon={Ticket} tone="bg-primary-50 text-primary-100" />
+                    <KpiCard label="Revenue from bookings" value={money(p.totalRevenue)} note="Price × bookings" Icon={Award} tone="bg-violet-50 text-violet-600" />
+                    <KpiCard label="Estimated profit earned" value={money(p.totalProfit)} note="After the margin per budget level" Icon={TrendingUp} tone="bg-success-50 text-success-700" />
                     <KpiCard label="Average margin" value={`${p.avgMargin}%`} note="Profit as a share of price" Icon={Percent} tone="bg-sky-50 text-sky-600" />
-                    <KpiCard label="Most profitable trip" value={p.best ? money(p.best.profit) : "-"} note={p.best?.name ?? "No priced trips yet"} Icon={Award} tone="bg-amber-50 text-amber-600" />
                 </ul>
+
+                {!p.totalBookings && p.ranked.length > 0 && (
+                    <p className="rounded-2xl bg-amber-50 text-amber-700 px-5 py-3 text-sm">
+                        No bookings entered yet, so earnings show ₹0. Open a trip, click <strong>Edit trip</strong> and set how many people booked it.
+                    </p>
+                )}
 
                 {/* Make more like this */}
                 <article className="relative overflow-hidden rounded-3xl bg-linear-to-br from-dark-100 to-[#1f2a44] text-white p-6 md:p-8 flex flex-col gap-5">
@@ -178,7 +194,7 @@ const Analytics = ({ loaderData }: Route.ComponentProps) => {
                         </span>
                         <span className="flex flex-col">
                             <h3 className="text-lg font-semibold">Make more trips like these</h3>
-                            <small className="text-white/60">Trip types with the highest estimated profit per day</small>
+                            <small className="text-white/60">Trip types that earn the most per day and get the most bookings</small>
                         </span>
                     </header>
                     {p.ideas.length ? (
@@ -193,7 +209,7 @@ const Analytics = ({ loaderData }: Route.ComponentProps) => {
                                     </span>
                                     <strong className="text-base leading-snug">{idea.label}</strong>
                                     <small className="text-white/60">
-                                        {money(idea.avgProfit)} average profit · {idea.trips} {idea.trips === 1 ? "trip" : "trips"} so far
+                                        {money(idea.avgProfit)} profit per booking · {idea.bookings} {idea.bookings === 1 ? "booking" : "bookings"} on {idea.trips} {idea.trips === 1 ? "trip" : "trips"}
                                     </small>
                                     <Link
                                         to={`/trips/create?state=${encodeURIComponent(idea.state)}&style=${encodeURIComponent(idea.style)}&budget=${encodeURIComponent(idea.budget)}`}
@@ -210,7 +226,16 @@ const Analytics = ({ loaderData }: Route.ComponentProps) => {
                 </article>
 
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                    <ChartCard className="xl:col-span-2" title="Top trips by estimated profit" subtitle="Each bar is the trip price, split into cost and profit" empty={!p.top.length ? noTrips ?? "No priced trips yet." : undefined}>
+                    <ChartCard title="Most booked trips" subtitle="Number of people who booked" empty={!p.mostBooked.length ? noTrips ?? "No bookings entered yet." : undefined}>
+                        <ChartComponent id="an-most-booked" dataSource={p.mostBooked} primaryXAxis={{ ...categoryAxis, isInversed: true }} primaryYAxis={valueAxis({ minimum: 0 })} chartArea={chartArea} tooltip={{ enable: true, format: "${point.x}: <b>${point.y} bookings</b>" }} background="transparent" height={`${Math.max(260, p.mostBooked.length * 46)}px`}>
+                            <ChartInject services={[BarSeries, Category, Tooltip, DataLabel]} />
+                            <SeriesCollectionDirective>
+                                <SeriesDirective dataSource={p.mostBooked} xName="x" yName="y" name="Bookings" type="Bar" fill={COLORS.blue} columnWidth={0.55} cornerRadius={{ topRight: 8, bottomRight: 8 }} marker={{ dataLabel: { visible: true, position: "Outer", font: { fontWeight: "600", color: "#374151" } } }} />
+                            </SeriesCollectionDirective>
+                        </ChartComponent>
+                    </ChartCard>
+
+                    <ChartCard title="Top trips by profit earned" subtitle="Revenue from bookings, split into cost and profit" empty={!p.top.length ? noTrips ?? "No bookings entered yet." : undefined}>
                         <ChartComponent id="an-profit-top" dataSource={p.top} primaryXAxis={{ ...categoryAxis, isInversed: true }} primaryYAxis={valueAxis({ minimum: 0, labelFormat: "₹{value}" })} chartArea={chartArea} tooltip={{ enable: true, shared: true, format: "${series.name}: <b>₹${point.y}</b>" }} legendSettings={legend} background="transparent" height={`${Math.max(260, p.top.length * 46)}px`}>
                             <ChartInject services={[StackingBarSeries, Category, Tooltip, Legend]} />
                             <SeriesCollectionDirective>
@@ -220,7 +245,7 @@ const Analytics = ({ loaderData }: Route.ComponentProps) => {
                         </ChartComponent>
                     </ChartCard>
 
-                    <ChartCard title="Average profit by travel style" subtitle="Which styles earn the most per trip" empty={!p.byStyle.length ? noTrips ?? "No priced trips yet." : undefined}>
+                    <ChartCard title="Profit per booking by travel style" subtitle="Which styles earn the most each time someone books" empty={!p.byStyle.length ? noTrips ?? "No priced trips yet." : undefined}>
                         <ChartComponent id="an-profit-style" dataSource={p.byStyle} primaryXAxis={categoryAxis} primaryYAxis={valueAxis({ minimum: 0, labelFormat: "₹{value}" })} chartArea={chartArea} tooltip={{ enable: true, format: "${point.x}: <b>₹${point.y}</b>" }} background="transparent" height="300px">
                             <ChartInject services={[ColumnSeries, Category, Tooltip]} />
                             <SeriesCollectionDirective>
@@ -229,7 +254,7 @@ const Analytics = ({ loaderData }: Route.ComponentProps) => {
                         </ChartComponent>
                     </ChartCard>
 
-                    <ChartCard title="Average profit by state" subtitle="Most profitable destinations" empty={!p.byState.length ? noTrips ?? "No priced trips yet." : undefined}>
+                    <ChartCard title="Profit per booking by state" subtitle="Most profitable destinations" empty={!p.byState.length ? noTrips ?? "No priced trips yet." : undefined}>
                         <ChartComponent id="an-profit-state" dataSource={p.byState} primaryXAxis={{ ...categoryAxis, isInversed: true }} primaryYAxis={valueAxis({ minimum: 0, labelFormat: "₹{value}" })} chartArea={chartArea} tooltip={{ enable: true, format: "${point.x}: <b>₹${point.y}</b>" }} background="transparent" height="300px">
                             <ChartInject services={[BarSeries, Category, Tooltip]} />
                             <SeriesCollectionDirective>
@@ -243,19 +268,20 @@ const Analytics = ({ loaderData }: Route.ComponentProps) => {
                 <article className="bg-white rounded-3xl border border-light-400 shadow-sm p-6 flex flex-col gap-4">
                     <header className="flex flex-col gap-0.5">
                         <h3 className="text-lg font-semibold text-dark-100">Trip profit ranking</h3>
-                        <p className="text-sm text-gray-100">Score mixes profit per day (70%) and total profit (30%), compared with your other trips.</p>
+                        <p className="text-sm text-gray-100">Score mixes number of bookings (40%), profit earned (35%) and profit per booking per day (25%). The best trip scores 100.</p>
                     </header>
                     {p.ranked.length ? (
                         <div className="overflow-x-auto -mx-6 px-6">
-                            <table className="w-full min-w-[760px] text-sm">
+                            <table className="w-full min-w-[860px] text-sm">
                                 <thead>
                                     <tr className="text-left text-xs uppercase tracking-wider text-gray-100 border-b border-light-400">
                                         <th className="py-3 pr-3 font-semibold">#</th>
                                         <th className="py-3 pr-3 font-semibold">Trip</th>
                                         <th className="py-3 pr-3 font-semibold">Budget</th>
                                         <th className="py-3 pr-3 font-semibold text-right">Price</th>
-                                        <th className="py-3 pr-3 font-semibold text-right">Est. profit</th>
-                                        <th className="py-3 pr-3 font-semibold text-right">Per day</th>
+                                        <th className="py-3 pr-3 font-semibold text-right">Bookings</th>
+                                        <th className="py-3 pr-3 font-semibold text-right">Profit earned</th>
+                                        <th className="py-3 pr-3 font-semibold text-right">Per booking / day</th>
                                         <th className="py-3 pr-3 font-semibold w-36">Score</th>
                                         <th className="py-3 font-semibold">Verdict</th>
                                     </tr>
@@ -269,7 +295,8 @@ const Analytics = ({ loaderData }: Route.ComponentProps) => {
                                                 <small className="block text-gray-100">{r.state} · {r.style} · {r.days} days</small>
                                             </td>
                                             <td className="py-3 pr-3 text-dark-100">{r.budget} <small className="text-gray-100">({Math.round(r.margin * 100)}%)</small></td>
-                                            <td className="py-3 pr-3 text-right tabular-nums text-dark-100">{money(r.revenue)}</td>
+                                            <td className="py-3 pr-3 text-right tabular-nums text-dark-100">{money(r.price)}</td>
+                                            <td className="py-3 pr-3 text-right tabular-nums text-dark-100">{r.bookings}</td>
                                             <td className="py-3 pr-3 text-right tabular-nums font-semibold text-success-700">{money(r.profit)}</td>
                                             <td className="py-3 pr-3 text-right tabular-nums text-dark-100">{money(r.profitPerDay)}</td>
                                             <td className="py-3 pr-3">

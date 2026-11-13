@@ -81,6 +81,7 @@ const TripsExplorer = ({ trips, basePath, initialQuery = "" }: Props) => {
                             location={t.location}
                             tags={t.tags}
                             price={t.price}
+                            bookings={basePath === "/trips" ? t.bookings : undefined}
                             href={`${basePath}/${t.id}`}
                         />
                     ))}

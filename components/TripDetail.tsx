@@ -2,7 +2,7 @@ import { lazy, Suspense } from "react";
 import { Link } from "react-router";
 import { ButtonComponent, ChipDirective, ChipListComponent, ChipsDirective } from "@syncfusion/ej2-react-buttons";
 import { AccordionComponent, AccordionItemDirective, AccordionItemsDirective } from "@syncfusion/ej2-react-navigations";
-import { ArrowLeft, CalendarDays, Clock, CloudSun, Sparkles, Users, Wallet } from "lucide-react";
+import { ArrowLeft, CalendarDays, Clock, CloudSun, Sparkles, Ticket, Users, Wallet } from "lucide-react";
 import type { TripView } from "~/lib/trip-view";
 import { cn } from "~/lib/utils";
 
@@ -15,11 +15,13 @@ type Props = {
     showAi?: boolean;
     /** Admin actions shown in the summary card (e.g. delete) */
     actions?: React.ReactNode;
+    /** Show how many people booked (admin pages) */
+    showBookings?: boolean;
     /** Shown above the trip, e.g. when a generated trip could not be saved */
     notice?: string;
 };
 
-const TripDetail = ({ trip, backTo, showAi = false, actions, notice }: Props) => {
+const TripDetail = ({ trip, backTo, showAi = false, actions, notice, showBookings = false }: Props) => {
     if (!trip) {
         return (
             <section className="flex flex-col items-center gap-4 py-24 text-center">
@@ -35,6 +37,7 @@ const TripDetail = ({ trip, backTo, showAi = false, actions, notice }: Props) =>
         { Icon: Users, label: trip.style ? `${trip.style} · group` : "Group type", value: trip.group },
         { Icon: CalendarDays, label: "Best time", value: trip.bestTime || "All year" },
         { Icon: Wallet, label: "Estimated price", value: trip.price },
+        ...(showBookings ? [{ Icon: Ticket, label: "Bookings", value: `${trip.bookings} ${trip.bookings === 1 ? "person" : "people"}` }] : []),
     ];
 
     return (

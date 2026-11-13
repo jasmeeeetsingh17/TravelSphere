@@ -16,6 +16,8 @@ export type TripView = {
     duration: string;
     /** Number of days, for charts */
     dayCount: number;
+    /** People who booked this trip (admin-entered). 0 when not set. */
+    bookings: number;
     budget?: string;
     interests?: string[];
     bestTime: string;
@@ -43,6 +45,7 @@ export const generatedToView = (
     description: trip.description,
     duration: `${trip.duration} ${trip.duration === 1 ? "day" : "days"}`,
     dayCount: Number(trip.duration) || trip.itinerary?.length || 0,
+    bookings: Math.max(0, Math.round(Number(trip.bookings) || 0)),
     budget: trip.budget,
     interests: (trip.interests ?? "").split(",").map((s) => s.trim()).filter(Boolean),
     bestTime: (trip.bestTimeToVisit ?? []).join(" · "),

@@ -1,3 +1,4 @@
+import { STATE_IMAGES } from "~/constants/indiaStates";
 import { formatPrice, money } from "~/lib/utils";
 
 /**
@@ -30,8 +31,9 @@ const FALLBACK = ["Guided sightseeing tour", "Lunch at a local favourite", "Free
 const TIMES = ["09:00 AM", "01:00 PM", "07:00 PM"];
 
 /** Rough cost per person per day in rupees (stay, food, local travel, activities). */
-const DAILY_COST: Record<string, number> = { Budget: 2500, "Mid-range": 5000, Luxury: 12000, Premium: 20000 };
-const GROUP_SIZE: Record<string, number> = { Solo: 1, Couple: 2, Family: 4, Friends: 3, Business: 2 };
+export const DAILY_COST: Record<string, number> = { Budget: 2500, "Mid-range": 5000, Luxury: 12000, Premium: 20000 };
+/** People counted for the price of each group type. */
+export const GROUP_SIZE: Record<string, number> = { Solo: 1, Couple: 2, Family: 4, Friends: 3, Business: 2 };
 
 export const clampDuration = (n: unknown) => Math.min(14, Math.max(1, Math.round(Number(n)) || 3));
 
@@ -54,7 +56,9 @@ export function generateTripTemplate(form: TripFormData): Trip {
         interests: form.interest,
         groupType: form.groupType,
         country,
-        imageUrls: pickImages(country + form.travelStyle),
+        imageUrls: STATE_IMAGES[country]
+            ? [STATE_IMAGES[country], ...pickImages(country + form.travelStyle, 2)]
+            : pickImages(country + form.travelStyle),
         itinerary: Array.from({ length: days }, (_, d) => ({
             day: d + 1,
             location: country,

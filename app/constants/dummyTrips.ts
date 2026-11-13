@@ -407,6 +407,7 @@ export const dummyTrips: TripView[] = seeds.map((s) => ({
     description: s.description,
     duration: `${s.days.length} ${s.days.length === 1 ? "day" : "days"}`,
     dayCount: s.days.length,
+    bookings: 0,
     budget: s.budget,
     interests: s.interests,
     bestTime: s.bestTime,
@@ -420,34 +421,6 @@ export const dummyTrips: TripView[] = seeds.map((s) => ({
 
 export const getDummyTrip = (id?: string) => dummyTrips.find((t) => t.id === id) ?? null;
 
-/** The same sample trips in the shape stored in the database, for "Import sample trips" in the admin panel. */
-export const sampleTrips: (Trip & { state: string })[] = seeds.map((s) => ({
-    id: "",
-    name: s.name,
-    description: s.description,
-    estimatedPrice: s.price,
-    duration: s.days.length,
-    budget: s.budget,
-    travelStyle: s.style,
-    interests: s.interests.join(", "),
-    groupType: s.group,
-    country: "India",
-    state: s.state,
-    imageUrls: [s.image],
-    itinerary: s.days.map(([location, acts], i) => ({
-        day: i + 1,
-        location,
-        activities: acts.map((description, j) => ({ time: ["09:00 AM", "01:00 PM", "07:00 PM"][j] ?? "", description })),
-    })),
-    bestTimeToVisit: [s.bestTime],
-    weatherInfo: s.weather,
-    location: {
-        city: `${s.city}, ${s.state}`,
-        coordinates: [0, 0],
-        openStreetMap: `https://www.openstreetmap.org/search?query=${encodeURIComponent(`${s.city}, ${s.state}`)}`,
-    } as unknown as Location,
-    payment_link: "",
-}));
 
 export const testimonials = [
     {

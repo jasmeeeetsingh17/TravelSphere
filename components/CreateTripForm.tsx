@@ -1,55 +1,213 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { useNavigate, useSearchParams } from "react-router";
-import { ButtonComponent } from "@syncfusion/ej2-react-buttons";
-import { ComboBoxComponent, DropDownListComponent, MultiSelectComponent } from "@syncfusion/ej2-react-dropdowns";
-import { Loader2, Sparkles } from "lucide-react";
+import {
+    Briefcase, Building2, Check, ChevronDown, Flame, Gem, Heart, Landmark, Loader2, MapPin, Minus, Mountain, Palmtree, PartyPopper,
+    Plus, RotateCcw, Search, Sparkles, Trees, User, Users, Wallet, type LucideIcon,
+} from "lucide-react";
 import { account } from "~/appwrite/client";
 import { getAuthToken, saveTrip } from "~/appwrite/trips";
-import { budgetOptions, groupTypes, interests, travelStyles } from "~/constants";
-import { indianStates } from "~/constants/indiaStates";
+import { budgetOptions, groupTypes, interests as INTERESTS, travelStyles } from "~/constants";
+import { indianStates, STATE_IMAGES } from "~/constants/indiaStates";
+import { DAILY_COST, GROUP_SIZE } from "~/lib/trip-generator";
 import { generatedToView, type TripView } from "~/lib/trip-view";
+import { cn, money } from "~/lib/utils";
 import TripDetail from "./TripDetail";
-
-// The app.css rule for .e-input-group-icon is made for another layout, so reset it inside this form.
-const field = "flex flex-col gap-2 [&_.e-input-group-icon]:!static";
-const labelClass = "text-sm font-medium text-dark-100";
 
 type Props = {
     /** Where saved trips are shown after creation */
     basePath: string;
 };
 
+const POPULAR = ["Rajasthan", "Kerala", "Goa", "Himachal Pradesh", "Ladakh", "Jammu and Kashmir"];
+
+const GROUP_ICONS: Record<string, LucideIcon> = { Solo: User, Couple: Heart, Family: Users, Friends: PartyPopper, Business: Briefcase };
+const STYLE_ICONS: Record<string, LucideIcon> = {
+    Relaxed: Palmtree, Luxury: Gem, Adventure: Mountain, Cultural: Landmark, Spiritual: Flame, "Nature & Outdoors": Trees, "City Exploration": Building2,
+};
+const BUDGET_NOTES: Record<string, string> = {
+    Budget: "Hostels, trains, street food",
+    "Mid-range": "3-star stays, cabs",
+    Luxury: "5-star hotels, private tours",
+    Premium: "Palace stays, the very best",
+};
+const LOADING_STEPS = ["Picking the best places", "Planning each day", "Checking the weather", "Working out the price", "Saving your trip"];
+
+/** Numbered section of the form. */
+const Step = ({ n, title, hint, done, children }: { n: number; title: string; hint?: string; done: boolean; children: ReactNode }) => (
+    <section className="bg-white rounded-3xl border border-light-400 shadow-sm p-5 md:p-7 flex flex-col gap-4">
+        <header className="flex items-center gap-3">
+            <span
+                className={cn(
+                    "size-8 shrink-0 rounded-full flex items-center justify-center text-sm font-bold transition-colors",
+                    done ? "bg-success-500 text-white" : "bg-primary-50 text-primary-100"
+                )}
+            >
+                {done ? <Check size={16} /> : n}
+            </span>
+            <span className="flex flex-col leading-tight">
+                <h2 className="text-base md:text-lg font-semibold text-dark-100">{title}</h2>
+                {hint && <small className="text-gray-100">{hint}</small>}
+            </span>
+        </header>
+        {children}
+    </section>
+);
+
+/** Clickable option tile with an icon. */
+const Tile = ({ active, onClick, Icon, label, note }: { active: boolean; onClick: () => void; Icon?: LucideIcon; label: string; note?: string }) => (
+    <button
+        type="button"
+        onClick={onClick}
+        aria-pressed={active}
+        className={cn(
+            "relative flex flex-col items-start gap-2 rounded-2xl border-2 p-4 text-left transition-all cursor-pointer",
+            active ? "border-primary-100 bg-primary-50/60 shadow-md shadow-primary-100/10" : "border-light-400 bg-white hover:border-primary-100/40 hover:-translate-y-0.5"
+        )}
+    >
+        {active && (
+            <span className="absolute top-2.5 right-2.5 size-5 rounded-full bg-primary-100 text-white flex items-center justify-center">
+                <Check size={12} />
+            </span>
+        )}
+        {Icon && (
+            <span className={cn("size-10 rounded-xl flex items-center justify-center", active ? "bg-primary-100 text-white" : "bg-light-200 text-dark-200")}>
+                <Icon size={20} />
+            </span>
+        )}
+        <strong className="text-sm font-semibold text-dark-100 leading-tight">{label}</strong>
+        {note && <small className="text-xs text-gray-100 leading-snug">{note}</small>}
+    </button>
+);
+
+/** Searchable list of Indian states and union territories. */
+const StatePicker = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => {
+    const [open, setOpen] = useState(false);
+    const [text, setText] = useState(value);
+    const box = useRef<HTMLDivElement>(null);
+
+    useEffect(() => setText(value), [value]);
+    useEffect(() => {
+        const close = (e: MouseEvent) => !box.current?.contains(e.target as Node) && setOpen(false);
+        document.addEventListener("mousedown", close);
+        return () => document.removeEventListener("mousedown", close);
+    }, []);
+
+    const matches = indianStates.filter((s) => s.toLowerCase().includes(text.trim().toLowerCase()));
+    const choose = (s: string) => {
+        onChange(s);
+        setText(s);
+        setOpen(false);
+    };
+
+    return (
+        <div ref={box} className="relative">
+            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-100 pointer-events-none" />
+            <input
+                value={text}
+                onChange={(e) => {
+                    setText(e.target.value);
+                    setOpen(true);
+                    if (value) onChange("");
+                }}
+                onFocus={() => setOpen(true)}
+                onKeyDown={(e) => {
+                    if (e.key === "Enter" && open && matches[0]) {
+                        e.preventDefault();
+                        choose(matches[0]);
+                    }
+                    if (e.key === "Escape") setOpen(false);
+                }}
+                placeholder="Search a state or union territory"
+                aria-label="State or union territory"
+                role="combobox"
+                aria-expanded={open}
+                className="h-12 w-full rounded-xl border border-light-400 bg-white pl-11 pr-10 text-dark-100 outline-none focus:border-primary-100 focus:ring-2 focus:ring-primary-100/15"
+            />
+            <ChevronDown size={18} className={cn("absolute right-4 top-1/2 -translate-y-1/2 text-gray-100 pointer-events-none transition-transform", open && "rotate-180")} />
+            {open && (
+                <ul role="listbox" className="absolute z-30 mt-2 w-full max-h-64 overflow-y-auto rounded-xl border border-light-400 bg-white shadow-xl py-1">
+                    {matches.length ? (
+                        matches.map((s) => (
+                            <li key={s}>
+                                <button
+                                    type="button"
+                                    role="option"
+                                    aria-selected={s === value}
+                                    onClick={() => choose(s)}
+                                    className={cn("w-full flex items-center gap-2 px-4 py-2.5 text-sm text-left hover:bg-primary-50 cursor-pointer", s === value && "text-primary-100 font-semibold")}
+                                >
+                                    <MapPin size={15} className="text-gray-100" /> {s}
+                                </button>
+                            </li>
+                        ))
+                    ) : (
+                        <li className="px-4 py-3 text-sm text-gray-100">No state matches "{text}"</li>
+                    )}
+                </ul>
+            )}
+        </div>
+    );
+};
+
 const CreateTripForm = ({ basePath }: Props) => {
     const navigate = useNavigate();
     const [params] = useSearchParams();
-    const presetState = indianStates.find((s) => s.toLowerCase() === (params.get("state") ?? "").toLowerCase()) ?? "";
-    const [state, setState] = useState(presetState);
+
     // Presets from the address, e.g. /trips/create?state=Goa&style=Adventure&budget=Luxury&group=Friends
     const preset = (key: string, list: string[]) => list.find((v) => v.toLowerCase() === (params.get(key) ?? "").toLowerCase()) ?? "";
-    const presetStyle = preset("style", travelStyles);
-    const presetBudget = preset("budget", budgetOptions);
-    const presetGroup = preset("group", groupTypes);
-    const [travelStyle, setTravelStyle] = useState(presetStyle);
+    const [state, setState] = useState(preset("state", indianStates));
+    const [travelStyle, setTravelStyle] = useState(preset("style", travelStyles));
+    const [budget, setBudget] = useState(preset("budget", budgetOptions));
+    const [groupType, setGroupType] = useState(preset("group", groupTypes));
     const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-    const [budget, setBudget] = useState(presetBudget);
-    const [groupType, setGroupType] = useState(presetGroup);
-    const [duration, setDuration] = useState(3);
+    const [duration, setDuration] = useState(5);
 
     const [loading, setLoading] = useState(false);
+    const [loadingStep, setLoadingStep] = useState(0);
     const [error, setError] = useState("");
     const [preview, setPreview] = useState<TripView | null>(null);
+
+    // Walk through the loading messages while the AI works
+    useEffect(() => {
+        if (!loading) return setLoadingStep(0);
+        const id = setInterval(() => setLoadingStep((s) => Math.min(s + 1, LOADING_STEPS.length - 1)), 2200);
+        return () => clearInterval(id);
+    }, [loading]);
+
+    const people = GROUP_SIZE[groupType] ?? 1;
+    const estimate = budget ? (DAILY_COST[budget] ?? 0) * duration * people : 0;
+    const filled = [state, travelStyle, groupType, budget, selectedInterests.length ? "x" : ""].filter(Boolean).length;
+    const image = STATE_IMAGES[state] ?? "/assets/images/hero-img1.jpg";
+
+    const missing = useMemo(
+        () =>
+            [!state && "a state", !groupType && "who is travelling", !travelStyle && "a travel style", !budget && "a budget", !selectedInterests.length && "at least one interest"].filter(
+                Boolean
+            ) as string[],
+        [state, groupType, travelStyle, budget, selectedInterests]
+    );
+
+    const toggleInterest = (i: string) =>
+        setSelectedInterests((list) => (list.includes(i) ? list.filter((x) => x !== i) : [...list, i]));
+
+    const reset = () => {
+        setState("");
+        setTravelStyle("");
+        setBudget("");
+        setGroupType("");
+        setSelectedInterests([]);
+        setDuration(5);
+        setError("");
+        setPreview(null);
+    };
 
     const onSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setError("");
         setPreview(null);
 
-        if (!state || !travelStyle || !selectedInterests.length || !budget || !groupType) {
-            setError("Please fill in every field before generating a trip.");
-            return;
-        }
-        if (duration < 1 || duration > 14) {
-            setError("Duration must be between 1 and 14 days.");
+        if (missing.length) {
+            setError(`Please choose ${missing.join(", ")}.`);
             return;
         }
 
@@ -74,94 +232,240 @@ const CreateTripForm = ({ basePath }: Props) => {
                 setPreview(generatedToView(trip, { id: "preview", saved: false }));
                 const reason = saveError instanceof Error ? saveError.message : "Unknown error";
                 setError(`Your trip was generated but could not be saved. Appwrite said: "${reason}"`);
+                setLoading(false);
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
-        } finally {
             setLoading(false);
         }
     };
 
     return (
         <div className="flex flex-col gap-10">
-            <form onSubmit={onSubmit} className="bg-white rounded-3xl border border-light-400 shadow-sm p-6 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className={field}>
-                    <label htmlFor="state" className={labelClass}>State or union territory (India)</label>
-                    <ComboBoxComponent
-                        id="state"
-                        dataSource={indianStates}
-                        placeholder="Choose or type a state"
-                        value={presetState || undefined}
-                        allowFiltering
-                        change={(e) => setState((e.value as string) ?? "")}
-                    />
+            <form onSubmit={onSubmit} className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-6 items-start">
+                {/* ---------------- Steps ---------------- */}
+                <div className="flex flex-col gap-5">
+                    <Step n={1} title="Where to?" hint="Any of India's 28 states and 8 union territories" done={!!state}>
+                        <StatePicker value={state} onChange={setState} />
+                        <div className="flex flex-wrap items-center gap-2">
+                            <small className="text-gray-100 mr-1">Popular:</small>
+                            {POPULAR.map((p) => (
+                                <button
+                                    key={p}
+                                    type="button"
+                                    onClick={() => setState(p)}
+                                    className={cn(
+                                        "rounded-full px-3 py-1.5 text-xs font-semibold border transition-colors cursor-pointer",
+                                        state === p ? "bg-primary-100 border-primary-100 text-white" : "bg-light-200 border-transparent text-dark-200 hover:border-primary-100"
+                                    )}
+                                >
+                                    {p}
+                                </button>
+                            ))}
+                        </div>
+                    </Step>
+
+                    <Step n={2} title="How many days?" hint="Between 1 and 14 days" done>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-5">
+                            <div className="flex items-center gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setDuration((d) => Math.max(1, d - 1))}
+                                    disabled={duration <= 1}
+                                    aria-label="Fewer days"
+                                    className="size-11 rounded-xl border border-light-400 flex items-center justify-center text-dark-100 hover:border-primary-100 disabled:opacity-30 cursor-pointer"
+                                >
+                                    <Minus size={18} />
+                                </button>
+                                <span className="w-24 text-center">
+                                    <strong className="block text-3xl font-bold text-dark-100 tabular-nums">{duration}</strong>
+                                    <small className="text-gray-100">{duration === 1 ? "day" : "days"}</small>
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => setDuration((d) => Math.min(14, d + 1))}
+                                    disabled={duration >= 14}
+                                    aria-label="More days"
+                                    className="size-11 rounded-xl border border-light-400 flex items-center justify-center text-dark-100 hover:border-primary-100 disabled:opacity-30 cursor-pointer"
+                                >
+                                    <Plus size={18} />
+                                </button>
+                            </div>
+                            <input
+                                type="range"
+                                min={1}
+                                max={14}
+                                value={duration}
+                                onChange={(e) => setDuration(Number(e.target.value))}
+                                aria-label="Trip length in days"
+                                className="flex-1 accent-primary-100 cursor-pointer"
+                            />
+                            <div className="flex gap-2">
+                                {[3, 5, 7].map((d) => (
+                                    <button
+                                        key={d}
+                                        type="button"
+                                        onClick={() => setDuration(d)}
+                                        className={cn(
+                                            "rounded-full px-3 py-1.5 text-xs font-semibold border cursor-pointer",
+                                            duration === d ? "bg-primary-100 border-primary-100 text-white" : "bg-light-200 border-transparent text-dark-200 hover:border-primary-100"
+                                        )}
+                                    >
+                                        {d === 7 ? "1 week" : `${d} days`}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </Step>
+
+                    <Step n={3} title="Who is travelling?" done={!!groupType}>
+                        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                            {groupTypes.map((g) => (
+                                <Tile
+                                    key={g}
+                                    active={groupType === g}
+                                    onClick={() => setGroupType(g)}
+                                    Icon={GROUP_ICONS[g]}
+                                    label={g}
+                                    note={`${GROUP_SIZE[g] ?? 1} ${(GROUP_SIZE[g] ?? 1) === 1 ? "person" : "people"}`}
+                                />
+                            ))}
+                        </div>
+                    </Step>
+
+                    <Step n={4} title="Travel style" done={!!travelStyle}>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            {travelStyles.map((s) => (
+                                <Tile key={s} active={travelStyle === s} onClick={() => setTravelStyle(s)} Icon={STYLE_ICONS[s]} label={s} />
+                            ))}
+                        </div>
+                    </Step>
+
+                    <Step n={5} title="Budget" hint="Rough cost per person per day" done={!!budget}>
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                            {budgetOptions.map((b) => (
+                                <Tile
+                                    key={b}
+                                    active={budget === b}
+                                    onClick={() => setBudget(b)}
+                                    Icon={Wallet}
+                                    label={`${b} · ${money(DAILY_COST[b] ?? 0)}`}
+                                    note={BUDGET_NOTES[b]}
+                                />
+                            ))}
+                        </div>
+                    </Step>
+
+                    <Step n={6} title="Interests" hint="Pick as many as you like" done={selectedInterests.length > 0}>
+                        <ul className="flex flex-wrap gap-2">
+                            {INTERESTS.map((i) => {
+                                const on = selectedInterests.includes(i);
+                                return (
+                                    <li key={i}>
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleInterest(i)}
+                                            aria-pressed={on}
+                                            className={cn(
+                                                "flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium border transition-colors cursor-pointer",
+                                                on ? "bg-primary-100 border-primary-100 text-white" : "bg-white border-light-400 text-dark-200 hover:border-primary-100"
+                                            )}
+                                        >
+                                            {on && <Check size={14} />} {i}
+                                        </button>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </Step>
                 </div>
 
-                <div className={field}>
-                    <label htmlFor="duration" className={labelClass}>Duration (days)</label>
-                    <input
-                        id="duration"
-                        type="number"
-                        min={1}
-                        max={14}
-                        value={duration}
-                        onChange={(e) => setDuration(Number(e.target.value))}
-                        className="h-10.5 rounded-xl border border-light-400 px-4 text-dark-100 outline-none focus:border-primary-100"
-                    />
-                </div>
+                {/* ---------------- Summary ---------------- */}
+                <aside className="lg:sticky lg:top-6 flex flex-col bg-white rounded-3xl border border-light-400 shadow-sm overflow-hidden">
+                    <figure className="relative h-44">
+                        <img src={image} alt="" className="size-full object-cover" />
+                        <span className="absolute inset-0 bg-linear-to-t from-black/70 via-black/10 to-transparent" />
+                        <figcaption className="absolute bottom-0 left-0 right-0 p-5 text-white">
+                            <small className="text-white/75">Your trip</small>
+                            <strong className="block text-xl leading-snug">
+                                {state ? `${duration}-day ${travelStyle || ""} trip to ${state}`.replace(/\s+/g, " ") : "Choose a destination"}
+                            </strong>
+                        </figcaption>
+                    </figure>
 
-                <div className={field}>
-                    <label htmlFor="travelStyle" className={labelClass}>Travel style</label>
-                    <DropDownListComponent
-                        id="travelStyle"
-                        dataSource={travelStyles}
-                        value={presetStyle || undefined}
-                        placeholder="Select a travel style"
-                        change={(e) => setTravelStyle((e.value as string) ?? "")}
-                    />
-                </div>
+                    <div className="p-5 flex flex-col gap-4">
+                        <ul className="flex flex-col gap-2.5 text-sm">
+                            {[
+                                ["Group", groupType ? `${groupType} (${people} ${people === 1 ? "person" : "people"})` : "-"],
+                                ["Style", travelStyle || "-"],
+                                ["Budget", budget || "-"],
+                                ["Interests", selectedInterests.length ? selectedInterests.join(", ") : "-"],
+                            ].map(([k, v]) => (
+                                <li key={k} className="flex justify-between gap-4">
+                                    <span className="text-gray-100 shrink-0">{k}</span>
+                                    <span className="font-medium text-dark-100 text-right line-clamp-2">{v}</span>
+                                </li>
+                            ))}
+                        </ul>
 
-                <div className={field}>
-                    <label htmlFor="groupType" className={labelClass}>Group type</label>
-                    <DropDownListComponent
-                        id="groupType"
-                        dataSource={groupTypes}
-                        value={presetGroup || undefined}
-                        placeholder="Who is travelling?"
-                        change={(e) => setGroupType((e.value as string) ?? "")}
-                    />
-                </div>
+                        <div className="rounded-2xl bg-light-200 p-4 flex flex-col gap-0.5">
+                            <small className="text-gray-100">Estimated price</small>
+                            <strong className="text-2xl font-bold text-dark-100 tabular-nums">{estimate ? money(estimate) : "₹ -"}</strong>
+                            <small className="text-xs text-gray-100">
+                                {estimate ? `${money(DAILY_COST[budget] ?? 0)} × ${duration} days × ${people} ${people === 1 ? "person" : "people"}. The AI may adjust it.` : "Pick a budget to see an estimate"}
+                            </small>
+                        </div>
 
-                <div className={field}>
-                    <label htmlFor="budget" className={labelClass}>Budget</label>
-                    <DropDownListComponent
-                        id="budget"
-                        dataSource={budgetOptions}
-                        value={presetBudget || undefined}
-                        placeholder="Select a budget"
-                        change={(e) => setBudget((e.value as string) ?? "")}
-                    />
-                </div>
+                        <div className="flex flex-col gap-1.5">
+                            <span className="flex justify-between text-xs text-gray-100">
+                                <span>{filled} of 5 choices made</span>
+                                <span>{Math.round((filled / 5) * 100)}%</span>
+                            </span>
+                            <span className="h-1.5 rounded-full bg-light-300 overflow-hidden">
+                                <span className="block h-full rounded-full bg-linear-to-r from-primary-100 to-violet-600 transition-all duration-500" style={{ width: `${(filled / 5) * 100}%` }} />
+                            </span>
+                        </div>
 
-                <div className={field}>
-                    <label htmlFor="interests" className={labelClass}>Interests</label>
-                    <MultiSelectComponent
-                        id="interests"
-                        dataSource={interests}
-                        placeholder="Pick one or more interests"
-                        change={(e) => setSelectedInterests((e.value as string[]) ?? [])}
-                    />
-                </div>
+                        {error && <p className="rounded-xl bg-red-50 text-red-500 px-4 py-3 text-sm">{error}</p>}
 
-                {error && <p className="md:col-span-2 rounded-xl bg-red-50 text-red-500 px-4 py-3 text-sm">{error}</p>}
-
-                <div className="md:col-span-2 flex justify-end">
-                    <ButtonComponent type="submit" disabled={loading} className="button-class h-11 w-full md:w-auto md:px-10">
-                        {loading ? <Loader2 size={18} className="animate-spin text-white mr-2" /> : <Sparkles size={18} className="text-white mr-2" />}
-                        <span className="text-white font-semibold">{loading ? "Generating your trip..." : "Generate trip"}</span>
-                    </ButtonComponent>
-                </div>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="flex items-center justify-center gap-2 h-12 rounded-xl bg-linear-to-r from-primary-100 to-violet-600 text-white font-semibold shadow-lg shadow-primary-100/30 hover:brightness-110 transition disabled:opacity-60 cursor-pointer"
+                        >
+                            {loading ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
+                            {loading ? "Generating..." : "Generate trip with AI"}
+                        </button>
+                        <button type="button" onClick={reset} className="flex items-center justify-center gap-1.5 text-sm font-medium text-gray-100 hover:text-dark-100 cursor-pointer">
+                            <RotateCcw size={14} /> Start over
+                        </button>
+                    </div>
+                </aside>
             </form>
+
+            {/* Progress while the AI works */}
+            {loading && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-100/50 backdrop-blur-sm px-4" role="status" aria-live="polite">
+                    <div className="w-full max-w-sm bg-white rounded-3xl shadow-2xl p-7 flex flex-col items-center gap-5 text-center">
+                        <span className="relative size-16">
+                            <span className="absolute inset-0 rounded-full border-4 border-primary-50 border-t-primary-100 border-r-violet-500 animate-spin" />
+                            <Sparkles size={24} className="absolute inset-0 m-auto text-primary-100" />
+                        </span>
+                        <span className="flex flex-col gap-1">
+                            <strong className="text-lg text-dark-100">Creating your {state} trip</strong>
+                            <small className="text-gray-100">This usually takes 10 to 20 seconds</small>
+                        </span>
+                        <ol className="w-full flex flex-col gap-2 text-left">
+                            {LOADING_STEPS.map((s, i) => (
+                                <li key={s} className={cn("flex items-center gap-2.5 text-sm transition-colors", i < loadingStep ? "text-success-700" : i === loadingStep ? "text-dark-100 font-semibold" : "text-gray-100/60")}>
+                                    {i < loadingStep ? <Check size={16} /> : i === loadingStep ? <Loader2 size={16} className="animate-spin text-primary-100" /> : <span className="size-4 rounded-full border-2 border-light-400" />}
+                                    {s}
+                                </li>
+                            ))}
+                        </ol>
+                    </div>
+                </div>
+            )}
 
             {preview && <TripDetail trip={preview} backTo={basePath} />}
         </div>
