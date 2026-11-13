@@ -4,14 +4,17 @@ import { cn, getFirstWord } from "~/lib/utils";
 
 type Props = TripCardProps & { href?: string };
 
-const TripCard = ({ id, name, location, imageUrl, tags, href }: Props) => {
+const TripCard = ({ id, name, location, imageUrl, tags, price, href }: Props) => {
     const path = useLocation();
     // Public pages link to /travel/:id, admin pages to /trips/:id. Pass `href` to override.
-    const publicPage = path.pathname === '/' || path.pathname.startsWith('/travel') || path.pathname.startsWith('/account');
+    const publicPage = path.pathname === '/' || path.pathname.startsWith('/travel');
 
     return (
-        <Link to={href ?? (publicPage ? `/travel/${id}` : `/trips/${id}`)} className="trip-card">
-            <img src={imageUrl} alt={name} />
+        <Link to={href ?? (publicPage ? `/travel/${id}` : `/trips/${id}`)} className="trip-card group">
+            <span className="block overflow-hidden rounded-t-[20px]">
+                <img src={imageUrl} alt={name} className="transition-transform duration-500 group-hover:scale-105" />
+            </span>
+            {price && <span className="tripCard-pill shadow-sm">{price}</span>}
 
             <article>
                 <h2>{name}</h2>

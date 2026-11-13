@@ -4,7 +4,6 @@ import { ButtonComponent, ChipDirective, ChipListComponent, ChipsDirective } fro
 import { AccordionComponent, AccordionItemDirective, AccordionItemsDirective } from "@syncfusion/ej2-react-navigations";
 import { ArrowLeft, CalendarDays, Clock, CloudSun, Sparkles, Users, Wallet } from "lucide-react";
 import type { TripView } from "~/lib/trip-view";
-import BookTrip, { type BookingUser } from "./BookTrip";
 import { cn } from "~/lib/utils";
 
 const TripMap = lazy(() => import("./TripMap"));
@@ -14,14 +13,13 @@ type Props = {
     backTo: string;
     /** Show the "Plan with AI" button (public site only) */
     showAi?: boolean;
-    /** Show the "Book this trip" button (public site only). `null` means signed out. */
-    bookingUser?: BookingUser | null;
-    showBooking?: boolean;
+    /** Admin actions shown in the summary card (e.g. delete) */
+    actions?: React.ReactNode;
     /** Shown above the trip, e.g. when a generated trip could not be saved */
     notice?: string;
 };
 
-const TripDetail = ({ trip, backTo, showAi = false, showBooking = false, bookingUser = null, notice }: Props) => {
+const TripDetail = ({ trip, backTo, showAi = false, actions, notice }: Props) => {
     if (!trip) {
         return (
             <section className="flex flex-col items-center gap-4 py-24 text-center">
@@ -136,7 +134,7 @@ const TripDetail = ({ trip, backTo, showAi = false, showBooking = false, booking
                         ))}
                     </ul>
 
-                    {showBooking && trip.saved && <BookTrip trip={trip} user={bookingUser} />}
+                    {actions}
 
                     {showAi && (
                         <ButtonComponent

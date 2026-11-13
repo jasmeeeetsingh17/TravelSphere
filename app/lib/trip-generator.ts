@@ -1,3 +1,5 @@
+import { formatPrice, money } from "~/lib/utils";
+
 /**
  * Builds a trip from the create-trip form without any AI service.
  * Used as a fallback by the API route when no GEMINI_API_KEY is set (or the AI call fails).
@@ -18,13 +20,17 @@ const ACTIVITIES: Record<string, string[]> = {
     "Museums & Art": ["Visit the top museum or art gallery", "Local craft and art workshop", "Gallery district walk"],
     "Nightlife & Bars": ["Rooftop drinks with city views", "Live music night at a popular venue", "Late-night food stop"],
     "Photography Spots": ["Sunrise photo walk at the best viewpoint", "Old town streets and markets photo session", "Golden-hour shoot at a landmark"],
+    "Temples & Spiritual Sites": ["Morning darshan at the main temple", "Evening aarti by the river or temple", "Visit a quiet ashram or monastery"],
+    "Wildlife Safaris": ["Early-morning jeep safari in the national park", "Birdwatching walk with a naturalist", "Evening talk at the forest lodge"],
+    "Festivals & Culture": ["Folk music and dance performance", "Visit a local craft village", "Traditional thali dinner"],
     "Shopping": ["Browse the main local market", "Pick up handmade souvenirs", "Visit a popular shopping street"],
     "Local Experiences": ["Meet a local family for a home-cooked meal", "Join a village or neighbourhood tour", "Attend a local festival or performance"],
 };
 const FALLBACK = ["Guided sightseeing tour", "Lunch at a local favourite", "Free time to explore on your own"];
 const TIMES = ["09:00 AM", "01:00 PM", "07:00 PM"];
 
-const DAILY_COST: Record<string, number> = { Budget: 60, "Mid-range": 120, Luxury: 280, Premium: 450 };
+/** Rough cost per person per day in rupees (stay, food, local travel, activities). */
+const DAILY_COST: Record<string, number> = { Budget: 2500, "Mid-range": 5000, Luxury: 12000, Premium: 20000 };
 const GROUP_SIZE: Record<string, number> = { Solo: 1, Couple: 2, Family: 4, Friends: 3, Business: 2 };
 
 export const clampDuration = (n: unknown) => Math.min(14, Math.max(1, Math.round(Number(n)) || 3));
@@ -35,13 +41,13 @@ export function generateTripTemplate(form: TripFormData): Trip {
     const interests = form.interest.split(",").map((s) => s.trim()).filter(Boolean);
     const pool = interests.flatMap((i) => ACTIVITIES[i] ?? []);
     const activities = pool.length ? pool : FALLBACK;
-    const total = (DAILY_COST[form.budget] ?? 120) * days * (GROUP_SIZE[form.groupType] ?? 1);
+    const total = (DAILY_COST[form.budget] ?? 5000) * days * (GROUP_SIZE[form.groupType] ?? 1);
 
     return {
         id: "",
         name: `${days}-Day ${form.travelStyle} Trip to ${country}`,
         description: `A ${form.travelStyle.toLowerCase()} ${days}-day trip to ${country} for a ${form.groupType.toLowerCase()} group, with a ${form.budget.toLowerCase()} budget. It focuses on ${interests.join(", ").toLowerCase() || "the best local sights"}.`,
-        estimatedPrice: `$${total.toLocaleString("en-US")}`,
+        estimatedPrice: money(total),
         duration: days,
         budget: form.budget,
         travelStyle: form.travelStyle,
@@ -88,7 +94,7 @@ export function normalizeTrip(raw: Partial<Trip> | null, fallback: Trip): Trip {
         ...fallback,
         name: str(raw.name, fallback.name),
         description: str(raw.description, fallback.description),
-        estimatedPrice: str(raw.estimatedPrice, fallback.estimatedPrice),
+        estimatedPrice: formatPrice(str(String(raw.estimatedPrice ?? ""), "")) || fallback.estimatedPrice,
         itinerary,
         bestTimeToVisit: list(raw.bestTimeToVisit, fallback.bestTimeToVisit),
         weatherInfo: list(raw.weatherInfo, fallback.weatherInfo),

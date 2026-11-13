@@ -1,12 +1,9 @@
 import { useSearchParams } from "react-router";
 import { Header } from "../../../components";
 import TripsExplorer from "../../../components/TripsExplorer";
-import { getSavedTrips } from "~/appwrite/trips";
-import type { Route } from "./+types/travel-trips";
+import { dummyTrips } from "~/constants/dummyTrips";
 
-export const clientLoader = async () => await getSavedTrips(200);
-
-const TravelTrips = ({ loaderData }: Route.ComponentProps) => {
+const TravelTrips = () => {
     const [params] = useSearchParams();
 
     return (
@@ -15,7 +12,7 @@ const TravelTrips = ({ loaderData }: Route.ComponentProps) => {
                 title="Explore All Trips"
                 description="Search by place or interest and filter by group to find your next trip."
             />
-            <TripsExplorer key={params.get("q") ?? ""} trips={loaderData} basePath="/travel" initialQuery={params.get("q") ?? ""} />
+            <TripsExplorer key={params.get("q") ?? ""} trips={dummyTrips} basePath="/travel" initialQuery={params.get("q") ?? ""} />
         </main>
     );
 };

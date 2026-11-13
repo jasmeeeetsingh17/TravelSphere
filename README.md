@@ -22,9 +22,12 @@ TravelSphere is a travel web app where visitors can explore featured destination
 
 ## ✨ Features
 
-- 🏠 **Public landing page**: hero section, featured destinations and handpicked trips
-- 🔐 **Authentication**: sign in to unlock the dashboard (a **Dashboard** button appears in the navbar for signed-in users)
-- 📊 **Admin dashboard**: manage trips, destinations and users in one place
+- 🏠 **Public showcase site**: hero, featured destinations, handpicked trips and testimonials (sample data, no sign-in)
+- 🔐 **Admin-only sign-in**: Google sign-in, and only accounts with the `admin` role get in
+- 📊 **Admin dashboard**: KPIs, growth, style, state, budget and interest charts from live Appwrite data
+- 🗺️ **Trip management**: generate AI itineraries, browse and delete trips
+- 👥 **Access control**: give or remove admin access, delete accounts
+- ⏳ **Loading spinner** between pages
 - 🤖 **AI mode**: a slide-up/slide-down popup assistant for trip ideas and planning
 - 🎨 **Consistent UI**: landing page styled to match the dashboard
 - 📱 **Responsive design**: works across mobile, tablet and desktop
@@ -82,15 +85,16 @@ Copy `.env.example` to `.env.local` and fill in the values:
 | `VITE_APPWRITE_DATABASE_ID` | Database holding the collections below |
 | `VITE_APPWRITE_USERS_COLLECTION_ID` | User profiles (`accountId`, `name`, `email`, `imageUrl`, `joinedAt`, `status`) |
 | `VITE_APPWRITE_TRIPS_COLLECTION_ID` | Saved trips (`tripDetail`, `imageUrls`, `userId`, `createdAt`) |
-| `VITE_APPWRITE_BOOKINGS_COLLECTION_ID` | Bookings (see `app/appwrite/bookings.ts` for attributes) |
-| `APPWRITE_API_KEY` | **Server only.** Admin actions: list bookings, change status, delete users |
+| `APPWRITE_API_KEY` | **Server only.** Admin actions: check admin role, delete trips, change roles, delete users |
 | `GEMINI_API_KEY` | **Server only, optional.** AI itineraries; falls back to a template without it |
 
 > ⚠️ Never commit your `.env.local` file. It is listed in `.gitignore`.
 
 ### Making yourself an admin
 
-Sign in once with Google, then in the Appwrite console open the users collection and set your document's `status` to `admin`. The **Dashboard** button then appears in the navbar.
+The public website uses sample data and needs no sign-in. Only admins can sign in, at `/sign-in` or with the **Admin** button in the navbar.
+
+The first admin has to be set by hand: sign in once with Google (you will be told you are not an admin), then in the Appwrite console open the users collection and set your document's `status` to `admin`. After that, admins can give or remove access to others from the **Users** page.
 
 ## 📂 Project Structure
 
@@ -101,12 +105,12 @@ TravelSphere/
 │   ├── constants/     # Dropdown options, states, map data
 │   ├── lib/           # Shared helpers, trip generator, server-only Appwrite client
 │   ├── routes/
-│   │   ├── root/      # Public site: landing, trips, trip detail, plan, account, sign-in
-│   │   ├── admin/     # Dashboard, analytics, users, trips, bookings
-│   │   └── api/       # Server routes: create-trip (AI), admin actions
+│   │   ├── root/      # Public site (sample data): landing, trips, trip detail, sign-in
+│   │   ├── admin/     # Admin panel: dashboard, analytics, users, trips, create trip
+│   │   └── api/       # Server routes (admins only): create-trip (AI), admin actions
 │   ├── root.tsx
 │   └── routes.ts
-├── components/        # Reusable UI (TripCard, TripDetail, AiAssistant, BookTrip...)
+├── components/        # Reusable UI (TripCard, TripDetail, AiAssistant, KpiCard, Spinner...)
 ├── public/assets/     # Icons and images
 ├── .env.example
 └── package.json

@@ -86,5 +86,18 @@ export const resolveTrip = async (id?: string): Promise<TripView | null> => {
     }
 };
 
+export type EditableTrip = Trip & { state?: string };
+
+/** The raw saved trip, for the edit form. */
+export const getTripForEdit = async (id?: string): Promise<{ id: string; trip: EditableTrip } | null> => {
+    if (!id) return null;
+    try {
+        const doc = await database.getDocument(appwriteConfig.databaseId, appwriteConfig.tripCollectionId, id);
+        return { id: doc.$id, trip: JSON.parse(doc.tripDetail) as EditableTrip };
+    } catch {
+        return null;
+    }
+};
+
 /** JWT the API route uses to check that the caller is signed in. */
 export const getAuthToken = async () => (await account.createJWT()).jwt;

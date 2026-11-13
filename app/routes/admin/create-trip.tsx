@@ -5,7 +5,7 @@ const CreateTrip = () => (
     <main className="dashboard wrapper">
         <Header
             title="Create a New Trip"
-            description="Pick a country, style and interests. A day-by-day itinerary is generated and saved for you."
+            description="Pick a state, style and interests. A day-by-day itinerary is generated with AI and saved."
         />
         <CreateTripForm basePath="/trips" />
     </main>
