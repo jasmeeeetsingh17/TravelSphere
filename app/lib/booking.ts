@@ -26,7 +26,7 @@ export type Booking = {
     createdAt: string; // ISO
 };
 
-export const MAX_TRAVELLERS = 20;
+export { MAX_TRAVELLERS } from "~/lib/booking-schema";
 
 export const bookingFromDoc = (d: any): Booking => ({
     id: d.$id,
@@ -45,7 +45,8 @@ export const bookingFromDoc = (d: any): Booking => ({
     status: BOOKING_STATUSES.includes(d.status) ? d.status : "Pending",
     notes: d.notes ?? "",
     source: d.source === "admin" ? "admin" : "website",
-    createdAt: d.$createdAt ?? "",
+    // `createdAt` is set for imported bookings; otherwise Appwrite's own timestamp
+    createdAt: d.createdAt || d.$createdAt || "",
 });
 
 /**
