@@ -5,7 +5,8 @@
  */
 import { getDummyTrip } from "~/constants/dummyTrips";
 import { asServer, HttpError, ids, listDocs, q } from "~/lib/appwrite.server";
-import { bookingFromDoc, pricePerPerson, type Booking, type BookingStatus, MAX_TRAVELLERS } from "~/lib/booking";
+import { bookingFromDoc, pricePerPerson, type Booking, type BookingStatus } from "~/lib/booking";
+import { BOOKING_ATTRS, MAX_TRAVELLERS, SUBSCRIBER_ATTRS, type Attr } from "~/lib/booking-schema";
 import { generatedToView, type TripView } from "~/lib/trip-view";
 
 const base = `/databases/${ids.db}/collections`;
@@ -106,31 +107,6 @@ export async function saveBooking(data: Record<string, unknown>) {
 }
 
 /* ---------------- One-click setup of the collections ---------------- */
-
-type Attr =
-    | { type: "string"; key: string; size: number; required: boolean }
-    | { type: "integer"; key: string; required: boolean; min?: number; max?: number }
-    | { type: "float"; key: string; required: boolean; min?: number };
-
-const BOOKING_ATTRS: Attr[] = [
-    { type: "string", key: "tripId", size: 64, required: true },
-    { type: "string", key: "tripName", size: 200, required: true },
-    { type: "string", key: "tripState", size: 80, required: false },
-    { type: "string", key: "tripStyle", size: 40, required: false },
-    { type: "string", key: "tripBudget", size: 40, required: false },
-    { type: "integer", key: "tripDays", required: false, min: 0, max: 60 },
-    { type: "string", key: "customerName", size: 120, required: true },
-    { type: "string", key: "email", size: 200, required: false },
-    { type: "string", key: "phone", size: 20, required: true },
-    { type: "string", key: "travelDate", size: 10, required: true },
-    { type: "integer", key: "travellers", required: true, min: 1, max: MAX_TRAVELLERS },
-    { type: "float", key: "amount", required: true, min: 0 },
-    { type: "string", key: "status", size: 20, required: true },
-    { type: "string", key: "notes", size: 500, required: false },
-    { type: "string", key: "source", size: 20, required: false },
-];
-
-const SUBSCRIBER_ATTRS: Attr[] = [{ type: "string", key: "email", size: 200, required: true }];
 
 /** Runs a create call and treats "already exists" (409) as success. */
 async function ensure(path: string, body: object) {

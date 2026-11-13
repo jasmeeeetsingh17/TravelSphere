@@ -421,6 +421,38 @@ export const dummyTrips: TripView[] = seeds.map((s) => ({
 
 export const getDummyTrip = (id?: string) => dummyTrips.find((t) => t.id === id) ?? null;
 
+/** The same sample trips in the shape stored in the database (used by scripts/seed-sample-data.ts). */
+export const sampleTripDetails = seeds.map((s) => ({
+    sampleId: s.id,
+    trip: {
+        id: "",
+        name: s.name,
+        description: s.description,
+        estimatedPrice: s.price,
+        duration: s.days.length,
+        budget: s.budget,
+        travelStyle: s.style,
+        interests: s.interests.join(", "),
+        groupType: s.group,
+        country: "India",
+        state: s.state,
+        imageUrls: [s.image],
+        itinerary: s.days.map(([location, acts], i) => ({
+            day: i + 1,
+            location,
+            activities: acts.map((description, j) => ({ time: ["09:00 AM", "01:00 PM", "07:00 PM"][j] ?? "", description })),
+        })),
+        bestTimeToVisit: [s.bestTime],
+        weatherInfo: s.weather,
+        location: {
+            city: `${s.city}, ${s.state}`,
+            coordinates: [0, 0] as [number, number],
+            openStreetMap: `https://www.openstreetmap.org/search?query=${encodeURIComponent(`${s.city}, ${s.state}`)}`,
+        },
+        payment_link: "",
+    },
+}));
+
 
 export const testimonials = [
     {
