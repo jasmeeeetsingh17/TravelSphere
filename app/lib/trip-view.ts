@@ -1,3 +1,5 @@
+import { formatPrice } from "~/lib/utils";
+
 /** One shape for every trip in the UI, whether it is a sample trip or one saved in Appwrite. */
 export type TripView = {
     id: string;
@@ -12,6 +14,10 @@ export type TripView = {
     state?: string;
     description: string;
     duration: string;
+    /** Number of days, for charts */
+    dayCount: number;
+    budget?: string;
+    interests?: string[];
     bestTime: string;
     days: { title: string; activities: string[] }[];
     weather: string[];
@@ -29,13 +35,16 @@ export const generatedToView = (
     location: [trip.location?.city, trip.country].filter((v, i, a) => v && a.indexOf(v) === i).join(", "),
     imageUrl: trip.imageUrls?.[0] ?? "/assets/images/1.jpg",
     tags: [trip.travelStyle, trip.interests?.split(",")[0]?.trim() ?? ""].filter(Boolean),
-    price: trip.estimatedPrice,
+    price: formatPrice(trip.estimatedPrice),
     group: trip.groupType,
     style: trip.travelStyle,
     country: trip.country,
     state: (trip as Trip & { state?: string }).state,
     description: trip.description,
     duration: `${trip.duration} ${trip.duration === 1 ? "day" : "days"}`,
+    dayCount: Number(trip.duration) || trip.itinerary?.length || 0,
+    budget: trip.budget,
+    interests: (trip.interests ?? "").split(",").map((s) => s.trim()).filter(Boolean),
     bestTime: (trip.bestTimeToVisit ?? []).join(" · "),
     days: (trip.itinerary ?? []).map((d) => ({
         title: `Day ${d.day} - ${d.location}`,

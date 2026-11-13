@@ -15,7 +15,7 @@ const field = "flex flex-col gap-2 [&_.e-input-group-icon]:!static";
 const labelClass = "text-sm font-medium text-dark-100";
 
 type Props = {
-    /** Where saved trips are shown after creation: "/trips" (admin) or "/travel" (public) */
+    /** Where saved trips are shown after creation */
     basePath: string;
 };
 
@@ -24,10 +24,15 @@ const CreateTripForm = ({ basePath }: Props) => {
     const [params] = useSearchParams();
     const presetState = indianStates.find((s) => s.toLowerCase() === (params.get("state") ?? "").toLowerCase()) ?? "";
     const [state, setState] = useState(presetState);
-    const [travelStyle, setTravelStyle] = useState("");
+    // Presets from the address, e.g. /trips/create?state=Goa&style=Adventure&budget=Luxury&group=Friends
+    const preset = (key: string, list: string[]) => list.find((v) => v.toLowerCase() === (params.get(key) ?? "").toLowerCase()) ?? "";
+    const presetStyle = preset("style", travelStyles);
+    const presetBudget = preset("budget", budgetOptions);
+    const presetGroup = preset("group", groupTypes);
+    const [travelStyle, setTravelStyle] = useState(presetStyle);
     const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-    const [budget, setBudget] = useState("");
-    const [groupType, setGroupType] = useState("");
+    const [budget, setBudget] = useState(presetBudget);
+    const [groupType, setGroupType] = useState(presetGroup);
     const [duration, setDuration] = useState(3);
 
     const [loading, setLoading] = useState(false);
@@ -110,6 +115,7 @@ const CreateTripForm = ({ basePath }: Props) => {
                     <DropDownListComponent
                         id="travelStyle"
                         dataSource={travelStyles}
+                        value={presetStyle || undefined}
                         placeholder="Select a travel style"
                         change={(e) => setTravelStyle((e.value as string) ?? "")}
                     />
@@ -120,6 +126,7 @@ const CreateTripForm = ({ basePath }: Props) => {
                     <DropDownListComponent
                         id="groupType"
                         dataSource={groupTypes}
+                        value={presetGroup || undefined}
                         placeholder="Who is travelling?"
                         change={(e) => setGroupType((e.value as string) ?? "")}
                     />
@@ -130,6 +137,7 @@ const CreateTripForm = ({ basePath }: Props) => {
                     <DropDownListComponent
                         id="budget"
                         dataSource={budgetOptions}
+                        value={presetBudget || undefined}
                         placeholder="Select a budget"
                         change={(e) => setBudget((e.value as string) ?? "")}
                     />

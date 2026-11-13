@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link, Outlet, useLoaderData, useLocation, useNavigate } from "react-router";
+import { Link, Outlet, useLocation } from "react-router";
 import {
     ArrowUp,
     Camera,
     Compass,
     LayoutDashboard,
-    LogOut,
     Mail,
     MapPin,
     Menu,
@@ -15,26 +14,17 @@ import {
     X,
 } from "lucide-react";
 
-import { getUser, isAdmin, logoutUser } from "~/appwrite/auth";
 import { cn } from "~/lib/utils";
 import AiAssistant from "../../../components/AiAssistant";
-
-export const clientLoader = async () => {
-    const user = await getUser();
-    return user ? { name: user.name as string, imageUrl: (user.imageUrl as string) ?? "", admin: isAdmin(user) } : null;
-};
 
 const navLinks = [
     { label: "Home", href: "/#hero" },
     { label: "Destinations", href: "/#featured" },
     { label: "Trips", href: "/#trips" },
     { label: "All Trips", href: "/travel" },
-    { label: "Plan a Trip", href: "/plan" },
 ];
 
 const TravelLayout = () => {
-    const user = useLoaderData<typeof clientLoader>();
-    const navigate = useNavigate();
     const { pathname, hash } = useLocation();
     const [scrolled, setScrolled] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
@@ -54,10 +44,6 @@ const TravelLayout = () => {
     }, []);
 
 
-    const handleLogout = async () => {
-        await logoutUser();
-        navigate("/sign-in");
-    };
     return (
         <div className="bg-light-200 min-h-screen">
 
@@ -92,41 +78,13 @@ const TravelLayout = () => {
                         </ul>
 
                         <div className="flex items-center gap-2 sm:gap-3">
-                            {user ? (
-                                <>
-                                    {user.admin && <Link
-                                        to="/dashboard"
-                                        className="flex items-center gap-2 bg-primary-100 hover:bg-primary-500 text-white text-sm font-semibold rounded-full px-4 py-2.5 transition-colors"
-                                    >
-                                        <LayoutDashboard size={16} />
-                                        <span className="hidden sm:inline">Dashboard</span>
-                                    </Link>}
-
-                                    <Link to="/account" aria-label="My account" title="My account">
-                                        <img
-                                            src={user.imageUrl || "/assets/images/david.webp"}
-                                            alt={user.name}
-                                            referrerPolicy="no-referrer"
-                                            className="size-10 rounded-full aspect-square object-cover border-2 border-white shadow hover:ring-2 hover:ring-primary-100 transition-shadow"
-                                        />
-                                    </Link>
-
-                                    <button
-                                        onClick={handleLogout}
-                                        aria-label="Log out"
-                                        className="size-10 rounded-full bg-white/80 hover:bg-white shadow flex items-center justify-center text-dark-100 cursor-pointer transition-colors"
-                                    >
-                                        <LogOut size={18} />
-                                    </button>
-                                </>
-                            ) : (
-                                <Link
-                                    to="/sign-in"
-                                    className="bg-primary-100 hover:bg-primary-500 text-white text-sm md:text-base font-semibold rounded-full px-5 py-2.5 transition-colors"
-                                >
-                                    Sign in
-                                </Link>
-                            )}
+                            <Link
+                                to="/dashboard"
+                                className="flex items-center gap-2 bg-primary-100 hover:bg-primary-500 text-white text-sm font-semibold rounded-full px-4 sm:px-5 py-2.5 shadow-md shadow-primary-100/30 transition-colors"
+                            >
+                                <LayoutDashboard size={16} />
+                                <span className="hidden sm:inline">Admin</span>
+                            </Link>
 
                             <button
                                 onClick={() => setMenuOpen((o) => !o)}
@@ -146,7 +104,7 @@ const TravelLayout = () => {
                             menuOpen ? "max-h-96 pb-4 opacity-100" : "max-h-0 opacity-0"
                         )}
                     >
-                        {[...navLinks, ...(user ? [{ label: "My Account", href: "/account" }] : [])].map((l) => (
+                        {navLinks.map((l) => (
                             <li key={l.label}>
                                 <Link
                                     to={l.href}
@@ -318,7 +276,7 @@ const TravelLayout = () => {
                                 </div>
 
                                 <Link
-                                    to="/sign-in"
+                                    to="/travel"
                                     className="flex items-center gap-3 hover:text-white transition-colors"
                                 >
                                     <Plane size={17} />

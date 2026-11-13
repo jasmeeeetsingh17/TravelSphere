@@ -1,3 +1,4 @@
+import { HttpError, requireAdmin } from "~/lib/appwrite.server";
 import { clampDuration, generateTripTemplate, normalizeTrip } from "~/lib/trip-generator";
 import type { Route } from "./+types/create-trip";
 
@@ -5,28 +6,13 @@ const MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
 const clean = (v: unknown, max = 120) => String(v ?? "").replace(/[\r\n]+/g, " ").trim().slice(0, max);
 
-/** Only signed-in users may spend the AI quota: ask Appwrite whether the JWT is valid. */
-async function isSignedIn(jwt: string | null) {
-    const endpoint = import.meta.env.VITE_APPWRITE_API_ENDPOINT;
-    const project = import.meta.env.VITE_APPWRITE_PROJECT_ID;
-    if (!jwt || !endpoint || !project) return false;
-    try {
-        const res = await fetch(`${endpoint}/account`, {
-            headers: { "X-Appwrite-Project": project, "X-Appwrite-JWT": jwt },
-        });
-        return res.ok;
-    } catch {
-        return false;
-    }
-}
-
 const buildPrompt = (f: TripFormData) => `Generate a ${f.duration}-day travel itinerary for ${f.country}, India (an Indian state or union territory).
 Travel style: ${f.travelStyle}. Interests: ${f.interest}. Budget: ${f.budget}. Group type: ${f.groupType}.
 Return ONLY valid JSON (no markdown) in exactly this shape:
 {
   "name": "A descriptive trip name",
   "description": "A short 2-3 sentence description",
-  "estimatedPrice": "$1,200",
+  "estimatedPrice": "₹45,000",
   "bestTimeToVisit": ["Season or months and why"],
   "weatherInfo": ["Season: temperature range"],
   "location": { "city": "Main city or region", "coordinates": [latitude, longitude], "openStreetMap": "https://www.openstreetmap.org/..." },
@@ -34,15 +20,20 @@ Return ONLY valid JSON (no markdown) in exactly this shape:
     { "day": 1, "location": "City or area", "activities": [ { "time": "09:00 AM", "description": "What to do" } ] }
   ]
 }
-The itinerary must have exactly ${f.duration} days with 3 activities per day.`;
+The itinerary must have exactly ${f.duration} days with 3 activities per day.
+estimatedPrice is the total for the whole group in Indian Rupees, written like "₹45,000" with Indian digit grouping (e.g. "₹1,20,000"). Use real places in this state, Indian food and local experiences, and temperatures in °C.`;
 
 export const loader = () => Response.json({ error: "Method not allowed" }, { status: 405 });
 
 export async function action({ request }: Route.ActionArgs) {
     if (request.method !== "POST") return Response.json({ error: "Method not allowed" }, { status: 405 });
 
-    if (!(await isSignedIn(request.headers.get("x-appwrite-jwt")))) {
-        return Response.json({ error: "Please sign in to create a trip." }, { status: 401 });
+    // Only admins may create trips (and spend the AI quota)
+    try {
+        await requireAdmin(request);
+    } catch (error) {
+        const status = error instanceof HttpError ? error.status : 500;
+        return Response.json({ error: error instanceof Error ? error.message : "Not allowed." }, { status });
     }
 
     let body: Record<string, unknown>;

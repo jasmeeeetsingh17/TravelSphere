@@ -10,6 +10,7 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import Spinner from "../components/Spinner";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -51,24 +52,35 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** Thin bar at the top of the page while the next route's data loads. */
-function NavigationProgress() {
+/** Full-screen spinner while the next page's data loads. Waits 150ms so fast navigations don't flash. */
+function NavigationSpinner() {
   const navigation = useNavigation();
-  const busy = navigation.state !== "idle";
+  const busy = navigation.state === "loading";
   return (
     <div
-      aria-hidden
-      className={`fixed top-0 left-0 z-[100] h-0.5 bg-gradient-to-r from-primary-100 to-violet-600 transition-all ease-out ${
-        busy ? "w-4/5 opacity-100 duration-[2500ms]" : "w-full opacity-0 duration-300"
+      aria-hidden={!busy}
+      className={`fixed inset-0 z-[100] flex items-center justify-center bg-white/55 backdrop-blur-[2px] transition-opacity ${
+        busy ? "opacity-100 delay-150 duration-200" : "opacity-0 pointer-events-none duration-150"
       }`}
-    />
+    >
+      <Spinner label="Loading" />
+    </div>
+  );
+}
+
+/** Shown on the very first load while client data is fetched. */
+export function HydrateFallback() {
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-light-200">
+      <Spinner label="Loading TravelSphere" />
+    </div>
   );
 }
 
 export default function App() {
   return (
     <>
-      <NavigationProgress />
+      <NavigationSpinner />
       <Outlet />
     </>
   );

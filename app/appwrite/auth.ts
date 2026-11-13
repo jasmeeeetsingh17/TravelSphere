@@ -66,7 +66,7 @@ export const loginWithGoogle = async () => {
     try {
         account.createOAuth2Session({
             provider: OAuthProvider.Google,
-            success: `${window.location.origin}/`,
+            success: `${window.location.origin}/dashboard`,
             failure: `${window.location.origin}/sign-in?error=oauth`
         });
     } catch (error) {

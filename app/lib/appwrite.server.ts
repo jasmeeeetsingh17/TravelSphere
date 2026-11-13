@@ -11,7 +11,6 @@ export const ids = {
     db: import.meta.env.VITE_APPWRITE_DATABASE_ID as string,
     users: import.meta.env.VITE_APPWRITE_USERS_COLLECTION_ID as string,
     trips: import.meta.env.VITE_APPWRITE_TRIPS_COLLECTION_ID as string,
-    bookings: import.meta.env.VITE_APPWRITE_BOOKINGS_COLLECTION_ID as string,
 };
 
 export class HttpError extends Error {

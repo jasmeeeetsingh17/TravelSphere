@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { AutoCompleteComponent, DropDownListComponent } from "@syncfusion/ej2-react-dropdowns";
 import { PagerComponent } from "@syncfusion/ej2-react-grids";
 import { Link } from "react-router";
-import { indianStates } from "~/constants/indiaStates";
 import type { TripView } from "~/lib/trip-view";
 import TripCard from "./TripCard";
 
@@ -81,7 +80,7 @@ const TripsExplorer = ({ trips, basePath, initialQuery = "" }: Props) => {
                             imageUrl={t.imageUrl}
                             location={t.location}
                             tags={t.tags}
-                            price=""
+                            price={t.price}
                             href={`${basePath}/${t.id}`}
                         />
                     ))}
@@ -91,12 +90,12 @@ const TripsExplorer = ({ trips, basePath, initialQuery = "" }: Props) => {
                     <p className="text-gray-100">
                         {trips.length ? "No trips match your search. Try a different word or group." : "There are no trips yet."}
                     </p>
-                    {basePath === "/travel" && (
+                    {basePath === "/trips" && !trips.length && (
                         <Link
-                            to={`/plan${indianStates.find((s) => s.toLowerCase() === query.trim().toLowerCase()) ? `?state=${encodeURIComponent(query.trim())}` : ""}`}
+                            to="/trips/create"
                             className="bg-primary-100 hover:bg-primary-500 text-white text-sm font-semibold rounded-full px-6 py-2.5 transition-colors"
                         >
-                            Plan a trip
+                            Create the first trip
                         </Link>
                     )}
                 </div>

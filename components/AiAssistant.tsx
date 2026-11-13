@@ -1,14 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Bot, ChevronDown, Send, Sparkles } from "lucide-react";
-import { getSavedTrips } from "~/appwrite/trips";
-import { priceToNumber } from "~/lib/booking";
+import { dummyTrips } from "~/constants/dummyTrips";
 import type { TripView } from "~/lib/trip-view";
-import { cn } from "~/lib/utils";
+import { cn, priceToNumber } from "~/lib/utils";
 
 type Message = { id: number; role: "user" | "ai"; text: string };
 
 const SUGGESTIONS = [
-    "Trips under $2,000",
+    "Trips under ₹40,000",
     "Romantic getaway ideas",
     "Best trips for solo travel",
     "Adventure destinations",
@@ -37,15 +36,16 @@ const STYLE_WORDS: Record<string, string> = {
  */
 function getReply(input: string, allTrips: TripView[]): string {
     if (!allTrips.length) {
-        return "There are no trips yet. Plan the first one from the Plan a Trip page and I will be able to suggest it.";
+        return "There are no trips to suggest right now.";
     }
 
     const q = input.toLowerCase();
     let trips = [...allTrips];
 
-    const budget = q.match(/(?:under|below|less than|within)\s*\$?\s*([\d,]+)/);
+    const budget = q.match(/(?:under|below|less than|within)\s*(?:₹|rs\.?|inr)?\s*([\d,.]+)\s*(k|l|lakh|lakhs)?/);
     if (budget) {
-        const max = Number(budget[1].replace(/,/g, ""));
+        const unit = budget[2] ? (budget[2] === "k" ? 1e3 : 1e5) : 1;
+        const max = Number(budget[1].replace(/,/g, "")) * unit;
         trips = trips.filter((t) => priceToNumber(t.price) <= max);
     }
 
@@ -73,7 +73,7 @@ const AiAssistant = () => {
     const [typing, setTyping] = useState(false);
     const [input, setInput] = useState("");
     const [messages, setMessages] = useState<Message[]>([GREETING]);
-    const [trips, setTrips] = useState<TripView[] | null>(null);
+    const trips: TripView[] = dummyTrips;
     const listRef = useRef<HTMLDivElement>(null);
     const nextId = useRef(1);
 
@@ -89,11 +89,6 @@ const AiAssistant = () => {
         };
     }, []);
 
-    // Load the real trips the first time the panel opens
-    useEffect(() => {
-        if (open && trips === null) getSavedTrips(60).then(setTrips);
-    }, [open, trips]);
-
     // Keep the newest message in view
     useEffect(() => {
         listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
@@ -106,7 +101,7 @@ const AiAssistant = () => {
         setInput("");
         setTyping(true);
         setTimeout(() => {
-            setMessages((m) => [...m, { id: nextId.current++, role: "ai", text: getReply(value, trips ?? []) }]);
+            setMessages((m) => [...m, { id: nextId.current++, role: "ai", text: getReply(value, trips) }]);
             setTyping(false);
         }, 700);
     };
