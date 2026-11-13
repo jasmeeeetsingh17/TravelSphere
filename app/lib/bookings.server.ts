@@ -6,7 +6,7 @@
 import { getDummyTrip } from "~/constants/dummyTrips";
 import { asServer, HttpError, ids, listDocs, q } from "~/lib/appwrite.server";
 import { bookingFromDoc, pricePerPerson, type Booking, type BookingStatus } from "~/lib/booking";
-import { BOOKING_ATTRS, MAX_TRAVELLERS, SUBSCRIBER_ATTRS, type Attr } from "~/lib/booking-schema";
+import { BOOKING_ATTRS, MAX_TRAVELLERS, type Attr } from "~/lib/booking-schema";
 import { generatedToView, type TripView } from "~/lib/trip-view";
 
 const base = `/databases/${ids.db}/collections`;
@@ -127,11 +127,10 @@ async function ensureCollection(id: string, name: string, attrs: Attr[]) {
     }
 }
 
-/** Creates the bookings and subscribers collections (safe to run more than once). */
+/** Creates the bookings collection (safe to run more than once). */
 export async function setupCollections() {
     try {
         await ensureCollection(ids.bookings, "Bookings", BOOKING_ATTRS);
-        await ensureCollection(ids.subscribers, "Newsletter subscribers", SUBSCRIBER_ATTRS);
     } catch (error) {
         if (error instanceof HttpError && error.status === 401) {
             throw new HttpError(

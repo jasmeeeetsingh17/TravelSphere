@@ -1,13 +1,11 @@
-import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router";
-import { ArrowRight, MapPin, MapPinned, Search, Sparkles, Star } from "lucide-react";
-import { PagerComponent } from "@syncfusion/ej2-react-grids";
-import { Header, TripCard } from "../../../components";
-import { ContactBand, Deals, Faq, HowItWorks, Testimonials, TravelStyles } from "../../../components/LandingSections";
+import { useEffect, useState } from "react";
+import { Link } from "react-router";
+import { ArrowRight, CheckCircle2, ChevronDown, MapPinned, Star } from "lucide-react";
+import { Header } from "../../../components";
+import { Deals, Faq } from "../../../components/LandingSections";
+import { WhyUs } from "../../../components/LandingExtras";
 import { dummyTrips } from "~/constants/dummyTrips";
 import { cn } from "~/lib/utils";
-
-const TRIPS_PER_PAGE = 8;
 
 const featuredDestinations = [
     { id: 1, name: "Hawa Mahal", search: "Rajasthan", location: "Jaipur, Rajasthan", image: "/assets/images/2.jpg" },
@@ -18,7 +16,12 @@ const featuredDestinations = [
     { id: 6, name: "Andaman Island", search: "Andaman", location: "Port Blair", image: "/assets/images/13.jpg" },
 ];
 
-const POPULAR = ["Rajasthan", "Kerala", "Ladakh", "Goa", "Kashmir"];
+/** Destinations that rotate in the hero headline */
+const ROTATING = ["Rajasthan", "Kerala", "Ladakh", "Goa", "Kashmir", "Sikkim"];
+
+const PERKS = ["No payment to request", "Free date changes", "24x7 local support"];
+
+const AVATARS = ["/assets/images/david.webp", "/assets/images/james.webp", "/assets/images/michael.webp"];
 
 const stats = [
     { value: "12K+", label: "Happy travellers" },
@@ -61,102 +64,81 @@ const FeaturedCard = ({ name, search, location, image, className, large, tripCou
 
 const TravelPage = () => {
     const trips = dummyTrips;
-    const [page, setPage] = useState(1);
-    const visible = trips.slice((page - 1) * TRIPS_PER_PAGE, page * TRIPS_PER_PAGE);
 
     const countFor = (search: string) =>
         trips.filter((t) => `${t.name} ${t.location}`.toLowerCase().includes(search.toLowerCase())).length;
     const featured = featuredDestinations.map((d) => ({ ...d, tripCount: countFor(d.search) }));
-    const spotlight = trips.find((t) => t.id === "udaipur-lakes") ?? trips[0];
 
-    const navigate = useNavigate();
-    const [query, setQuery] = useState("");
-    const search = (e: FormEvent) => {
-        e.preventDefault();
-        navigate(query.trim() ? `/travel?q=${encodeURIComponent(query.trim())}` : "/travel");
-    };
+    // Rotate the destination in the headline every 2.5 seconds
+    const [wordIndex, setWordIndex] = useState(0);
+    useEffect(() => {
+        const id = setInterval(() => setWordIndex((i) => (i + 1) % ROTATING.length), 2500);
+        return () => clearInterval(id);
+    }, []);
 
     return (
         <main className="flex flex-col">
             {/* Hero */}
             <section id="hero" className="relative bg-hero bg-cover bg-center">
                 <div className="bg-linear100 bg-cover">
-                    <div className="wrapper pt-32 pb-36 md:pt-40 md:pb-44 grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-12 items-center">
+                    <div className="wrapper relative pt-32 pb-36 md:pt-40 md:pb-44 flex flex-col">
                         <div className="flex flex-col gap-6 max-w-2xl">
                             <span className="flex items-center gap-2 w-fit bg-white/80 backdrop-blur text-primary-100 text-sm font-semibold rounded-full px-4 py-1.5 shadow-sm">
                                 <MapPinned size={16} /> Explore incredible India
                             </span>
                             <h1 className="text-5xl md:text-7xl font-bold text-dark-100 leading-[1.05] tracking-tight">
-                                Plan your trip <span className="block bg-linear-to-r from-primary-100 to-violet-600 bg-clip-text text-transparent">with ease</span>
+                                Plan your trip to
+                                <span
+                                    key={ROTATING[wordIndex]}
+                                    className="hero-word block pb-1 bg-linear-to-r from-primary-100 to-violet-600 bg-clip-text text-transparent"
+                                >
+                                    {ROTATING[wordIndex]}
+                                </span>
                             </h1>
                             <p className="text-lg text-dark-400 max-w-xl">
                                 Day-by-day itineraries across India, from Himalayan passes to Kerala backwaters. Pick a place, set your style and go.
                             </p>
 
-                            <form onSubmit={search} className="flex items-center gap-2 bg-white rounded-full p-2 pl-5 shadow-xl shadow-dark-100/10 border border-white max-w-xl">
-                                <Search size={20} className="text-gray-100 shrink-0" />
-                                <input
-                                    value={query}
-                                    onChange={(e) => setQuery(e.target.value)}
-                                    placeholder="Where do you want to go?"
-                                    aria-label="Search destinations"
-                                    className="flex-1 min-w-0 h-11 bg-transparent text-dark-100 outline-none placeholder:text-gray-100"
-                                />
-                                <button type="submit" className="flex items-center gap-2 bg-primary-100 hover:bg-primary-500 text-white font-semibold rounded-full px-5 sm:px-7 h-11 transition-colors cursor-pointer">
-                                    <span className="hidden sm:inline">Search</span>
-                                    <ArrowRight size={18} className="sm:hidden" />
-                                </button>
-                            </form>
-
-                            <div className="flex flex-wrap items-center gap-2 text-sm">
-                                <span className="text-dark-400 font-medium mr-1">Popular:</span>
-                                {POPULAR.map((p) => (
-                                    <Link
-                                        key={p}
-                                        to={`/travel?q=${encodeURIComponent(p)}`}
-                                        className="bg-white/70 hover:bg-white backdrop-blur text-dark-100 font-medium rounded-full px-3.5 py-1.5 transition-colors"
-                                    >
-                                        {p}
-                                    </Link>
-                                ))}
-                                <button
-                                    onClick={() => window.dispatchEvent(new Event("open-ai-mode"))}
-                                    className="flex items-center gap-1.5 bg-dark-100/80 hover:bg-dark-100 text-white font-medium rounded-full px-3.5 py-1.5 transition-colors cursor-pointer"
-                                >
-                                    <Sparkles size={14} /> Ask AI
-                                </button>
+                            {/* Trust + reassurance */}
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 pt-2">
+                                <span className="flex items-center gap-3">
+                                    <span className="flex -space-x-3">
+                                        {AVATARS.map((src) => (
+                                            <img key={src} src={src} alt="" className="size-10 rounded-full object-cover border-2 border-white shadow" />
+                                        ))}
+                                        <span className="size-10 rounded-full border-2 border-white bg-primary-100 text-white text-[11px] font-bold flex items-center justify-center shadow">
+                                            12K+
+                                        </span>
+                                    </span>
+                                    <span className="flex flex-col leading-tight">
+                                        <span className="flex items-center gap-0.5">
+                                            {Array.from({ length: 5 }, (_, i) => (
+                                                <Star key={i} size={14} className="fill-amber-400 text-amber-400" />
+                                            ))}
+                                            <strong className="ml-1 text-sm text-dark-100">4.9</strong>
+                                        </span>
+                                        <small className="text-dark-400">Loved by 12,000+ travellers</small>
+                                    </span>
+                                </span>
+                                <span className="hidden sm:block h-10 w-px bg-dark-100/15" />
+                                <ul className="flex flex-col gap-1">
+                                    {PERKS.map((p) => (
+                                        <li key={p} className="flex items-center gap-2 text-sm font-medium text-dark-400">
+                                            <CheckCircle2 size={16} className="text-success-700 shrink-0" /> {p}
+                                        </li>
+                                    ))}
+                                </ul>
                             </div>
                         </div>
 
-                        {/* Floating preview card */}
-                        {spotlight && (
-                            <div className="relative hidden lg:block">
-                                <Link to={`/travel/${spotlight.id}`} className="group block bg-white rounded-3xl p-3 shadow-2xl shadow-dark-100/20 rotate-2 hover:rotate-0 transition-transform duration-500">
-                                    <span className="block relative h-64 rounded-2xl overflow-hidden">
-                                        <img src={spotlight.imageUrl} alt={spotlight.name} className="size-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                                        <span className="absolute top-3 left-3 bg-white/90 backdrop-blur text-xs font-semibold text-dark-100 rounded-full px-3 py-1">Trip of the week</span>
-                                    </span>
-                                    <span className="flex items-start justify-between gap-3 px-2 pt-4 pb-2">
-                                        <span className="flex flex-col gap-1">
-                                            <strong className="text-lg text-dark-100 leading-snug">{spotlight.name}</strong>
-                                            <small className="flex items-center gap-1 text-gray-100"><MapPin size={14} /> {spotlight.location}</small>
-                                        </span>
-                                        <span className="flex flex-col items-end shrink-0">
-                                            <strong className="text-lg text-primary-100">{spotlight.price}</strong>
-                                            <small className="text-gray-100">{spotlight.duration}</small>
-                                        </span>
-                                    </span>
-                                </Link>
-                                <span className="absolute -left-10 top-10 flex items-center gap-2 bg-white rounded-2xl shadow-xl px-4 py-3 -rotate-3">
-                                    <span className="size-9 rounded-xl bg-amber-50 flex items-center justify-center"><Star size={18} className="fill-amber-400 text-amber-400" /></span>
-                                    <span className="flex flex-col leading-tight"><strong className="text-dark-100 text-sm">4.9 rating</strong><small className="text-gray-100 text-xs">12K+ travellers</small></span>
-                                </span>
-                                <span className="absolute -right-6 -bottom-6 flex items-center gap-2 bg-white rounded-2xl shadow-xl px-4 py-3 rotate-3">
-                                    <span className="size-9 rounded-xl bg-primary-50 flex items-center justify-center text-primary-100"><Sparkles size={18} /></span>
-                                    <span className="flex flex-col leading-tight"><strong className="text-dark-100 text-sm">AI itinerary</strong><small className="text-gray-100 text-xs">Ready in seconds</small></span>
-                                </span>
-                            </div>
-                        )}
+                        {/* Scroll cue */}
+                        <a
+                            href="#featured"
+                            className="hidden md:flex absolute bottom-20 left-1/2 -translate-x-1/2 flex-col items-center gap-1 text-xs font-semibold text-dark-400 hover:text-primary-100 transition-colors"
+                        >
+                            Scroll to explore
+                            <ChevronDown size={20} className="animate-bounce" />
+                        </a>
                     </div>
                 </div>
             </section>
@@ -190,38 +172,12 @@ const TravelPage = () => {
                 </div>
             </section>
 
-            <TravelStyles />
             <Deals />
 
-            {/* Handpicked trips */}
-            <section id="trips" className="wrapper pt-20 flex flex-col gap-10">
-                <span className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                    <Header title="Handpicked Trips" description="Browse well-planned trips designed for different travel styles and interests." />
-                    <Link to="/travel" className="flex items-center gap-2 text-primary-100 font-semibold hover:gap-3 transition-all shrink-0">
-                        View all trips <ArrowRight size={18} />
-                    </Link>
-                </span>
 
-                <div className="trip-grid">
-                    {visible.map((t) => (
-                        <TripCard key={t.id} id={t.id} name={t.name} imageUrl={t.imageUrl} location={t.location} tags={t.tags} price={t.price} />
-                    ))}
-                </div>
-
-                {trips.length > TRIPS_PER_PAGE && (
-                    <PagerComponent
-                        totalRecordsCount={trips.length}
-                        pageSize={TRIPS_PER_PAGE}
-                        currentPage={page}
-                        click={(args: { currentPage: number }) => setPage(args.currentPage)}
-                    />
-                )}
-            </section>
-
-            <HowItWorks />
-            <Testimonials />
+            <WhyUs />
             <Faq />
-            <ContactBand />
+            <div className="pb-20" />
         </main>
     );
 };

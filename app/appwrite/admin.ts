@@ -14,7 +14,7 @@ export async function adminCall<T = Record<string, unknown>>(op: string, payload
     return data as T;
 }
 
-export type BookingsData = { bookings: Booking[]; subscribers: number; ready: boolean; error: string };
+export type BookingsData = { bookings: Booking[]; ready: boolean; error: string };
 
 /** All bookings for admin pages. Never throws: problems come back as `error`, a missing collection as `ready: false`. */
 export async function loadBookings(): Promise<BookingsData> {
@@ -22,6 +22,6 @@ export async function loadBookings(): Promise<BookingsData> {
         const data = await adminCall<Omit<BookingsData, "error">>("listBookings");
         return { ...data, error: "" };
     } catch (e) {
-        return { bookings: [], subscribers: 0, ready: true, error: e instanceof Error ? e.message : "Could not load bookings." };
+        return { bookings: [], ready: true, error: e instanceof Error ? e.message : "Could not load bookings." };
     }
 }

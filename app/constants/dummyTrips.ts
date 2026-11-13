@@ -452,25 +452,3 @@ export const sampleTripDetails = seeds.map((s) => ({
         payment_link: "",
     },
 }));
-
-
-export const testimonials = [
-    {
-        name: "David Miller",
-        role: "Solo traveller",
-        image: "/assets/images/david.webp",
-        quote: "The Varanasi itinerary was spot on. Every day was planned but never rushed, and the sunrise boat ride was unforgettable.",
-    },
-    {
-        name: "James Carter",
-        role: "Family of four",
-        image: "/assets/images/james.webp",
-        quote: "Kerala with kids felt easy. The houseboat day was the highlight and the budget estimate was close to what we spent.",
-    },
-    {
-        name: "Michael Chen",
-        role: "Travelled with friends",
-        image: "/assets/images/michael.webp",
-        quote: "We did the Meghalaya trip as a group of five. Root bridges, waterfalls, great food. Already planning the next one.",
-    },
-];

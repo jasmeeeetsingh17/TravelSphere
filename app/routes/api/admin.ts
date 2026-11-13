@@ -1,4 +1,4 @@
-import { asServer, HttpError, ids, listDocs, q, queries, requireAdmin } from "~/lib/appwrite.server";
+import { asServer, HttpError, ids, listDocs, q, requireAdmin } from "~/lib/appwrite.server";
 import { buildBooking, isMissingCollection, listAllBookings, NOT_SET_UP, saveBooking, setupCollections } from "~/lib/bookings.server";
 import { BOOKING_STATUSES } from "~/lib/booking";
 import type { Route } from "./+types/admin";
@@ -70,16 +70,9 @@ export async function action({ request }: Route.ActionArgs) {
         switch (body.op) {
             case "listBookings": {
                 try {
-                    const bookings = await listAllBookings();
-                    let subscribers = 0;
-                    try {
-                        subscribers = (await asServer(`/databases/${ids.db}/collections/${ids.subscribers}/documents?${queries([q.limit(1)])}`)).total ?? 0;
-                    } catch {
-                        // newsletter collection is optional
-                    }
-                    return Response.json({ bookings, subscribers, ready: true });
+                    return Response.json({ bookings: await listAllBookings(), ready: true });
                 } catch (error) {
-                    if (isMissingCollection(error)) return Response.json({ bookings: [], subscribers: 0, ready: false });
+                    if (isMissingCollection(error)) return Response.json({ bookings: [], ready: false });
                     throw error;
                 }
             }

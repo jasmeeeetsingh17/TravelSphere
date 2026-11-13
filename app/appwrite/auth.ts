@@ -1,20 +1,6 @@
 import { ID, OAuthProvider, Query } from "appwrite";
 import { account, database, appwriteConfig } from "~/appwrite/client";
 
-export const getExistingUser = async (id: string) => {
-    try {
-        const { documents, total } = await database.listDocuments(
-            appwriteConfig.databaseId,
-            appwriteConfig.userCollectionId,
-            [Query.equal("accountId", id)]
-        );
-        return total > 0 ? documents[0] : null;
-    } catch (error) {
-        console.error("Error fetching user:", error);
-        return null;
-    }
-};
-
 export const storeUserData = async () => {
     try {
         const user = await account.get();

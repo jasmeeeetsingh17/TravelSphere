@@ -86,7 +86,7 @@ Copy `.env.example` to `.env.local` and fill in the values:
 | `VITE_APPWRITE_USERS_COLLECTION_ID` | User profiles (`accountId`, `name`, `email`, `imageUrl`, `joinedAt`, `status`) |
 | `VITE_APPWRITE_TRIPS_COLLECTION_ID` | Saved trips (`tripDetail`, `imageUrls`, `userId`, `createdAt`) |
 | `APPWRITE_API_KEY` | **Server only.** Admin actions: check admin role, delete trips, change roles, delete users |
-| `GEMINI_API_KEY` | **Server only, optional.** AI itineraries; falls back to a template without it |
+| `GEMINI_API_KEY` | **Server only, optional.** Google Gemini for the public **AI Trip Planner** (`/plan`) and admin **Create Trip**. Get a free key at https://aistudio.google.com/apikey. Without it, plans come from a template. Optional `GEMINI_MODEL` (default `gemini-2.5-flash`). |
 
 > ⚠️ Never commit your `.env.local` file. It is listed in `.gitignore`.
 
@@ -94,9 +94,9 @@ Copy `.env.example` to `.env.local` and fill in the values:
 
 Visitors book trips from the public trip pages (no sign-in, no payment). Each request is saved in an Appwrite **bookings** collection and shows up on the admin **Bookings** page, where you confirm, cancel or add bookings by phone. Dashboard and Analytics read from the same records.
 
-The first time, open **Bookings** in the admin panel and click **Set up bookings**. It creates two collections, `bookings` and `subscribers` (newsletter), with no browser permissions, so customer details can only be read through the server. This needs the API key scopes `collections.write` and `attributes.write` (plus `documents.read` / `documents.write`).
+The first time, open **Bookings** in the admin panel and click **Set up bookings**. It creates the `bookings` collection with no browser permissions, so customer details can only be read through the server. This needs the API key scopes `collections.write` and `attributes.write` (plus `documents.read` / `documents.write`).
 
-To create them by hand instead, make collections with IDs `bookings` and `subscribers` (or set `VITE_APPWRITE_BOOKINGS_COLLECTION_ID` / `VITE_APPWRITE_SUBSCRIBERS_COLLECTION_ID`) and add the attributes listed in `app/lib/bookings.server.ts`.
+To create it by hand instead, make a collection with ID `bookings` (or set `VITE_APPWRITE_BOOKINGS_COLLECTION_ID`) and add the attributes listed in `app/lib/booking-schema.ts`.
 
 The contact details on the landing page and footer are placeholders: change them in `CONTACT` in `components/LandingSections.tsx`.
 

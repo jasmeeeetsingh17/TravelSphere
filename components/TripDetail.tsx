@@ -1,6 +1,6 @@
 import { lazy, Suspense } from "react";
 import { Link } from "react-router";
-import { ButtonComponent, ChipDirective, ChipListComponent, ChipsDirective } from "@syncfusion/ej2-react-buttons";
+import { ChipDirective, ChipListComponent, ChipsDirective } from "@syncfusion/ej2-react-buttons";
 import { AccordionComponent, AccordionItemDirective, AccordionItemsDirective } from "@syncfusion/ej2-react-navigations";
 import { ArrowLeft, CalendarDays, Clock, CloudSun, Sparkles, Ticket, Users, Wallet } from "lucide-react";
 import type { TripView } from "~/lib/trip-view";
@@ -11,7 +11,7 @@ const TripMap = lazy(() => import("./TripMap"));
 type Props = {
     trip: TripView | null;
     backTo: string;
-    /** Show the "Plan with AI" button (public site only) */
+    /** Show the "Customise with AI planner" link (public site only) */
     showAi?: boolean;
     /** Admin actions shown in the summary card (e.g. delete) */
     actions?: React.ReactNode;
@@ -140,14 +140,12 @@ const TripDetail = ({ trip, backTo, showAi = false, actions, notice, showBooking
                     {actions}
 
                     {showAi && (
-                        <ButtonComponent
-                            type="button"
-                            className="button-class h-11 w-full"
-                            onClick={() => window.dispatchEvent(new Event("open-ai-mode"))}
+                        <Link
+                            to={`/plan?${new URLSearchParams({ state: trip.state ?? "", style: trip.style ?? "", group: trip.group ?? "", budget: trip.budget ?? "" })}`}
+                            className="flex items-center justify-center gap-2 h-11 rounded-xl border border-primary-100 text-primary-100 font-semibold hover:bg-primary-50 transition-colors"
                         >
-                            <Sparkles size={18} className="text-white mr-2" />
-                            <span className="text-white font-semibold">Plan this trip with AI</span>
-                        </ButtonComponent>
+                            <Sparkles size={18} /> Customise with AI planner
+                        </Link>
                     )}
                 </aside>
             </div>
