@@ -2,12 +2,17 @@ import { Link } from "react-router";
 import { Plus } from "lucide-react";
 import { Header } from "../../../components";
 import TripsExplorer from "../../../components/TripsExplorer";
+import { loadBookings } from "~/appwrite/admin";
 import { getSavedTrips } from "~/appwrite/trips";
+import { withBookingStats } from "~/lib/booking";
 import type { Route } from "./+types/trips";
 
 export const meta = () => [{ title: "Trips | TravelSphere Admin" }];
 
-export const clientLoader = async () => await getSavedTrips(200);
+export const clientLoader = async () => {
+    const [trips, { bookings }] = await Promise.all([getSavedTrips(200), loadBookings()]);
+    return withBookingStats(trips, bookings);
+};
 
 const Trips = ({ loaderData }: Route.ComponentProps) => (
     <main className="dashboard wrapper">

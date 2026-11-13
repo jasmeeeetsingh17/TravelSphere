@@ -29,13 +29,13 @@ export type TripProfit = {
     unitProfit: number;
     /** Profit from one booking, per day of the trip */
     profitPerDay: number;
-    /** People who booked (entered by an admin) */
+    /** People booked on active (not cancelled) bookings */
     bookings: number;
-    /** Money taken so far: price × bookings */
+    /** Confirmed booking revenue */
     revenue: number;
     /** Cost of those bookings */
     cost: number;
-    /** Profit earned so far: unitProfit × bookings */
+    /** Profit earned on confirmed bookings */
     profit: number;
     /** 0-100, relative to the other trips */
     score: number;
@@ -50,6 +50,9 @@ export const tripProfit = (t: TripView): Base => {
     const unitProfit = Math.round(price * margin);
     const days = t.dayCount || 1;
     const bookings = t.bookings || 0;
+    // Real confirmed revenue when bookings are loaded, otherwise price × people booked
+    const revenue = t.revenue ?? price * bookings;
+    const profit = Math.round(revenue * margin);
     return {
         id: t.id,
         name: t.name,
@@ -63,9 +66,9 @@ export const tripProfit = (t: TripView): Base => {
         unitProfit,
         profitPerDay: Math.round(unitProfit / days),
         bookings,
-        revenue: price * bookings,
-        cost: (price - unitProfit) * bookings,
-        profit: unitProfit * bookings,
+        revenue,
+        cost: revenue - profit,
+        profit,
     };
 };
 

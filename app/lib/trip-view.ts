@@ -18,6 +18,8 @@ export type TripView = {
     dayCount: number;
     /** People who booked this trip (admin-entered). 0 when not set. */
     bookings: number;
+    /** Confirmed booking revenue in rupees (admin pages only) */
+    revenue?: number;
     budget?: string;
     interests?: string[];
     bestTime: string;

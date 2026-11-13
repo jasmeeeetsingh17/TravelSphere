@@ -4,7 +4,9 @@ import { CalendarDays, ExternalLink, Fingerprint, LogOut, Mail, MapPinned, Plus,
 import { TripCard } from "../../../components";
 import KpiCard from "../../../components/KpiCard";
 import { getUser, logoutUser } from "~/appwrite/auth";
+import { loadBookings } from "~/appwrite/admin";
 import { getSavedTrips } from "~/appwrite/trips";
+import { withBookingStats } from "~/lib/booking";
 import { rankTrips } from "~/lib/profit";
 import { formatDate, money } from "~/lib/utils";
 import type { Route } from "./+types/account";
@@ -14,7 +16,8 @@ export const meta = () => [{ title: "My account | TravelSphere Admin" }];
 export const clientLoader = async () => {
     const user = await getUser();
     const accountId = (user?.accountId as string | undefined) ?? "";
-    const trips = accountId ? await getSavedTrips(200, accountId) : [];
+    const [mine, { bookings }] = await Promise.all([accountId ? getSavedTrips(200, accountId) : Promise.resolve([]), loadBookings()]);
+    const trips = withBookingStats(mine, bookings);
     return {
         name: (user?.name as string | undefined) ?? "Admin",
         email: (user?.email as string | undefined) ?? "",

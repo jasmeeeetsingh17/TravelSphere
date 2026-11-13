@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router";
 import { ArrowRight, MapPin, MapPinned, Search, Sparkles, Star } from "lucide-react";
 import { PagerComponent } from "@syncfusion/ej2-react-grids";
 import { Header, TripCard } from "../../../components";
+import { ContactBand, Deals, Faq, HowItWorks, Testimonials, TravelStyles } from "../../../components/LandingSections";
 import { dummyTrips } from "~/constants/dummyTrips";
 import { cn } from "~/lib/utils";
 
@@ -189,8 +190,11 @@ const TravelPage = () => {
                 </div>
             </section>
 
+            <TravelStyles />
+            <Deals />
+
             {/* Handpicked trips */}
-            <section id="trips" className="wrapper pt-20 pb-24 flex flex-col gap-10">
+            <section id="trips" className="wrapper pt-20 flex flex-col gap-10">
                 <span className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                     <Header title="Handpicked Trips" description="Browse well-planned trips designed for different travel styles and interests." />
                     <Link to="/travel" className="flex items-center gap-2 text-primary-100 font-semibold hover:gap-3 transition-all shrink-0">
@@ -214,6 +218,10 @@ const TravelPage = () => {
                 )}
             </section>
 
+            <HowItWorks />
+            <Testimonials />
+            <Faq />
+            <ContactBand />
         </main>
     );
 };

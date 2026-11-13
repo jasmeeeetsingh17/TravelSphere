@@ -3,11 +3,15 @@ import { Link, useNavigate } from "react-router";
 import { Loader2, Pencil, Trash2 } from "lucide-react";
 import Modal from "../../../components/Modal";
 import TripDetail from "../../../components/TripDetail";
-import { adminCall } from "~/appwrite/admin";
+import { adminCall, loadBookings } from "~/appwrite/admin";
+import { withBookingStats } from "~/lib/booking";
 import { resolveTrip } from "~/appwrite/trips";
 import type { Route } from "./+types/trip-detail";
 
-export const clientLoader = async ({ params }: Route.ClientLoaderArgs) => await resolveTrip(params.tripId);
+export const clientLoader = async ({ params }: Route.ClientLoaderArgs) => {
+    const [trip, { bookings }] = await Promise.all([resolveTrip(params.tripId), loadBookings()]);
+    return trip ? withBookingStats([trip], bookings)[0] : null;
+};
 
 const AdminTripDetail = ({ loaderData }: Route.ComponentProps) => {
     const navigate = useNavigate();

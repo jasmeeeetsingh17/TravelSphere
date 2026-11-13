@@ -1,5 +1,5 @@
 import { Link, NavLink, useNavigate, useRouteLoaderData } from "react-router";
-import { BarChart3, ExternalLink, LayoutDashboard, LogOut, Map, PlusCircle, UserCircle, Users, type LucideIcon } from "lucide-react";
+import { BarChart3, CalendarCheck, ExternalLink, LayoutDashboard, LogOut, Map, PlusCircle, UserCircle, Users, type LucideIcon } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { logoutUser } from "~/appwrite/auth";
 
@@ -16,6 +16,7 @@ const sections: { title: string; links: NavLinkItem[] }[] = [
     {
         title: "Manage",
         links: [
+            { href: "/bookings", label: "Bookings", Icon: CalendarCheck },
             { href: "/trips", label: "All Trips", Icon: Map, end: true },
             { href: "/trips/create", label: "Create Trip", Icon: PlusCircle },
             { href: "/all-users", label: "Users", Icon: Users },
