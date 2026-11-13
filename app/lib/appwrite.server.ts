@@ -11,6 +11,9 @@ export const ids = {
     db: import.meta.env.VITE_APPWRITE_DATABASE_ID as string,
     users: import.meta.env.VITE_APPWRITE_USERS_COLLECTION_ID as string,
     trips: import.meta.env.VITE_APPWRITE_TRIPS_COLLECTION_ID as string,
+    /** Created by "Set up bookings" in the admin panel. Override with VITE_APPWRITE_BOOKINGS_COLLECTION_ID. */
+    bookings: (import.meta.env.VITE_APPWRITE_BOOKINGS_COLLECTION_ID as string) || "bookings",
+    subscribers: (import.meta.env.VITE_APPWRITE_SUBSCRIBERS_COLLECTION_ID as string) || "subscribers",
 };
 
 export class HttpError extends Error {
@@ -46,6 +49,7 @@ export const queries = (list: object[]) => list.map((q) => `queries[]=${encodeUR
 export const q = {
     equal: (attribute: string, value: string) => ({ method: "equal", attribute, values: [value] }),
     limit: (n: number) => ({ method: "limit", values: [n] }),
+    offset: (n: number) => ({ method: "offset", values: [n] }),
     orderDesc: (attribute: string) => ({ method: "orderDesc", attribute }),
 };
 

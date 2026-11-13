@@ -4,6 +4,8 @@ export default [
     route('sign-in', 'routes/root/sign-in.tsx'),
     route('api/create-trip', 'routes/api/create-trip.ts'),
     route('api/admin', 'routes/api/admin.ts'),
+    route('api/book', 'routes/api/book.ts'),
+    route('api/subscribe', 'routes/api/subscribe.ts'),
 
     // Public showcase site (dummy data, no sign-in needed)
     layout("routes/root/travel-layout.tsx", [
@@ -22,6 +24,7 @@ export default [
         route("trips/create", "routes/admin/create-trip.tsx"),
         route("trips/:tripId", "routes/admin/trip-detail.tsx"),
         route("trips/:tripId/edit", "routes/admin/edit-trip.tsx"),
+        route("bookings", "routes/admin/bookings.tsx"),
         route("account", "routes/admin/account.tsx"),
     ]),
 ] satisfies RouteConfig;

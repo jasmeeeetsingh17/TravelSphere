@@ -1,4 +1,6 @@
-import { asServer, HttpError, ids, listDocs, q, requireAdmin } from "~/lib/appwrite.server";
+import { asServer, HttpError, ids, listDocs, q, queries, requireAdmin } from "~/lib/appwrite.server";
+import { buildBooking, isMissingCollection, listAllBookings, NOT_SET_UP, saveBooking, setupCollections } from "~/lib/bookings.server";
+import { BOOKING_STATUSES } from "~/lib/booking";
 import type { Route } from "./+types/admin";
 
 export const loader = () => Response.json({ error: "Method not allowed" }, { status: 405 });
@@ -34,7 +36,6 @@ function cleanTrip(raw: any) {
         name: text(raw.name, 150),
         description: text(raw.description, 2000),
         estimatedPrice: text(raw.estimatedPrice, 30),
-        bookings: Math.min(1_000_000, Math.max(0, Math.round(Number(raw.bookings) || 0))),
         budget: text(raw.budget, 40),
         travelStyle: text(raw.travelStyle, 40),
         groupType: text(raw.groupType, 40),
@@ -67,6 +68,47 @@ export async function action({ request }: Route.ActionArgs) {
         const body = await request.json().catch(() => ({}));
 
         switch (body.op) {
+            case "listBookings": {
+                try {
+                    const bookings = await listAllBookings();
+                    let subscribers = 0;
+                    try {
+                        subscribers = (await asServer(`/databases/${ids.db}/collections/${ids.subscribers}/documents?${queries([q.limit(1)])}`)).total ?? 0;
+                    } catch {
+                        // newsletter collection is optional
+                    }
+                    return Response.json({ bookings, subscribers, ready: true });
+                } catch (error) {
+                    if (isMissingCollection(error)) return Response.json({ bookings: [], subscribers: 0, ready: false });
+                    throw error;
+                }
+            }
+
+            case "setupBookings": {
+                await setupCollections();
+                return Response.json({ ok: true });
+            }
+
+            case "createBooking": {
+                const status = BOOKING_STATUSES.includes(body.status) ? body.status : "Confirmed";
+                const booking = await saveBooking(await buildBooking(body, "admin", status));
+                return Response.json({ booking });
+            }
+
+            case "setBookingStatus": {
+                const id = String(body.id ?? "");
+                if (!id || !BOOKING_STATUSES.includes(body.status)) throw new HttpError(400, "Invalid booking or status.");
+                await asServer(docPath(ids.bookings, id), { method: "PATCH", body: JSON.stringify({ data: { status: body.status } }) });
+                return Response.json({ ok: true });
+            }
+
+            case "deleteBooking": {
+                const id = String(body.id ?? "");
+                if (!id) throw new HttpError(400, "Missing booking.");
+                await asServer(docPath(ids.bookings, id), { method: "DELETE" });
+                return Response.json({ ok: true });
+            }
+
             case "deleteTrip": {
                 const id = String(body.id ?? "");
                 if (!id) throw new HttpError(400, "Missing trip.");
@@ -121,6 +163,7 @@ export async function action({ request }: Route.ActionArgs) {
                 throw new HttpError(400, "Unknown action.");
         }
     } catch (error) {
+        if (isMissingCollection(error)) return Response.json({ error: NOT_SET_UP }, { status: 503 });
         if (error instanceof HttpError) return Response.json({ error: error.message }, { status: error.status });
         console.error("Admin action failed:", error);
         return Response.json({ error: "Something went wrong on the server." }, { status: 500 });

@@ -1,6 +1,6 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router";
-import { ArrowLeft, Check, Loader2, MapPin, Minus, Plus, Save, Trash2, X } from "lucide-react";
+import { ArrowLeft, Check, Loader2, MapPin, Plus, Save, Trash2, X } from "lucide-react";
 import { adminCall } from "~/appwrite/admin";
 import { getTripForEdit, type EditableTrip } from "~/appwrite/trips";
 import { budgetOptions, groupTypes, interests as INTERESTS, travelStyles } from "~/constants";
@@ -270,39 +270,6 @@ const EditTrip = ({ loaderData, params }: Route.ComponentProps) => {
                                 <Select value={trip.budget} options={budgetOptions} onChange={(v) => set("budget", v)} placeholder="Choose a budget" />
                             </label>
                         </Card>
-
-                        <Card title="Bookings" subtitle="How many people have booked this trip so far.">
-                            <span className="flex items-center gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => set("bookings", Math.max(0, (trip.bookings ?? 0) - 1))}
-                                    aria-label="One less booking"
-                                    className="size-11 shrink-0 rounded-xl border border-light-400 flex items-center justify-center text-dark-100 hover:border-primary-100 cursor-pointer"
-                                >
-                                    <Minus size={18} />
-                                </button>
-                                <input
-                                    type="number"
-                                    min={0}
-                                    value={trip.bookings ?? 0}
-                                    onChange={(e) => set("bookings", Math.max(0, Math.round(Number(e.target.value) || 0)))}
-                                    aria-label="Number of bookings"
-                                    className={cn(input, "text-center text-lg font-semibold tabular-nums")}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => set("bookings", (trip.bookings ?? 0) + 1)}
-                                    aria-label="One more booking"
-                                    className="size-11 shrink-0 rounded-xl border border-light-400 flex items-center justify-center text-dark-100 hover:border-primary-100 cursor-pointer"
-                                >
-                                    <Plus size={18} />
-                                </button>
-                            </span>
-                            <small className="text-xs text-gray-100">
-                                Earned so far: <strong className="text-dark-100">{money(price * (trip.bookings ?? 0))}</strong> ({money(price)} × {trip.bookings ?? 0})
-                            </small>
-                        </Card>
-
                         <Card title="Interests">
                             <ul className="flex flex-wrap gap-2">
                                 {[...new Set([...INTERESTS, ...chosenInterests])].map((i) => {
