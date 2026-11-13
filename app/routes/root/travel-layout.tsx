@@ -1,16 +1,17 @@
 import { useEffect, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router";
-import { LayoutDashboard, Menu, X } from "lucide-react";
+import { LayoutDashboard, Menu, Sparkles, X } from "lucide-react";
 
 import { cn } from "~/lib/utils";
-import AiAssistant from "../../../components/AiAssistant";
 import SiteFooter from "../../../components/SiteFooter";
 
 const navLinks = [
     { label: "Home", href: "/#hero" },
     { label: "Destinations", href: "/#featured" },
-    { label: "Trips", href: "/#trips" },
-    { label: "All Trips", href: "/travel" },
+    { label: "Deals", href: "/#deals" },
+    { label: "FAQ", href: "/#faq" },
+    { label: "Contact", href: "/#contact" },
+    { label: "AI Planner", href: "/plan", ai: true },
 ];
 
 const TravelLayout = () => {
@@ -50,13 +51,25 @@ const TravelLayout = () => {
                             <span className="text-base md:text-2xl font-bold text-dark-100">TravelSphere</span>
                         </Link>
 
-                        <ul className="hidden md:flex items-center gap-8">
+                        <ul className="hidden lg:flex items-center gap-5 xl:gap-7">
                             {navLinks.map((l) => (
                                 <li key={l.label}>
                                     {l.href.includes("#") ? (
                                         <a href={l.href} className="text-sm font-medium text-dark-100 hover:text-primary-100 transition-colors">
                                             {l.label}
                                         </a>
+                                    ) : "ai" in l ? (
+                                        <Link
+                                            to={l.href}
+                                            className={cn(
+                                                "flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-semibold transition-all",
+                                                pathname === l.href
+                                                    ? "bg-linear-to-r from-primary-100 to-violet-600 text-white shadow-md"
+                                                    : "bg-linear-to-r from-primary-50 to-violet-50 text-primary-100 hover:shadow-md"
+                                            )}
+                                        >
+                                            <Sparkles size={15} /> {l.label}
+                                        </Link>
                                     ) : (
                                         <Link to={l.href} className="text-sm font-medium text-dark-100 hover:text-primary-100 transition-colors">
                                             {l.label}
@@ -79,7 +92,7 @@ const TravelLayout = () => {
                                 onClick={() => setMenuOpen((o) => !o)}
                                 aria-label={menuOpen ? "Close menu" : "Open menu"}
                                 aria-expanded={menuOpen}
-                                className="md:hidden size-10 rounded-full bg-white/80 hover:bg-white shadow flex items-center justify-center text-dark-100 cursor-pointer"
+                                className="lg:hidden size-10 rounded-full bg-white/80 hover:bg-white shadow flex items-center justify-center text-dark-100 cursor-pointer"
                             >
                                 {menuOpen ? <X size={20} /> : <Menu size={20} />}
                             </button>
@@ -89,8 +102,8 @@ const TravelLayout = () => {
                     {/* Mobile menu */}
                     <ul
                         className={cn(
-                            "md:hidden flex flex-col overflow-hidden transition-all duration-300",
-                            menuOpen ? "max-h-96 pb-4 opacity-100" : "max-h-0 opacity-0"
+                            "lg:hidden flex flex-col overflow-hidden transition-all duration-300",
+                            menuOpen ? "max-h-[32rem] pb-4 opacity-100" : "max-h-0 opacity-0"
                         )}
                     >
                         {navLinks.map((l) => (
@@ -112,7 +125,6 @@ const TravelLayout = () => {
             <Outlet />
 
             {/* AI mode popup (slides up / down) */}
-            <AiAssistant />
 
             <SiteFooter />
         </div>

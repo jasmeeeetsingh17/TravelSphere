@@ -1,5 +1,5 @@
 /**
- * Appwrite fields for the bookings and subscribers collections.
+ * Appwrite fields for the bookings collection.
  * Plain file with no imports so both the app and scripts/seed-sample-data.ts can use it.
  */
 export type Attr =
@@ -28,5 +28,3 @@ export const BOOKING_ATTRS: Attr[] = [
     // Set for imported bookings so history keeps its real dates; otherwise Appwrite's $createdAt is used
     { type: "string", key: "createdAt", size: 30, required: false },
 ];
-
-export const SUBSCRIBER_ATTRS: Attr[] = [{ type: "string", key: "email", size: 200, required: true }];

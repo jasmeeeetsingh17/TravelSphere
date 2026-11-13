@@ -39,8 +39,8 @@ const COLUMNS = [
         links: [
             { label: "Home", to: "/" },
             { label: "All trips", to: "/travel" },
+            { label: "AI Trip Planner", to: "/plan" },
             { label: "Featured destinations", to: "/#featured" },
-            { label: "Handpicked trips", to: "/#trips" },
         ],
     },
     {
@@ -56,7 +56,6 @@ const COLUMNS = [
     {
         title: "Help",
         links: [
-            { label: "How booking works", to: "/#faq" },
             { label: "FAQ", to: "/#faq" },
             { label: "Contact us", to: "/#contact" },
             { label: "Admin login", to: "/sign-in" },
@@ -108,7 +107,7 @@ const SiteFooter = () => (
                 ))}
 
                 {/* Contact */}
-                <div className="col-span-2 md:col-span-1 flex flex-col gap-4">
+                <div id="contact" className="col-span-2 md:col-span-1 flex flex-col gap-4 scroll-mt-24">
                     <h3 className="font-semibold">Get in touch</h3>
                     <ul className="flex flex-col gap-3 text-sm text-gray-400">
                         <li>
@@ -140,7 +139,7 @@ const SiteFooter = () => (
                 </p>
                 <button
                     onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                    className="flex items-center gap-2 hover:text-white transition-colors cursor-pointer md:mr-36"
+                    className="flex items-center gap-2 hover:text-white transition-colors cursor-pointer"
                 >
                     Back to top <ArrowUp size={16} />
                 </button>

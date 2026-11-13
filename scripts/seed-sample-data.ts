@@ -1,15 +1,15 @@
 /**
  * Fills Appwrite with sample data so the admin dashboard, bookings and analytics have something to show.
  *
- *   npm run seed            add 18 Indian trips + ~64 bookings + newsletter subscribers
- *   npm run seed -- --remove   delete the sample bookings/subscribers and the sample trips again
+ *   npm run seed            add 18 Indian trips + ~64 bookings
+ *   npm run seed -- --remove   delete the sample bookings and trips again (and old sample newsletter subscribers)
  *
  * Safe to run twice: trips with the same name and existing sample bookings are skipped.
  * Sample bookings use phone numbers starting with 90000 and @example.com emails, so they are easy to spot.
  * Reads APPWRITE_API_KEY and the VITE_APPWRITE_* ids from .env.local (never prints them).
  */
 import { readFileSync } from "node:fs";
-import { BOOKING_ATTRS, SUBSCRIBER_ATTRS } from "../app/lib/booking-schema.ts";
+import { BOOKING_ATTRS } from "../app/lib/booking-schema.ts";
 import { sampleTripDetails } from "../app/constants/dummyTrips.ts";
 
 /* ---------------- env + REST helper ---------------- */
@@ -163,13 +163,10 @@ async function ensure(path: string, body: object) {
 async function ensureCollections() {
     await ensure(`/databases/${DB}/collections`, { collectionId: BOOKINGS, name: "Bookings", permissions: [], documentSecurity: false, enabled: true });
     for (const { type, ...attr } of BOOKING_ATTRS) await ensure(`${col(BOOKINGS)}/attributes/${type}`, attr);
-    await ensure(`/databases/${DB}/collections`, { collectionId: SUBSCRIBERS, name: "Newsletter subscribers", permissions: [], documentSecurity: false, enabled: true });
-    for (const { type, ...attr } of SUBSCRIBER_ATTRS) await ensure(`${col(SUBSCRIBERS)}/attributes/${type}`, attr);
 
     // Appwrite builds new attributes in the background; wait until they are ready
     for (let i = 0; i < 30; i++) {
-        const [a, b] = await Promise.all([api(`${col(BOOKINGS)}/attributes`), api(`${col(SUBSCRIBERS)}/attributes`)]);
-        const all = [...a.attributes, ...b.attributes];
+        const all = (await api(`${col(BOOKINGS)}/attributes`)).attributes;
         const failed = all.filter((x: any) => x.status === "failed");
         if (failed.length) throw new Error(`Appwrite could not create: ${failed.map((x: any) => x.key).join(", ")}`);
         if (all.every((x: any) => x.status === "available")) return;
@@ -250,18 +247,6 @@ async function seedBookings(tripIds: Map<string, string>) {
     console.log(`Bookings: ${count} added (${customers.length} different customers).`);
 }
 
-async function seedSubscribers() {
-    const existing = new Set((await listAll(SUBSCRIBERS)).map((d) => d.email));
-    let added = 0;
-    for (const name of NAMES.slice(0, 18)) {
-        const email = `${name.toLowerCase().replace(/[^a-z]+/g, ".")}@example.com`;
-        if (existing.has(email)) continue;
-        await api(`${col(SUBSCRIBERS)}/documents`, { method: "POST", body: { documentId: "unique()", data: { email } } });
-        added++;
-    }
-    console.log(`Newsletter subscribers: ${added} added.`);
-}
-
 async function removeSamples() {
     const del = (c: string, id: string) => api(`${col(c)}/documents/${id}`, { method: "DELETE" });
     let b = 0, s = 0, t = 0;
@@ -292,7 +277,6 @@ try {
         const tripIds = await seedTrips(adminId);
         await ensureCollections();
         await seedBookings(tripIds);
-        await seedSubscribers();
         console.log("Done. Refresh the admin panel to see it.");
     }
 } catch (e) {

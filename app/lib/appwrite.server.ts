@@ -13,7 +13,6 @@ export const ids = {
     trips: import.meta.env.VITE_APPWRITE_TRIPS_COLLECTION_ID as string,
     /** Created by "Set up bookings" in the admin panel. Override with VITE_APPWRITE_BOOKINGS_COLLECTION_ID. */
     bookings: (import.meta.env.VITE_APPWRITE_BOOKINGS_COLLECTION_ID as string) || "bookings",
-    subscribers: (import.meta.env.VITE_APPWRITE_SUBSCRIBERS_COLLECTION_ID as string) || "subscribers",
 };
 
 export class HttpError extends Error {

@@ -14,8 +14,13 @@ import { cn, money } from "~/lib/utils";
 import TripDetail from "./TripDetail";
 
 type Props = {
-    /** Where saved trips are shown after creation */
+    /** Where saved trips are shown after creation (admin) or the "back" link of the result (public) */
     basePath: string;
+    /**
+     * "admin" (default): generate with /api/create-trip and save to the database.
+     * "public": the AI Trip Planner for visitors. Uses /api/plan-trip, needs no sign-in, shows the plan on the page and saves nothing.
+     */
+    mode?: "admin" | "public";
 };
 
 const POPULAR = ["Rajasthan", "Kerala", "Goa", "Himachal Pradesh", "Ladakh", "Jammu and Kashmir"];
@@ -30,7 +35,7 @@ const BUDGET_NOTES: Record<string, string> = {
     Luxury: "5-star hotels, private tours",
     Premium: "Palace stays, the very best",
 };
-const LOADING_STEPS = ["Picking the best places", "Planning each day", "Checking the weather", "Working out the price", "Saving your trip"];
+const LOADING_STEPS = ["Picking the best places", "Planning each day", "Checking the weather", "Working out the price"];
 
 /** Numbered section of the form. */
 const Step = ({ n, title, hint, done, children }: { n: number; title: string; hint?: string; done: boolean; children: ReactNode }) => (
@@ -149,7 +154,11 @@ const StatePicker = ({ value, onChange }: { value: string; onChange: (v: string)
     );
 };
 
-const CreateTripForm = ({ basePath }: Props) => {
+const CreateTripForm = ({ basePath, mode = "admin" }: Props) => {
+    const isPublic = mode === "public";
+    const steps = isPublic ? LOADING_STEPS : [...LOADING_STEPS, "Saving your trip"];
+    const resultRef = useRef<HTMLDivElement>(null);
+    const [source, setSource] = useState<"gemini" | "template" | "">("");
     const navigate = useNavigate();
     const [params] = useSearchParams();
 
@@ -170,9 +179,9 @@ const CreateTripForm = ({ basePath }: Props) => {
     // Walk through the loading messages while the AI works
     useEffect(() => {
         if (!loading) return setLoadingStep(0);
-        const id = setInterval(() => setLoadingStep((s) => Math.min(s + 1, LOADING_STEPS.length - 1)), 2200);
+        const id = setInterval(() => setLoadingStep((s) => Math.min(s + 1, steps.length - 1)), 2200);
         return () => clearInterval(id);
-    }, [loading]);
+    }, [loading, steps.length]);
 
     const people = GROUP_SIZE[groupType] ?? 1;
     const estimate = budget ? (DAILY_COST[budget] ?? 0) * duration * people : 0;
@@ -213,16 +222,26 @@ const CreateTripForm = ({ basePath }: Props) => {
 
         setLoading(true);
         try {
-            const jwt = await getAuthToken();
-            const res = await fetch("/api/create-trip", {
+            const headers: Record<string, string> = { "Content-Type": "application/json" };
+            if (!isPublic) headers["x-appwrite-jwt"] = await getAuthToken();
+            const res = await fetch(isPublic ? "/api/plan-trip" : "/api/create-trip", {
                 method: "POST",
-                headers: { "Content-Type": "application/json", "x-appwrite-jwt": jwt },
+                headers,
                 body: JSON.stringify({ state, travelStyle, interest: selectedInterests.join(", "), budget, groupType, duration }),
             });
-            const data = await res.json();
+            const data = await res.json().catch(() => ({}));
             if (!res.ok) throw new Error(data.error ?? "Could not generate the trip.");
 
             const trip = data.trip as Trip;
+
+            // Public planner: show the plan right here, nothing is saved
+            if (isPublic) {
+                setPreview(generatedToView(trip, { id: "plan", saved: false }));
+                setSource(data.source === "gemini" ? "gemini" : "template");
+                setLoading(false);
+                setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+                return;
+            }
             try {
                 const me = await account.get();
                 const id = await saveTrip(trip, me.$id);
@@ -381,7 +400,7 @@ const CreateTripForm = ({ basePath }: Props) => {
                 </div>
 
                 {/* ---------------- Summary ---------------- */}
-                <aside className="lg:sticky lg:top-6 flex flex-col bg-white rounded-3xl border border-light-400 shadow-sm overflow-hidden">
+                <aside className={cn("lg:sticky flex flex-col bg-white rounded-3xl border border-light-400 shadow-sm overflow-hidden", isPublic ? "lg:top-24" : "lg:top-6")}>
                     <figure className="relative h-44">
                         <img src={image} alt="" className="size-full object-cover" />
                         <span className="absolute inset-0 bg-linear-to-t from-black/70 via-black/10 to-transparent" />
@@ -456,7 +475,7 @@ const CreateTripForm = ({ basePath }: Props) => {
                             <small className="text-gray-100">This usually takes 10 to 20 seconds</small>
                         </span>
                         <ol className="w-full flex flex-col gap-2 text-left">
-                            {LOADING_STEPS.map((s, i) => (
+                            {steps.map((s, i) => (
                                 <li key={s} className={cn("flex items-center gap-2.5 text-sm transition-colors", i < loadingStep ? "text-success-700" : i === loadingStep ? "text-dark-100 font-semibold" : "text-gray-100/60")}>
                                     {i < loadingStep ? <Check size={16} /> : i === loadingStep ? <Loader2 size={16} className="animate-spin text-primary-100" /> : <span className="size-4 rounded-full border-2 border-light-400" />}
                                     {s}
@@ -467,7 +486,45 @@ const CreateTripForm = ({ basePath }: Props) => {
                 </div>
             )}
 
-            {preview && <TripDetail trip={preview} backTo={basePath} />}
+            {preview && isPublic && (
+                <div ref={resultRef} className="flex flex-col gap-6 scroll-mt-24">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-3xl bg-linear-to-r from-primary-100 to-violet-600 text-white p-6">
+                        <span className="flex items-center gap-3">
+                            <span className="size-11 rounded-2xl bg-white/20 flex items-center justify-center"><Sparkles size={22} /></span>
+                            <span className="flex flex-col leading-tight">
+                                <strong className="text-lg">Your plan is ready</strong>
+                                <small className="text-white/80">
+                                    {source === "gemini" ? "Planned by Google Gemini AI. Prices are estimates." : "Built from our trip templates. Prices are estimates."}
+                                </small>
+                            </span>
+                        </span>
+                        <span className="flex flex-wrap gap-2 print:hidden">
+                            <a href="/#contact" className="flex items-center gap-2 bg-white text-primary-100 font-semibold rounded-full px-5 py-2.5 text-sm hover:scale-105 transition-transform">
+                                Book with an expert
+                            </a>
+                            <button
+                                type="button"
+                                onClick={() => window.print()}
+                                className="flex items-center gap-2 border border-white/60 text-white font-semibold rounded-full px-5 py-2.5 text-sm hover:bg-white/10 cursor-pointer"
+                            >
+                                Print / save PDF
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setPreview(null);
+                                    window.scrollTo({ top: 0, behavior: "smooth" });
+                                }}
+                                className="flex items-center gap-2 border border-white/60 text-white font-semibold rounded-full px-5 py-2.5 text-sm hover:bg-white/10 cursor-pointer"
+                            >
+                                <RotateCcw size={15} /> Plan another
+                            </button>
+                        </span>
+                    </div>
+                    <TripDetail trip={preview} backTo={basePath} />
+                </div>
+            )}
+            {preview && !isPublic && <TripDetail trip={preview} backTo={basePath} />}
         </div>
     );
 };

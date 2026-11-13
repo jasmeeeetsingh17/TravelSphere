@@ -59,8 +59,7 @@ const SetupCard = ({ onDone }: { onDone: () => void }) => {
             <span className="flex flex-col gap-2 max-w-lg">
                 <h2 className="text-xl font-semibold text-dark-100">Set up bookings</h2>
                 <p className="text-gray-100 leading-7">
-                    Bookings are saved in their own Appwrite collection. Click below and the app creates the <code className="bg-light-200 px-1.5 rounded">bookings</code> and{" "}
-                    <code className="bg-light-200 px-1.5 rounded">subscribers</code> collections for you. Customer details stay private: only the server can read them.
+                    Bookings are saved in their own Appwrite collection. Click below and the app creates the <code className="bg-light-200 px-1.5 rounded">bookings</code> collection for you. Customer details stay private: only the server can read them.
                 </p>
             </span>
             {error && <p className="rounded-xl bg-red-50 text-red-500 px-4 py-3 text-sm max-w-lg">{error}</p>}

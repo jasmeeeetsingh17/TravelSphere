@@ -1,42 +1,4 @@
-declare interface BaseUser {
-  id: string;
-  name: string;
-  email: string;
-  dateJoined: string;
-  imageUrl: string;
-}
-
-declare interface UserData extends BaseUser {
-  itineraryCreated: number | string;
-  status: "user" | "admin";
-}
-
-declare type User = BaseUser;
-
-declare interface Country {
-  name: string;
-  coordinates: [number, number];
-  value: string;
-  openStreetMap?: string;
-}
-
-declare interface DropdownItem {
-  name: string;
-}
-
-declare interface SelectProps {
-  data: Country[] | DropdownItem[];
-  onValueChange: (value: string) => void;
-  id: string;
-  label: string;
-  placeholder: string;
-}
-
-declare interface PillProps {
-  text: string;
-  bgColor?: string;
-  textColor?: string;
-}
+/** Global types shared across the app. */
 
 declare interface Activity {
   time: string;
@@ -72,7 +34,7 @@ declare interface Trip {
   weatherInfo: string[];
   location: Location;
   payment_link: string;
-  /** How many people have booked this trip. Entered by an admin. */
+  /** Older manual booking count. Admin pages now count live bookings instead. */
   bookings?: number;
 }
 
@@ -85,71 +47,6 @@ declare interface TripCardProps {
   price: string;
   /** Shown as a badge when set */
   bookings?: number;
-}
-
-declare interface StatsCard {
-  headerTitle: string;
-  total: number;
-  lastMonthCount: number;
-  currentMonthCount: number;
-}
-
-declare interface TrendResult {
-  trend: "increment" | "decrement" | "no change";
-  percentage: number;
-}
-
-declare interface DashboardStats {
-  totalUsers: number;
-  usersJoined: {
-    currentMonth: number;
-    lastMonth: number;
-  };
-  userRole: {
-    total: number;
-    currentMonth: number;
-    lastMonth: number;
-  };
-  totalTrips: number;
-  tripsCreated: {
-    currentMonth: number;
-    lastMonth: number;
-  };
-}
-
-declare interface CreateTripResponse {
-  id?: string;
-}
-
-declare interface DestinationProps {
-  containerClass?: string;
-  bigCard?: boolean;
-  activityCount: number;
-  rating: number;
-  bgImage: string;
-  title: string;
-}
-
-type GetAllTripsResponse = {
-  allTrips: Models.Document[];
-  total: number;
-};
-
-declare interface UsersItineraryCount {
-  imageUrl: string;
-  name: string;
-  count: number;
-}
-
-declare interface TripsInterest {
-  imageUrl: string;
-  name: string;
-  interest: string;
-}
-
-declare interface InfoPillProps {
-  text: string;
-  image: string;
 }
 
 declare interface TripFormData {
