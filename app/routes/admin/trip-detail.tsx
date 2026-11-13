@@ -33,6 +33,7 @@ const AdminTripDetail = ({ loaderData }: Route.ComponentProps) => {
             <TripDetail
                 trip={loaderData}
                 backTo="/trips"
+                showBookings
                 actions={
                     <div className="flex flex-col gap-3">
                     <Link

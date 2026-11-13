@@ -1,54 +1,9 @@
 import { asServer, HttpError, ids, listDocs, q, requireAdmin } from "~/lib/appwrite.server";
-import { sampleTrips } from "~/constants/dummyTrips";
 import type { Route } from "./+types/admin";
 
 export const loader = () => Response.json({ error: "Method not allowed" }, { status: 405 });
 
 const docPath = (collectionId: string, id: string) => `/databases/${ids.db}/collections/${collectionId}/documents/${id}`;
-
-/** Creates a trip document. Drops optional attributes the collection does not have. */
-async function createTripDoc(data: Record<string, unknown>) {
-    for (let attempt = 0; attempt < 3; attempt++) {
-        try {
-            return await asServer(`/databases/${ids.db}/collections/${ids.trips}/documents`, {
-                method: "POST",
-                body: JSON.stringify({ documentId: "unique()", data }),
-            });
-        } catch (error) {
-            const unknown = error instanceof HttpError ? /Unknown attribute:?\s*"?([A-Za-z0-9_$]+)"?/.exec(error.message)?.[1] : undefined;
-            if (unknown && (unknown === "imageUrls" || unknown === "createdAt") && unknown in data) {
-                delete data[unknown];
-                continue;
-            }
-            throw error;
-        }
-    }
-}
-
-/**
- * Saves the sample Indian trips to the database, skipping any whose name already exists.
- * Dates are spread over the last 6 months so the dashboard charts show a trend.
- */
-async function importSampleTrips(adminId: string) {
-    const existing = await listDocs(ids.trips, [q.limit(500)]);
-    const names = new Set(
-        existing.map((d) => {
-            try {
-                return String(JSON.parse(d.tripDetail).name).toLowerCase();
-            } catch {
-                return "";
-            }
-        })
-    );
-
-    const todo = sampleTrips.filter((t) => !names.has(t.name.toLowerCase()));
-    const DAY = 86_400_000;
-    for (const [i, trip] of todo.entries()) {
-        const createdAt = new Date(Date.now() - Math.round((i / Math.max(1, todo.length - 1)) * 170) * DAY).toISOString();
-        await createTripDoc({ tripDetail: JSON.stringify(trip), imageUrls: trip.imageUrls, userId: adminId, createdAt });
-    }
-    return { added: todo.length, skipped: sampleTrips.length - todo.length };
-}
 
 /** Deletes every document in a collection whose `attribute` equals `value`. */
 async function deleteWhere(collectionId: string, attribute: string, value: string) {
@@ -79,6 +34,7 @@ function cleanTrip(raw: any) {
         name: text(raw.name, 150),
         description: text(raw.description, 2000),
         estimatedPrice: text(raw.estimatedPrice, 30),
+        bookings: Math.min(1_000_000, Math.max(0, Math.round(Number(raw.bookings) || 0))),
         budget: text(raw.budget, 40),
         travelStyle: text(raw.travelStyle, 40),
         groupType: text(raw.groupType, 40),
@@ -116,10 +72,6 @@ export async function action({ request }: Route.ActionArgs) {
                 if (!id) throw new HttpError(400, "Missing trip.");
                 await asServer(docPath(ids.trips, id), { method: "DELETE" });
                 return Response.json({ ok: true });
-            }
-
-            case "importSampleTrips": {
-                return Response.json(await importSampleTrips(adminId));
             }
 
             case "updateTrip": {

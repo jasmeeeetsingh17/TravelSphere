@@ -72,6 +72,8 @@ declare interface Trip {
   weatherInfo: string[];
   location: Location;
   payment_link: string;
+  /** How many people have booked this trip. Entered by an admin. */
+  bookings?: number;
 }
 
 declare interface TripCardProps {
@@ -81,6 +83,8 @@ declare interface TripCardProps {
   imageUrl: string;
   tags: string[];
   price: string;
+  /** Shown as a badge when set */
+  bookings?: number;
 }
 
 declare interface StatsCard {

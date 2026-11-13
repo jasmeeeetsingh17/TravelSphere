@@ -22,21 +22,34 @@ export type TripProfit = {
     budget: string;
     group: string;
     days: number;
-    revenue: number;
-    cost: number;
-    profit: number;
+    /** Price of one booking */
+    price: number;
     margin: number;
+    /** Profit from one booking */
+    unitProfit: number;
+    /** Profit from one booking, per day of the trip */
     profitPerDay: number;
-    /** 0-100, relative to the other trips (profit per day counts most, then total profit) */
+    /** People who booked (entered by an admin) */
+    bookings: number;
+    /** Money taken so far: price × bookings */
+    revenue: number;
+    /** Cost of those bookings */
+    cost: number;
+    /** Profit earned so far: unitProfit × bookings */
+    profit: number;
+    /** 0-100, relative to the other trips */
     score: number;
     verdict: "Make more" | "Good" | "Review";
 };
 
-export const tripProfit = (t: TripView): Omit<TripProfit, "score" | "verdict"> => {
-    const revenue = priceToNumber(t.price);
+type Base = Omit<TripProfit, "score" | "verdict">;
+
+export const tripProfit = (t: TripView): Base => {
+    const price = priceToNumber(t.price);
     const margin = MARGINS[t.budget ?? ""] ?? DEFAULT_MARGIN;
-    const profit = Math.round(revenue * margin);
+    const unitProfit = Math.round(price * margin);
     const days = t.dayCount || 1;
+    const bookings = t.bookings || 0;
     return {
         id: t.id,
         name: t.name,
@@ -45,23 +58,39 @@ export const tripProfit = (t: TripView): Omit<TripProfit, "score" | "verdict"> =
         budget: t.budget || "Other",
         group: t.group || "Other",
         days,
-        revenue,
-        cost: revenue - profit,
-        profit,
+        price,
         margin,
-        profitPerDay: Math.round(profit / days),
+        unitProfit,
+        profitPerDay: Math.round(unitProfit / days),
+        bookings,
+        revenue: price * bookings,
+        cost: (price - unitProfit) * bookings,
+        profit: unitProfit * bookings,
     };
 };
 
-/** Every trip with its estimated profit and a score, best first. */
+/**
+ * Every priced trip with a score, best first.
+ * The score mixes how many people booked (40%), the profit earned so far (35%) and how
+ * profitable each booking is per day (25%), so proven demand counts most. When no bookings
+ * are entered yet, only profit per day counts. It is scaled so the best trip scores 100.
+ */
 export const rankTrips = (trips: TripView[]): TripProfit[] => {
-    const rows = trips.map(tripProfit).filter((r) => r.revenue > 0);
-    const maxPerDay = Math.max(1, ...rows.map((r) => r.profitPerDay));
-    const maxProfit = Math.max(1, ...rows.map((r) => r.profit));
+    const rows = trips.map(tripProfit).filter((r) => r.price > 0);
+    const max = (f: (r: Base) => number) => Math.max(1, ...rows.map(f));
+    const maxPerDay = max((r) => r.profitPerDay);
+    const maxBookings = max((r) => r.bookings);
+    const maxProfit = max((r) => r.profit);
 
-    return rows
-        .map((r) => {
-            const score = Math.round((r.profitPerDay / maxPerDay) * 70 + (r.profit / maxProfit) * 30);
+    const raw = rows.map((r) => ({
+        r,
+        s: (r.bookings / maxBookings) * 40 + (r.profit / maxProfit) * 35 + (r.profitPerDay / maxPerDay) * 25,
+    }));
+    const top = Math.max(1, ...raw.map((x) => x.s));
+
+    return raw
+        .map(({ r, s }) => {
+            const score = Math.round((s / top) * 100);
             const verdict: TripProfit["verdict"] = score >= 66 ? "Make more" : score >= 33 ? "Good" : "Review";
             return { ...r, score, verdict };
         })
@@ -74,13 +103,15 @@ export type Recommendation = {
     budget: string;
     state: string;
     trips: number;
+    bookings: number;
     avgProfit: number;
     avgProfitPerDay: number;
+    score: number;
 };
 
 /**
- * Groups trips by style + budget + state and returns the most profitable kinds,
- * so the admin knows which trips to create more of.
+ * Groups trips by style + budget + state and returns the strongest kinds of trip
+ * (by average score), so the admin knows what to create more of.
  */
 export const recommend = (rows: TripProfit[], limit = 3): Recommendation[] => {
     const groups = new Map<string, TripProfit[]>();
@@ -99,20 +130,22 @@ export const recommend = (rows: TripProfit[], limit = 3): Recommendation[] => {
                 budget,
                 state,
                 trips: list.length,
-                avgProfit: avg((r) => r.profit),
+                bookings: list.reduce((s, r) => s + r.bookings, 0),
+                avgProfit: avg((r) => r.unitProfit),
                 avgProfitPerDay: avg((r) => r.profitPerDay),
+                score: avg((r) => r.score),
             };
         })
-        .sort((a, b) => b.avgProfitPerDay - a.avgProfitPerDay)
+        .sort((a, b) => b.score - a.score)
         .slice(0, limit);
 };
 
-/** Average profit per day for each value of a field (style, budget, state...). */
+/** Average profit per booking for each value of a field (style, budget, state...). */
 export const profitBy = (rows: TripProfit[], key: (r: TripProfit) => string) =>
     Object.entries(
         rows.reduce<Record<string, { sum: number; n: number }>>((acc, r) => {
             const k = key(r);
-            acc[k] = { sum: (acc[k]?.sum ?? 0) + r.profit, n: (acc[k]?.n ?? 0) + 1 };
+            acc[k] = { sum: (acc[k]?.sum ?? 0) + r.unitProfit, n: (acc[k]?.n ?? 0) + 1 };
             return acc;
         }, {})
     )

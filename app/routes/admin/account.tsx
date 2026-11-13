@@ -1,12 +1,12 @@
 import { Link, useNavigate } from "react-router";
 import dayjs from "dayjs";
-import { CalendarDays, ExternalLink, Fingerprint, LogOut, Mail, MapPinned, Plus, ShieldCheck, Sparkles, TrendingUp, Wallet } from "lucide-react";
+import { CalendarDays, ExternalLink, Fingerprint, LogOut, Mail, MapPinned, Plus, ShieldCheck, Sparkles, Ticket, TrendingUp } from "lucide-react";
 import { TripCard } from "../../../components";
 import KpiCard from "../../../components/KpiCard";
 import { getUser, logoutUser } from "~/appwrite/auth";
 import { getSavedTrips } from "~/appwrite/trips";
 import { rankTrips } from "~/lib/profit";
-import { formatDate, money, priceToNumber } from "~/lib/utils";
+import { formatDate, money } from "~/lib/utils";
 import type { Route } from "./+types/account";
 
 export const meta = () => [{ title: "My account | TravelSphere Admin" }];
@@ -29,7 +29,7 @@ const Account = ({ loaderData }: Route.ComponentProps) => {
     const { name, email, imageUrl, joinedAt, accountId, trips } = loaderData;
     const navigate = useNavigate();
 
-    const totalValue = trips.reduce((s, t) => s + priceToNumber(t.price), 0);
+    const bookings = trips.reduce((s, t) => s + t.bookings, 0);
     const profit = rankTrips(trips).reduce((s, r) => s + r.profit, 0);
     const states = new Set(trips.map((t) => t.state).filter(Boolean)).size;
     const days = joinedAt ? Math.max(0, dayjs().diff(joinedAt, "day")) : 0;
@@ -86,8 +86,8 @@ const Account = ({ loaderData }: Route.ComponentProps) => {
             {/* Stats */}
             <ul className="grid grid-cols-2 xl:grid-cols-4 gap-5">
                 <KpiCard label="Trips you created" value={trips.length} note={`${thisMonth} this month`} Icon={Sparkles} tone="bg-primary-50 text-primary-100" />
-                <KpiCard label="Total trip value" value={money(totalValue)} note="Sum of your trip prices" Icon={Wallet} tone="bg-violet-50 text-violet-600" />
-                <KpiCard label="Estimated profit" value={money(profit)} note="From your trips" Icon={TrendingUp} tone="bg-success-50 text-success-700" />
+                <KpiCard label="Bookings on your trips" value={bookings.toLocaleString("en-IN")} note="People who booked" Icon={Ticket} tone="bg-violet-50 text-violet-600" />
+                <KpiCard label="Estimated profit earned" value={money(profit)} note="From bookings on your trips" Icon={TrendingUp} tone="bg-success-50 text-success-700" />
                 <KpiCard label="States covered" value={states} note="By your trips" Icon={MapPinned} tone="bg-amber-50 text-amber-600" />
             </ul>
 
@@ -127,7 +127,7 @@ const Account = ({ loaderData }: Route.ComponentProps) => {
                     {trips.length ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             {trips.slice(0, 4).map((t) => (
-                                <TripCard key={t.id} id={t.id} name={t.name} imageUrl={t.imageUrl} location={t.location} tags={t.tags} price={t.price} />
+                                <TripCard key={t.id} id={t.id} name={t.name} imageUrl={t.imageUrl} location={t.location} tags={t.tags} price={t.price} bookings={t.bookings} />
                             ))}
                         </div>
                     ) : (

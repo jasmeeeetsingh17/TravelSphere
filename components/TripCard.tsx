@@ -1,10 +1,11 @@
 import { Link, useLocation } from "react-router";
 import { ChipDirective, ChipListComponent, ChipsDirective } from "@syncfusion/ej2-react-buttons";
+import { Users } from "lucide-react";
 import { cn, getFirstWord } from "~/lib/utils";
 
 type Props = TripCardProps & { href?: string };
 
-const TripCard = ({ id, name, location, imageUrl, tags, price, href }: Props) => {
+const TripCard = ({ id, name, location, imageUrl, tags, price, bookings, href }: Props) => {
     const path = useLocation();
     // Public pages link to /travel/:id, admin pages to /trips/:id. Pass `href` to override.
     const publicPage = path.pathname === '/' || path.pathname.startsWith('/travel');
@@ -15,6 +16,11 @@ const TripCard = ({ id, name, location, imageUrl, tags, price, href }: Props) =>
                 <img src={imageUrl} alt={name} className="transition-transform duration-500 group-hover:scale-105" />
             </span>
             {price && <span className="tripCard-pill shadow-sm">{price}</span>}
+            {bookings !== undefined && (
+                <span className="absolute top-2.5 left-4 flex items-center gap-1 rounded-full bg-dark-100/80 backdrop-blur px-2.5 py-1 text-xs font-semibold text-white">
+                    <Users size={12} /> {bookings} booked
+                </span>
+            )}
 
             <article>
                 <h2>{name}</h2>
