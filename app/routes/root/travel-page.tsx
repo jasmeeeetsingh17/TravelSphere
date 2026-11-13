@@ -1,6 +1,9 @@
-import { useState } from "react";
-import { Link } from "react-router";
-import { ArrowRight, Compass, MapPinned, Quote, ShieldCheck, Sparkles, Star, Wallet } from "lucide-react";
+import { useState, type FormEvent } from "react";
+import { Link, useNavigate } from "react-router";
+import {
+    ArrowRight, Building2, CalendarCheck, Compass, Flame, Gem, Landmark, MapPin, MapPinned, Mountain, Palmtree, Quote, Search,
+    ShieldCheck, SlidersHorizontal, Sparkles, Star, Trees, Wallet, type LucideIcon,
+} from "lucide-react";
 import { PagerComponent } from "@syncfusion/ej2-react-grids";
 import { Header, TripCard } from "../../../components";
 import { dummyTrips, testimonials } from "~/constants/dummyTrips";
@@ -15,6 +18,24 @@ const featuredDestinations = [
     { id: 4, name: "Golden Temple", search: "Punjab", location: "Amritsar, Punjab", image: "/assets/images/7.jpg" },
     { id: 5, name: "Dal Lake", search: "Kashmir", location: "Srinagar, Kashmir", image: "/assets/images/10.jpg" },
     { id: 6, name: "Andaman Island", search: "Andaman", location: "Port Blair", image: "/assets/images/13.jpg" },
+];
+
+const POPULAR = ["Rajasthan", "Kerala", "Ladakh", "Goa", "Kashmir"];
+
+const styles: { name: string; Icon: LucideIcon; tone: string }[] = [
+    { name: "Adventure", Icon: Mountain, tone: "from-orange-400 to-rose-500" },
+    { name: "Cultural", Icon: Landmark, tone: "from-amber-400 to-orange-500" },
+    { name: "Relaxed", Icon: Palmtree, tone: "from-teal-400 to-cyan-500" },
+    { name: "Spiritual", Icon: Flame, tone: "from-yellow-400 to-amber-500" },
+    { name: "Nature & Outdoors", Icon: Trees, tone: "from-emerald-400 to-green-600" },
+    { name: "Luxury", Icon: Gem, tone: "from-violet-400 to-purple-600" },
+    { name: "City Exploration", Icon: Building2, tone: "from-sky-400 to-blue-600" },
+];
+
+const steps = [
+    { Icon: MapPin, title: "Pick a destination", text: "Choose from all 28 states and 8 union territories of India." },
+    { Icon: SlidersHorizontal, title: "Set your style", text: "Tell us your budget, group and interests: temples, beaches, food or treks." },
+    { Icon: CalendarCheck, title: "Get your plan", text: "A day-by-day itinerary with timings, weather and a price in rupees." },
 ];
 
 const stats = [
@@ -71,39 +92,97 @@ const TravelPage = () => {
     const countFor = (search: string) =>
         trips.filter((t) => `${t.name} ${t.location}`.toLowerCase().includes(search.toLowerCase())).length;
     const featured = featuredDestinations.map((d) => ({ ...d, tripCount: countFor(d.search) }));
+    const spotlight = trips.find((t) => t.id === "udaipur-lakes") ?? trips[0];
+
+    const navigate = useNavigate();
+    const [query, setQuery] = useState("");
+    const search = (e: FormEvent) => {
+        e.preventDefault();
+        navigate(query.trim() ? `/travel?q=${encodeURIComponent(query.trim())}` : "/travel");
+    };
 
     return (
         <main className="flex flex-col">
             {/* Hero */}
-            <section id="hero" className="travel-hero">
-                <div>
-                    <section className="wrapper">
-                        <article>
+            <section id="hero" className="relative bg-hero bg-cover bg-center">
+                <div className="bg-linear100 bg-cover">
+                    <div className="wrapper pt-32 pb-36 md:pt-40 md:pb-44 grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-12 items-center">
+                        <div className="flex flex-col gap-6 max-w-2xl">
                             <span className="flex items-center gap-2 w-fit bg-white/80 backdrop-blur text-primary-100 text-sm font-semibold rounded-full px-4 py-1.5 shadow-sm">
                                 <MapPinned size={16} /> Explore incredible India
                             </span>
-                            <h1 className="p-72-bold text-dark-100">Plan Your Trip with Ease</h1>
-                            <p>
-                                Customize your travel itinerary in minutes. Pick your destination,
-                                set your preferences, and explore with confidence.
+                            <h1 className="text-5xl md:text-7xl font-bold text-dark-100 leading-[1.05] tracking-tight">
+                                Plan your trip <span className="block bg-linear-to-r from-primary-100 to-violet-600 bg-clip-text text-transparent">with ease</span>
+                            </h1>
+                            <p className="text-lg text-dark-400 max-w-xl">
+                                Day-by-day itineraries across India, from Himalayan passes to Kerala backwaters. Pick a place, set your style and go.
                             </p>
-                        </article>
-                        <aside className="flex flex-wrap items-center gap-3 w-full">
-                            <a
-                                href="#trips"
-                                className="flex items-center gap-2 bg-primary-100 hover:bg-primary-500 text-white font-semibold rounded-full px-8 py-3 shadow-lg shadow-primary-100/30 transition-colors"
-                            >
-                                Explore trips <ArrowRight size={18} />
-                            </a>
-                            <button
-                                onClick={() => window.dispatchEvent(new Event("open-ai-mode"))}
-                                className="flex items-center gap-2 bg-white/90 hover:bg-white text-dark-100 font-semibold rounded-full px-6 py-3 shadow transition-colors cursor-pointer"
-                            >
-                                <Sparkles size={18} className="text-primary-100" />
-                                Ask AI
-                            </button>
-                        </aside>
-                    </section>
+
+                            <form onSubmit={search} className="flex items-center gap-2 bg-white rounded-full p-2 pl-5 shadow-xl shadow-dark-100/10 border border-white max-w-xl">
+                                <Search size={20} className="text-gray-100 shrink-0" />
+                                <input
+                                    value={query}
+                                    onChange={(e) => setQuery(e.target.value)}
+                                    placeholder="Where do you want to go?"
+                                    aria-label="Search destinations"
+                                    className="flex-1 min-w-0 h-11 bg-transparent text-dark-100 outline-none placeholder:text-gray-100"
+                                />
+                                <button type="submit" className="flex items-center gap-2 bg-primary-100 hover:bg-primary-500 text-white font-semibold rounded-full px-5 sm:px-7 h-11 transition-colors cursor-pointer">
+                                    <span className="hidden sm:inline">Search</span>
+                                    <ArrowRight size={18} className="sm:hidden" />
+                                </button>
+                            </form>
+
+                            <div className="flex flex-wrap items-center gap-2 text-sm">
+                                <span className="text-dark-400 font-medium mr-1">Popular:</span>
+                                {POPULAR.map((p) => (
+                                    <Link
+                                        key={p}
+                                        to={`/travel?q=${encodeURIComponent(p)}`}
+                                        className="bg-white/70 hover:bg-white backdrop-blur text-dark-100 font-medium rounded-full px-3.5 py-1.5 transition-colors"
+                                    >
+                                        {p}
+                                    </Link>
+                                ))}
+                                <button
+                                    onClick={() => window.dispatchEvent(new Event("open-ai-mode"))}
+                                    className="flex items-center gap-1.5 bg-dark-100/80 hover:bg-dark-100 text-white font-medium rounded-full px-3.5 py-1.5 transition-colors cursor-pointer"
+                                >
+                                    <Sparkles size={14} /> Ask AI
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Floating preview card */}
+                        {spotlight && (
+                            <div className="relative hidden lg:block">
+                                <Link to={`/travel/${spotlight.id}`} className="group block bg-white rounded-3xl p-3 shadow-2xl shadow-dark-100/20 rotate-2 hover:rotate-0 transition-transform duration-500">
+                                    <span className="block relative h-64 rounded-2xl overflow-hidden">
+                                        <img src={spotlight.imageUrl} alt={spotlight.name} className="size-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                                        <span className="absolute top-3 left-3 bg-white/90 backdrop-blur text-xs font-semibold text-dark-100 rounded-full px-3 py-1">Trip of the week</span>
+                                    </span>
+                                    <span className="flex items-start justify-between gap-3 px-2 pt-4 pb-2">
+                                        <span className="flex flex-col gap-1">
+                                            <strong className="text-lg text-dark-100 leading-snug">{spotlight.name}</strong>
+                                            <small className="flex items-center gap-1 text-gray-100"><MapPin size={14} /> {spotlight.location}</small>
+                                        </span>
+                                        <span className="flex flex-col items-end shrink-0">
+                                            <strong className="text-lg text-primary-100">{spotlight.price}</strong>
+                                            <small className="text-gray-100">{spotlight.duration}</small>
+                                        </span>
+                                    </span>
+                                </Link>
+                                <span className="absolute -left-10 top-10 flex items-center gap-2 bg-white rounded-2xl shadow-xl px-4 py-3 -rotate-3">
+                                    <span className="size-9 rounded-xl bg-amber-50 flex items-center justify-center"><Star size={18} className="fill-amber-400 text-amber-400" /></span>
+                                    <span className="flex flex-col leading-tight"><strong className="text-dark-100 text-sm">4.9 rating</strong><small className="text-gray-100 text-xs">12K+ travellers</small></span>
+                                </span>
+                                <span className="absolute -right-6 -bottom-6 flex items-center gap-2 bg-white rounded-2xl shadow-xl px-4 py-3 rotate-3">
+                                    <span className="size-9 rounded-xl bg-primary-50 flex items-center justify-center text-primary-100"><Sparkles size={18} /></span>
+                                    <span className="flex flex-col leading-tight"><strong className="text-dark-100 text-sm">AI itinerary</strong><small className="text-gray-100 text-xs">Ready in seconds</small></span>
+                                </span>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </section>
 
@@ -136,6 +215,30 @@ const TravelPage = () => {
                 </div>
             </section>
 
+            {/* Browse by travel style */}
+            <section className="wrapper pt-20 flex flex-col gap-10">
+                <Header title="Travel Your Way" description="Pick a style and see trips made for it." />
+                <ul className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4">
+                    {styles.map(({ name, Icon, tone }) => {
+                        const count = trips.filter((t) => t.style === name).length;
+                        return (
+                            <li key={name}>
+                                <Link
+                                    to={`/travel?q=${encodeURIComponent(name)}`}
+                                    className="group h-full bg-white rounded-3xl border border-light-400 p-5 flex flex-col items-center text-center gap-3 hover:-translate-y-1 hover:shadow-lg transition-all"
+                                >
+                                    <span className={cn("size-14 rounded-2xl bg-linear-to-br text-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform", tone)}>
+                                        <Icon size={26} />
+                                    </span>
+                                    <strong className="text-sm font-semibold text-dark-100 leading-tight">{name}</strong>
+                                    <small className="text-xs text-gray-100">{count} {count === 1 ? "trip" : "trips"}</small>
+                                </Link>
+                            </li>
+                        );
+                    })}
+                </ul>
+            </section>
+
             {/* Handpicked trips */}
             <section id="trips" className="wrapper pt-20 pb-16 flex flex-col gap-10">
                 <span className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -159,6 +262,24 @@ const TravelPage = () => {
                         click={(args: { currentPage: number }) => setPage(args.currentPage)}
                     />
                 )}
+            </section>
+
+            {/* How it works */}
+            <section className="wrapper pb-20 flex flex-col gap-10">
+                <Header title="How It Works" description="From idea to itinerary in three steps." />
+                <ol className="relative grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <span aria-hidden className="hidden md:block absolute top-10 left-[16%] right-[16%] border-t-2 border-dashed border-primary-100/30" />
+                    {steps.map(({ Icon, title, text }, i) => (
+                        <li key={title} className="relative bg-white rounded-3xl border border-light-400 p-6 flex flex-col items-center text-center gap-3">
+                            <span className="relative size-14 rounded-full bg-primary-100 text-white flex items-center justify-center shadow-lg shadow-primary-100/30">
+                                <Icon size={24} />
+                                <span className="absolute -top-1 -right-1 size-6 rounded-full bg-dark-100 text-white text-xs font-bold flex items-center justify-center">{i + 1}</span>
+                            </span>
+                            <h3 className="text-lg font-semibold text-dark-100">{title}</h3>
+                            <p className="text-sm leading-6 text-gray-100">{text}</p>
+                        </li>
+                    ))}
+                </ol>
             </section>
 
             {/* Why TravelSphere */}

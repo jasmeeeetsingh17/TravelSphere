@@ -1,19 +1,10 @@
 import { Link } from "react-router";
 import dayjs from "dayjs";
 import {
-    AccumulationChartComponent,
-    AccumulationDataLabel,
-    AccumulationLegend,
-    AccumulationSeriesCollectionDirective,
-    AccumulationSeriesDirective,
-    AccumulationTooltip,
-    BarSeries,
     Category,
     ChartComponent,
-    DataLabel,
     Inject as ChartInject,
     Legend,
-    PieSeries,
     SeriesCollectionDirective,
     SeriesDirective,
     SplineAreaSeries,
@@ -26,8 +17,8 @@ import KpiCard from "../../../components/KpiCard";
 import { getUser } from "~/appwrite/auth";
 import { getSavedTrips } from "~/appwrite/trips";
 import { getAllUsers } from "~/appwrite/users";
-import { categoryAxis, chartArea, COLORS, legend, PALETTE, tooltip, valueAxis } from "~/lib/chart-theme";
-import { bucket, countBy, lastMonths, monthLabel, pctChange, thisVsLast } from "~/lib/stats";
+import { categoryAxis, chartArea, COLORS, legend, tooltip, valueAxis } from "~/lib/chart-theme";
+import { bucket, lastMonths, monthLabel, pctChange, thisVsLast } from "~/lib/stats";
 import type { Route } from "./+types/dashboard";
 
 export const meta = () => [{ title: "Dashboard | TravelSphere Admin" }];
@@ -55,8 +46,6 @@ const Dashboard = ({ loaderData }: Route.ComponentProps) => {
     const userSeries = bucket(userDates, months);
     const growth = months.map((m, i) => ({ month: monthLabel(m), trips: tripSeries[i], users: userSeries[i] }));
 
-    const byStyle = countBy(trips, (t) => t.style ?? "").map((d, i) => ({ ...d, color: PALETTE[i % PALETTE.length] }));
-    const byState = countBy(trips, (t) => t.state ?? "").slice(0, 6);
     const states = new Set(trips.map((t) => t.state).filter(Boolean)).size;
     const admins = users.filter((u) => u.status === "admin").length;
 
@@ -93,7 +82,7 @@ const Dashboard = ({ loaderData }: Route.ComponentProps) => {
                 <KpiCard label="States covered" value={states} note="Across all trips" Icon={MapPinned} tone="bg-amber-50 text-amber-600" />
             </ul>
 
-            {/* Charts row 1 */}
+            {/* Growth + recent users */}
             <section className="grid grid-cols-1 xl:grid-cols-3 gap-6">
                 <ChartCard
                     className="xl:col-span-2"
@@ -106,34 +95,6 @@ const Dashboard = ({ loaderData }: Route.ComponentProps) => {
                         <SeriesCollectionDirective>
                             <SeriesDirective dataSource={growth} xName="month" yName="trips" name="Trips" type="SplineArea" fill={COLORS.blue} opacity={0.18} border={{ width: 3, color: COLORS.blue }} marker={{ visible: true, width: 8, height: 8, fill: "#ffffff", border: { width: 2, color: COLORS.blue } }} />
                             <SeriesDirective dataSource={growth} xName="month" yName="users" name="Users" type="SplineArea" fill={COLORS.pink} opacity={0.15} border={{ width: 3, color: COLORS.pink }} marker={{ visible: true, width: 8, height: 8, fill: "#ffffff", border: { width: 2, color: COLORS.pink } }} />
-                        </SeriesCollectionDirective>
-                    </ChartComponent>
-                </ChartCard>
-
-                <ChartCard title="Travel styles" subtitle="Share of trips by style" empty={!byStyle.length ? "No trips yet." : undefined}>
-                    <AccumulationChartComponent
-                        id="dash-styles"
-                        legendSettings={{ visible: true, position: "Bottom" }}
-                        tooltip={{ enable: true, format: "${point.x}: <b>${point.y}</b>" }}
-                        background="transparent"
-                        height="300px"
-                        centerLabel={{ text: `${trips.length}<br>trips`, textStyle: { size: "16px", fontWeight: "700", color: "#111827" } }}
-                    >
-                        <ChartInject services={[PieSeries, AccumulationLegend, AccumulationTooltip, AccumulationDataLabel]} />
-                        <AccumulationSeriesCollectionDirective>
-                            <AccumulationSeriesDirective dataSource={byStyle} xName="x" yName="y" type="Pie" pointColorMapping="color" radius="85%" innerRadius="65%" border={{ width: 3, color: "#ffffff" }} />
-                        </AccumulationSeriesCollectionDirective>
-                    </AccumulationChartComponent>
-                </ChartCard>
-            </section>
-
-            {/* Charts row 2 + recent users */}
-            <section className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                <ChartCard className="xl:col-span-2" title="Top states" subtitle="Where trips are being planned" empty={!byState.length ? "No trips yet." : undefined}>
-                    <ChartComponent id="dash-states" dataSource={byState} primaryXAxis={{ ...categoryAxis, isInversed: true }} primaryYAxis={valueAxis({ minimum: 0, interval: 1 })} chartArea={chartArea} tooltip={{ enable: true }} background="transparent" height="300px">
-                        <ChartInject services={[BarSeries, Category, Tooltip, DataLabel]} />
-                        <SeriesCollectionDirective>
-                            <SeriesDirective dataSource={byState} xName="x" yName="y" name="Trips" type="Bar" fill={COLORS.violet} columnWidth={0.5} cornerRadius={{ topRight: 8, bottomRight: 8 }} marker={{ dataLabel: { visible: true, position: "Outer", font: { fontWeight: "600", color: "#374151" } } }} />
                         </SeriesCollectionDirective>
                     </ChartComponent>
                 </ChartCard>
