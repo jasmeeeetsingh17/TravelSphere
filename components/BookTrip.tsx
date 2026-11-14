@@ -5,7 +5,7 @@ import type { TripView } from "~/lib/trip-view";
 import { money } from "~/lib/utils";
 import Modal from "./Modal";
 
-const input = "h-11 w-full rounded-xl border border-light-400 bg-white px-4 text-sm text-dark-100 outline-none focus:border-primary-100 focus:ring-2 focus:ring-primary-100/15";
+const input = "h-11 w-full rounded-xl border border-light-400 bg-surface px-4 text-sm text-dark-100 outline-none focus:border-primary-100 focus:ring-2 focus:ring-primary-100/15";
 const label = "flex flex-col gap-1.5 text-sm font-medium text-dark-100";
 
 const inDays = (n: number) => new Date(Date.now() + n * 86_400_000).toISOString().slice(0, 10);

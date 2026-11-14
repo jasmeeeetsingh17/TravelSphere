@@ -26,7 +26,7 @@ const SORTS = {
 type Sort = keyof typeof SORTS;
 const PAGE = 12;
 
-const control = "h-11 rounded-xl border border-light-400 bg-white px-3 text-sm text-dark-100 outline-none focus:border-primary-100 focus:ring-2 focus:ring-primary-100/15";
+const control = "h-11 rounded-xl border border-light-400 bg-surface px-3 text-sm text-dark-100 outline-none focus:border-primary-100 focus:ring-2 focus:ring-primary-100/15";
 const uniq = (list: (string | undefined)[]) => [...new Set(list.filter(Boolean) as string[])].sort();
 
 const Trips = ({ loaderData: trips }: Route.ComponentProps) => {
@@ -91,7 +91,7 @@ const Trips = ({ loaderData: trips }: Route.ComponentProps) => {
             </div>
 
             {/* Summary */}
-            <ul className="grid grid-cols-2 md:grid-cols-4 bg-white rounded-2xl border border-light-400 divide-x divide-y md:divide-y-0 divide-light-400 overflow-hidden">
+            <ul className="grid grid-cols-2 md:grid-cols-4 bg-surface rounded-2xl border border-light-400 divide-x divide-y md:divide-y-0 divide-light-400 overflow-hidden">
                 {stats.map(([label, value]) => (
                     <li key={label} className="px-5 py-4 flex flex-col gap-0.5">
                         <small className="text-xs text-gray-100">{label}</small>
@@ -101,7 +101,7 @@ const Trips = ({ loaderData: trips }: Route.ComponentProps) => {
             </ul>
 
             {/* Toolbar */}
-            <section className="bg-white rounded-2xl border border-light-400 p-3 md:p-4 flex flex-col gap-3">
+            <section className="bg-surface rounded-2xl border border-light-400 p-3 md:p-4 flex flex-col gap-3">
                 <div className="flex flex-col lg:flex-row gap-3">
                     <span className="relative flex-1">
                         <Search size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-100" />
@@ -172,7 +172,7 @@ const Trips = ({ loaderData: trips }: Route.ComponentProps) => {
                                 aria-selected={view === v}
                                 aria-label={`${v} view`}
                                 onClick={() => setView(v)}
-                                className={cn("size-8 rounded-lg flex items-center justify-center transition-colors cursor-pointer", view === v ? "bg-white text-primary-100 shadow" : "text-gray-100 hover:text-dark-100")}
+                                className={cn("size-8 rounded-lg flex items-center justify-center transition-colors cursor-pointer", view === v ? "bg-surface text-primary-100 shadow" : "text-gray-100 hover:text-dark-100")}
                             >
                                 <Icon size={16} />
                             </button>
@@ -183,7 +183,7 @@ const Trips = ({ loaderData: trips }: Route.ComponentProps) => {
 
             {/* Results */}
             {!visible.length ? (
-                <div className="flex flex-col items-center gap-3 text-center bg-white rounded-2xl border border-dashed border-light-400 py-16">
+                <div className="flex flex-col items-center gap-3 text-center bg-surface rounded-2xl border border-dashed border-light-400 py-16">
                     <p className="text-gray-100">{trips.length ? "No trips match these filters." : "There are no trips yet."}</p>
                     {trips.length ? (
                         <button onClick={clear} className="text-sm font-semibold text-primary-100 hover:underline cursor-pointer">Clear filters</button>
@@ -200,7 +200,7 @@ const Trips = ({ loaderData: trips }: Route.ComponentProps) => {
                     ))}
                 </div>
             ) : (
-                <div className="bg-white rounded-2xl border border-light-400 overflow-x-auto">
+                <div className="bg-surface rounded-2xl border border-light-400 overflow-x-auto">
                     <table className="w-full min-w-[820px] text-sm">
                         <thead>
                             <tr className="text-left text-xs uppercase tracking-wider text-gray-100 border-b border-light-400">
@@ -254,7 +254,7 @@ const Trips = ({ loaderData: trips }: Route.ComponentProps) => {
             {filtered.length > shown && (
                 <button
                     onClick={() => setShown((n) => n + PAGE)}
-                    className="self-center h-11 px-6 rounded-xl border border-light-400 bg-white text-sm font-semibold text-dark-100 hover:border-primary-100 hover:text-primary-100 transition-colors cursor-pointer"
+                    className="self-center h-11 px-6 rounded-xl border border-light-400 bg-surface text-sm font-semibold text-dark-100 hover:border-primary-100 hover:text-primary-100 transition-colors cursor-pointer"
                 >
                     Load more ({filtered.length - shown} left)
                 </button>

@@ -11,7 +11,7 @@ type Props = {
 
 /** White card used around every chart so they all look the same. */
 const ChartCard = ({ title, subtitle, empty, children, className = "" }: Props) => (
-    <article className={`bg-white rounded-3xl border border-light-400 shadow-sm p-6 flex flex-col gap-4 ${className}`}>
+    <article className={`bg-surface rounded-3xl border border-light-400 shadow-sm p-6 flex flex-col gap-4 ${className}`}>
         <header className="flex flex-col gap-0.5">
             <h2 className="text-lg font-semibold text-dark-100">{title}</h2>
             {subtitle && <p className="text-sm text-gray-100">{subtitle}</p>}

@@ -96,7 +96,7 @@ const Dashboard = ({ loaderData }: Route.ComponentProps) => {
                     </ChartComponent>
                 </ChartCard>
 
-                <article className="bg-white rounded-3xl border border-light-400 shadow-sm p-6 flex flex-col gap-4">
+                <article className="bg-surface rounded-3xl border border-light-400 shadow-sm p-6 flex flex-col gap-4">
                     <header className="flex items-center justify-between">
                         <span className="flex flex-col gap-0.5">
                             <h2 className="text-lg font-semibold text-dark-100">Most booked trips</h2>
@@ -132,7 +132,7 @@ const Dashboard = ({ loaderData }: Route.ComponentProps) => {
 
             {/* Recent bookings + notifications */}
             <section className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
-            <article className="xl:col-span-2 bg-white rounded-3xl border border-light-400 shadow-sm p-6 flex flex-col gap-4">
+            <article className="xl:col-span-2 bg-surface rounded-3xl border border-light-400 shadow-sm p-6 flex flex-col gap-4">
                 <header className="flex items-center justify-between">
                     <span className="flex flex-col gap-0.5">
                         <h2 className="text-lg font-semibold text-dark-100">Recent bookings</h2>
@@ -190,7 +190,7 @@ const Dashboard = ({ loaderData }: Route.ComponentProps) => {
                         ))}
                     </div>
                 ) : (
-                    <div className="flex flex-col items-center gap-3 bg-white rounded-3xl border border-dashed border-light-400 text-center py-14">
+                    <div className="flex flex-col items-center gap-3 bg-surface rounded-3xl border border-dashed border-light-400 text-center py-14">
                         <p className="text-gray-100">No trips yet.</p>
                         <Link to="/trips/create" className="flex items-center gap-2 bg-primary-100 hover:bg-primary-500 text-white text-sm font-semibold rounded-full px-5 py-2.5 transition-colors">
                             <Plus size={16} /> Create the first trip

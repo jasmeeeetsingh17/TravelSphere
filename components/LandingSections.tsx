@@ -29,7 +29,7 @@ export const Deals = () => (
                 const deal = Math.round((price * (100 - off)) / 100 / 100) * 100;
                 return (
                     <li key={id}>
-                        <Link to={`/travel/${t.id}`} className="group block h-full bg-white rounded-3xl border border-light-400 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all">
+                        <Link to={`/travel/${t.id}`} className="group block h-full bg-surface rounded-3xl border border-light-400 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all">
                             <span className="relative block h-44 overflow-hidden">
                                 <img src={t.imageUrl} alt={t.name} className="size-full object-cover group-hover:scale-105 transition-transform duration-700" />
                                 <span className="absolute top-3 left-3 flex items-center gap-1 rounded-full bg-pink-500 text-white text-xs font-bold px-3 py-1 shadow">
@@ -77,7 +77,7 @@ export const Faq = () => (
         <ul className="flex flex-col gap-3">
             {FAQS.map((f, i) => (
                 <li key={f.q}>
-                    <details className="group bg-white rounded-2xl border border-light-400 open:shadow-md transition-shadow" open={i === 0}>
+                    <details className="group bg-surface rounded-2xl border border-light-400 open:shadow-md transition-shadow" open={i === 0}>
                         <summary className="flex items-center justify-between gap-4 cursor-pointer list-none px-5 py-4 font-semibold text-dark-100 [&::-webkit-details-marker]:hidden">
                             {f.q}
                             <ChevronDown size={20} className="shrink-0 text-gray-100 transition-transform group-open:rotate-180" />

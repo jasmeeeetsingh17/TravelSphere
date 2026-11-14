@@ -83,7 +83,7 @@ const TravelPage = () => {
                 <div className="bg-linear100 bg-cover">
                     <div className="wrapper relative pt-32 pb-36 md:pt-40 md:pb-44 flex flex-col">
                         <div className="flex flex-col gap-6 max-w-2xl">
-                            <span className="flex items-center gap-2 w-fit bg-white/80 backdrop-blur text-primary-100 text-sm font-semibold rounded-full px-4 py-1.5 shadow-sm">
+                            <span className="flex items-center gap-2 w-fit bg-surface/80 backdrop-blur text-primary-100 text-sm font-semibold rounded-full px-4 py-1.5 shadow-sm">
                                 <MapPinned size={16} /> Explore incredible India
                             </span>
                             <h1 className="text-5xl md:text-7xl font-bold text-dark-100 leading-[1.05] tracking-tight">
@@ -104,9 +104,9 @@ const TravelPage = () => {
                                 <span className="flex items-center gap-3">
                                     <span className="flex -space-x-3">
                                         {AVATARS.map((src) => (
-                                            <img key={src} src={src} alt="" className="size-10 rounded-full object-cover border-2 border-white shadow" />
+                                            <img key={src} src={src} alt="" className="size-10 rounded-full object-cover border-2 border-surface shadow" />
                                         ))}
-                                        <span className="size-10 rounded-full border-2 border-white bg-primary-100 text-white text-[11px] font-bold flex items-center justify-center shadow">
+                                        <span className="size-10 rounded-full border-2 border-surface bg-primary-100 text-white text-[11px] font-bold flex items-center justify-center shadow">
                                             12K+
                                         </span>
                                     </span>
@@ -145,7 +145,7 @@ const TravelPage = () => {
 
             {/* Stats strip */}
             <section className="wrapper -mt-12 relative z-10">
-                <ul className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white rounded-3xl shadow-xl border border-light-400 p-6 md:p-8">
+                <ul className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-surface rounded-3xl shadow-xl border border-light-400 p-6 md:p-8">
                     {stats.map(({ value, label, star }) => (
                         <li key={label} className="flex flex-col items-center text-center gap-1">
                             <strong className="flex items-center gap-1 text-2xl md:text-3xl font-bold text-primary-100">

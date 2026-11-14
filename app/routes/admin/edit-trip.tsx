@@ -14,11 +14,11 @@ export const clientLoader = async ({ params }: Route.ClientLoaderArgs) => await 
 
 const IMAGES = [...Array.from({ length: 15 }, (_, i) => `/assets/images/${i + 1}.jpg`), "/assets/images/card-img-2.png"];
 
-const input = "h-11 w-full rounded-xl border border-light-400 bg-white px-4 text-sm text-dark-100 outline-none focus:border-primary-100 focus:ring-2 focus:ring-primary-100/15";
+const input = "h-11 w-full rounded-xl border border-light-400 bg-surface px-4 text-sm text-dark-100 outline-none focus:border-primary-100 focus:ring-2 focus:ring-primary-100/15";
 const label = "flex flex-col gap-2 text-sm font-medium text-dark-100";
 
 const Card = ({ title, subtitle, children }: { title: string; subtitle?: string; children: ReactNode }) => (
-    <section className="bg-white rounded-3xl border border-light-400 shadow-sm p-6 md:p-8 flex flex-col gap-5">
+    <section className="bg-surface rounded-3xl border border-light-400 shadow-sm p-6 md:p-8 flex flex-col gap-5">
         <header className="flex flex-col gap-0.5">
             <h2 className="text-lg font-semibold text-dark-100">{title}</h2>
             {subtitle && <p className="text-sm text-gray-100">{subtitle}</p>}
@@ -282,7 +282,7 @@ const EditTrip = ({ loaderData, params }: Route.ComponentProps) => {
                                                 aria-pressed={on}
                                                 className={cn(
                                                     "flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold border transition-colors cursor-pointer",
-                                                    on ? "bg-primary-100 border-primary-100 text-white" : "bg-white border-light-400 text-dark-200 hover:border-primary-100"
+                                                    on ? "bg-primary-100 border-primary-100 text-white" : "bg-surface border-light-400 text-dark-200 hover:border-primary-100"
                                                 )}
                                             >
                                                 {on && <Check size={13} />} {i}
@@ -322,7 +322,7 @@ const EditTrip = ({ loaderData, params }: Route.ComponentProps) => {
                 </div>
 
                 {/* Save bar */}
-                <div className="sticky bottom-4 z-20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/95 backdrop-blur rounded-2xl border border-light-400 shadow-xl px-5 py-4">
+                <div className="sticky bottom-4 z-20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-surface/95 backdrop-blur rounded-2xl border border-light-400 shadow-xl px-5 py-4">
                     {error ? <p className="text-sm text-red-500">{error}</p> : <p className="text-sm text-gray-100">Changes are saved to the database for everyone.</p>}
                     <span className="flex gap-3">
                         <Link to={`/trips/${params.tripId}`} className="h-11 px-6 rounded-xl border border-light-400 text-dark-100 font-medium flex items-center hover:bg-light-200">

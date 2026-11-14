@@ -2,10 +2,17 @@
 
 @import "tailwindcss";
 
+/* Dark mode is switched on by the "dark" class on <html> (see ThemeToggle). */
+@custom-variant dark (&:where(.dark, .dark *));
+
 
 @theme {
   --font-figtree: "Figtree", sans-serif;
   --font-inter: "Inter", sans-serif;
+  /* Card and panel background (white in light mode) */
+  --color-surface: #ffffff;
+  /* Always-dark colour for overlays and the footer, in both modes */
+  --color-ink: #1f1f36;
   --color-dark-100: #1f1f36;
   --color-dark-200: #141627;
   --color-dark-300: #101828;
@@ -51,7 +58,7 @@
 
 @layer components {
   .trip-card {
-    @apply shadow-300 bg-white rounded-[20px] flex flex-col w-full relative transition-all duration-300 hover:-translate-y-1 hover:shadow-xl;
+    @apply shadow-300 bg-surface rounded-[20px] flex flex-col w-full relative transition-all duration-300 hover:-translate-y-1 hover:shadow-xl;
 
     > span img {
       @apply w-full h-[180px] object-cover aspect-video;
@@ -110,11 +117,11 @@
   }
 
   .tripCard-pill {
-    @apply bg-white py-1 px-2.5 w-fit rounded-[20px] absolute top-2.5 right-4 text-dark-100 text-sm font-semibold;
+    @apply bg-surface py-1 px-2.5 w-fit rounded-[20px] absolute top-2.5 right-4 text-dark-100 text-sm font-semibold;
   }
 
   .price-pill {
-    @apply bg-white py-0.5 px-2.5 w-fit rounded-[20px] top-2.5 right-4 text-dark-100 text-sm font-semibold;
+    @apply bg-surface py-0.5 px-2.5 w-fit rounded-[20px] top-2.5 right-4 text-dark-100 text-sm font-semibold;
   }
 
   .trip-grid {
@@ -126,8 +133,115 @@
 html,
 body {
   font-family: "Figtree", sans-serif;
-  background-color: #f9fbfc;
+  background-color: var(--color-light-200);
+  color: var(--color-dark-100);
   scroll-behavior: smooth;
+}
+
+/* ---------- Dark mode ----------
+ * The app is styled with the colour tokens above, so dark mode only swaps the tokens:
+ * light backgrounds become deep navy and dark text becomes light. */
+.dark {
+  color-scheme: dark;
+
+  --color-surface: #141a2c;
+  --color-light-100: #1a2034;
+  --color-light-200: #0a0d1a;
+  --color-light-300: #1b2236;
+  --color-light-400: #252d45;
+  --color-light-500: #1a2a48;
+  --color-gray-100: #9ba1b6;
+  --color-gray-200: #283049;
+  --color-gray-500: #a3a9bc;
+  --color-gray-700: #cbd0dc;
+  --color-dark-100: #eceef5;
+  --color-dark-200: #dde0ea;
+  --color-dark-300: #f3f4f8;
+  --color-dark-400: #c9cdda;
+
+  --color-primary-50: #17264a;
+  --color-primary-100: #4d8bff;
+  --color-primary-500: #3a78f0;
+  --color-success-50: #0f2a20;
+  --color-success-700: #4ade80;
+  --color-red-50: #2e1713;
+  --color-red-200: #5c2b21;
+  --color-red-500: #ff7f61;
+  --color-pink-50: #2c1424;
+  --color-pink-500: #f472b6;
+  --color-navy-50: #0f2233;
+  --color-navy-500: #38bdf8;
+  --color-amber-50: #2b2110;
+  --color-amber-600: #fbbf24;
+  --color-amber-700: #fcd34d;
+  --color-violet-50: #221a3d;
+  --color-violet-700: #c4b5fd;
+  --color-sky-50: #0c2230;
+  --color-sky-600: #38bdf8;
+
+  /* Footer and overlays: a step darker than the page so the footer doesn't look lighter */
+  --color-ink: #060913;
+
+  /* The hero picture gets a dark wash so the light text stays readable */
+  --background-image-linear100: linear-gradient(105deg, rgba(10, 13, 26, 0.92) 14%, rgba(10, 13, 26, 0.35) 62%, rgba(10, 13, 26, 0.1) 100%);
+}
+
+/* Shadows on a dark page: deeper, plus a faint top highlight that lifts cards off the page */
+.dark .shadow-sm,
+.dark .shadow-300,
+.dark .trip-card {
+  --tw-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.045) inset, 0 6px 18px -6px rgba(0, 0, 0, 0.55);
+}
+.dark .shadow-xl,
+.dark .shadow-200 {
+  --tw-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.05) inset, 0 24px 48px -12px rgba(0, 0, 0, 0.7);
+}
+
+/* A soft blue and violet glow behind the page instead of one flat colour */
+.dark body {
+  background-image:
+    radial-gradient(900px 520px at 0% -5%, rgba(77, 139, 255, 0.09), transparent 70%),
+    radial-gradient(800px 480px at 100% 10%, rgba(139, 92, 246, 0.07), transparent 70%);
+  background-attachment: fixed;
+}
+
+/* Photos are toned down a touch so they don't glare on a dark page */
+.dark img:not([src$=".svg"]) {
+  filter: brightness(0.9) saturate(1.05);
+}
+
+.dark ::selection {
+  background: rgba(77, 139, 255, 0.35);
+  color: #fff;
+}
+
+/* Smooth fade while switching theme (added for a moment by ThemeToggle) */
+.theme-switching,
+.theme-switching * {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, fill 0.3s ease !important;
+}
+
+/* Charts draw their own SVG text and grid lines */
+.dark .e-chart text,
+.dark .e-accumulationchart text {
+  fill: #c3c8d6 !important;
+}
+.dark .e-chart [id*="MajorGridLine"] {
+  stroke: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Skeleton shimmer for loading placeholders */
+@keyframes skeleton {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--color-light-300) 25%, var(--color-light-400) 50%, var(--color-light-300) 75%);
+  background-size: 200% 100%;
+  animation: skeleton 1.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton { animation: none; }
 }
 
 /* Syncfusion charts draw SVG text in "Roboto"; use the site font instead */

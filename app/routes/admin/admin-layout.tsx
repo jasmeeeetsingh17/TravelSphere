@@ -1,7 +1,7 @@
-import { Outlet, redirect } from "react-router";
+import { Outlet, redirect, useLocation, useNavigation } from "react-router";
 import { MobileSidebar, NavItems } from "../../../components";
 import AdminTopbar from "../../../components/AdminTopbar";
-import Spinner from "../../../components/Spinner";
+import { AdminPageSkeleton, AdminShellSkeleton, isAdminPath, useDelayed } from "../../../components/Skeleton";
 import { getUser, isAdmin, logoutUser } from "~/appwrite/auth";
 import { AdminFeedProvider } from "~/lib/admin-feed";
 
@@ -20,14 +20,17 @@ export async function clientLoader() {
 }
 
 export function HydrateFallback() {
-  return (
-    <div className="fixed inset-0 flex items-center justify-center bg-light-200">
-      <Spinner label="Opening dashboard" />
-    </div>
-  );
+  return <AdminShellSkeleton />;
 }
 
-const AdminLayout = () => (
+const AdminLayout = () => {
+  // Moving to another admin page shows a page skeleton while its data loads
+  const navigation = useNavigation();
+  const { pathname } = useLocation();
+  const next = navigation.location?.pathname;
+  const switching = useDelayed(navigation.state === "loading" && !!next && next !== pathname && isAdminPath(next));
+
+  return (
   <div className="admin-layout">
     <AdminFeedProvider>
     <MobileSidebar />
@@ -39,11 +42,12 @@ const AdminLayout = () => (
     <section className="children">
       <AdminTopbar />
       <div className="pt-6 lg:pt-8">
-        <Outlet />
+        {switching ? <AdminPageSkeleton /> : <Outlet />}
       </div>
     </section>
     </AdminFeedProvider>
   </div>
-);
+  );
+};
 
 export default AdminLayout;

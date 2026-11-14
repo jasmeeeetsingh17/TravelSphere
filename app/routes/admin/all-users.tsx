@@ -99,7 +99,7 @@ const InviteGuide = () => {
                 </ol>
                 <div className="flex items-center gap-2 rounded-xl border border-light-400 bg-light-200 p-2 pl-4">
                     <code className="flex-1 truncate text-sm text-dark-100">{link}</code>
-                    <button onClick={copy} className="flex items-center gap-1.5 rounded-lg bg-white border border-light-400 px-3 py-2 text-sm font-semibold text-dark-100 hover:border-primary-100 cursor-pointer">
+                    <button onClick={copy} className="flex items-center gap-1.5 rounded-lg bg-surface border border-light-400 px-3 py-2 text-sm font-semibold text-dark-100 hover:border-primary-100 cursor-pointer">
                         {copied ? <Check size={15} className="text-success-700" /> : <Copy size={15} />} {copied ? "Copied" : "Copy"}
                     </button>
                 </div>
@@ -208,7 +208,7 @@ const AllUsers = ({ loaderData }: Route.ComponentProps) => {
 
             {notice && <p className="rounded-xl bg-success-50 text-success-700 px-4 py-3 text-sm">{notice}</p>}
 
-            <section className="bg-white rounded-3xl border border-light-400 shadow-sm p-4 md:p-6 flex flex-col gap-5">
+            <section className="bg-surface rounded-3xl border border-light-400 shadow-sm p-4 md:p-6 flex flex-col gap-5">
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
                     <div className="flex flex-wrap gap-1 bg-light-200 rounded-full p-1 w-fit" role="tablist">
                         {TABS.map((t) => (
@@ -217,7 +217,7 @@ const AllUsers = ({ loaderData }: Route.ComponentProps) => {
                                 role="tab"
                                 aria-selected={tab === t}
                                 onClick={() => setTab(t)}
-                                className={cn("rounded-full px-4 py-1.5 text-sm font-semibold transition-colors cursor-pointer", tab === t ? "bg-white text-dark-100 shadow" : "text-gray-100 hover:text-dark-100")}
+                                className={cn("rounded-full px-4 py-1.5 text-sm font-semibold transition-colors cursor-pointer", tab === t ? "bg-surface text-dark-100 shadow" : "text-gray-100 hover:text-dark-100")}
                             >
                                 {t} <span className="text-xs text-gray-100">{counts[t]}</span>
                             </button>
@@ -230,7 +230,7 @@ const AllUsers = ({ loaderData }: Route.ComponentProps) => {
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
                                 placeholder="Search name or email"
-                                className="h-11 w-full rounded-xl border border-light-400 bg-white pl-10 pr-4 text-sm text-dark-100 outline-none focus:border-primary-100 focus:ring-2 focus:ring-primary-100/15"
+                                className="h-11 w-full rounded-xl border border-light-400 bg-surface pl-10 pr-4 text-sm text-dark-100 outline-none focus:border-primary-100 focus:ring-2 focus:ring-primary-100/15"
                             />
                         </span>
                         <label className="relative">
@@ -239,7 +239,7 @@ const AllUsers = ({ loaderData }: Route.ComponentProps) => {
                                 value={sort}
                                 onChange={(e) => setSort(e.target.value as Sort)}
                                 aria-label="Sort users"
-                                className="h-11 w-full rounded-xl border border-light-400 bg-white pl-10 pr-8 text-sm text-dark-100 outline-none focus:border-primary-100 cursor-pointer appearance-none"
+                                className="h-11 w-full rounded-xl border border-light-400 bg-surface pl-10 pr-8 text-sm text-dark-100 outline-none focus:border-primary-100 cursor-pointer appearance-none"
                             >
                                 {Object.entries(SORTS).map(([k, v]) => (
                                     <option key={k} value={k}>{v}</option>

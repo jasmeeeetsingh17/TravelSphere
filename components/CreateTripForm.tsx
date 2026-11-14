@@ -45,7 +45,7 @@ const writeRecent = (list: SavedPlan[]) => {
 
 /** Numbered section of the form. */
 const Step = ({ n, title, hint, done, children }: { n: number; title: string; hint?: string; done: boolean; children: ReactNode }) => (
-    <section className="bg-white rounded-3xl border border-light-400 shadow-sm p-5 md:p-7 flex flex-col gap-4">
+    <section className="bg-surface rounded-3xl border border-light-400 shadow-sm p-5 md:p-7 flex flex-col gap-4">
         <header className="flex items-center gap-3">
             <span
                 className={cn(
@@ -72,7 +72,7 @@ const Tile = ({ active, onClick, Icon, label, note }: { active: boolean; onClick
         aria-pressed={active}
         className={cn(
             "relative flex flex-col items-start gap-2 rounded-2xl border-2 p-4 text-left transition-all cursor-pointer",
-            active ? "border-primary-100 bg-primary-50/60 shadow-md shadow-primary-100/10" : "border-light-400 bg-white hover:border-primary-100/40 hover:-translate-y-0.5"
+            active ? "border-primary-100 bg-primary-50/60 shadow-md shadow-primary-100/10" : "border-light-400 bg-surface hover:border-primary-100/40 hover:-translate-y-0.5"
         )}
     >
         {active && (
@@ -132,11 +132,11 @@ const StatePicker = ({ value, onChange }: { value: string; onChange: (v: string)
                 aria-label="State or union territory"
                 role="combobox"
                 aria-expanded={open}
-                className="h-12 w-full rounded-xl border border-light-400 bg-white pl-11 pr-10 text-dark-100 outline-none focus:border-primary-100 focus:ring-2 focus:ring-primary-100/15"
+                className="h-12 w-full rounded-xl border border-light-400 bg-surface pl-11 pr-10 text-dark-100 outline-none focus:border-primary-100 focus:ring-2 focus:ring-primary-100/15"
             />
             <ChevronDown size={18} className={cn("absolute right-4 top-1/2 -translate-y-1/2 text-gray-100 pointer-events-none transition-transform", open && "rotate-180")} />
             {open && (
-                <ul role="listbox" className="absolute z-30 mt-2 w-full max-h-64 overflow-y-auto rounded-xl border border-light-400 bg-white shadow-xl py-1">
+                <ul role="listbox" className="absolute z-30 mt-2 w-full max-h-64 overflow-y-auto rounded-xl border border-light-400 bg-surface shadow-xl py-1">
                     {matches.length ? (
                         matches.map((s) => (
                             <li key={s}>
@@ -338,7 +338,7 @@ const CreateTripForm = ({ basePath }: Props) => {
                             key={idea.label}
                             type="button"
                             onClick={() => applyIdea(idea)}
-                            className="shrink-0 rounded-full border border-light-400 bg-white px-4 py-2 text-sm font-medium text-dark-200 hover:border-primary-100 hover:text-primary-100 transition-colors cursor-pointer"
+                            className="shrink-0 rounded-full border border-light-400 bg-surface px-4 py-2 text-sm font-medium text-dark-200 hover:border-primary-100 hover:text-primary-100 transition-colors cursor-pointer"
                         >
                             {idea.label}
                         </button>
@@ -488,7 +488,7 @@ const CreateTripForm = ({ basePath }: Props) => {
                                             aria-pressed={on}
                                             className={cn(
                                                 "flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium border transition-colors cursor-pointer",
-                                                on ? "bg-primary-100 border-primary-100 text-white" : "bg-white border-light-400 text-dark-200 hover:border-primary-100"
+                                                on ? "bg-primary-100 border-primary-100 text-white" : "bg-surface border-light-400 text-dark-200 hover:border-primary-100"
                                             )}
                                         >
                                             {on && <Check size={14} />} {i}
@@ -506,14 +506,14 @@ const CreateTripForm = ({ basePath }: Props) => {
                             rows={3}
                             placeholder="e.g. vegetarian food, travelling with grandparents, no early mornings, want a houseboat night"
                             aria-label="Anything else the AI should know"
-                            className="w-full rounded-xl border border-light-400 bg-white px-4 py-3 text-sm text-dark-100 outline-none resize-none focus:border-primary-100 focus:ring-2 focus:ring-primary-100/15"
+                            className="w-full rounded-xl border border-light-400 bg-surface px-4 py-3 text-sm text-dark-100 outline-none resize-none focus:border-primary-100 focus:ring-2 focus:ring-primary-100/15"
                         />
                         <small className="self-end text-xs text-gray-100 tabular-nums">{notes.length}/{NOTES_MAX}</small>
                     </Step>
                 </div>
 
                 {/* ---------------- Summary ---------------- */}
-                <aside className={cn("lg:sticky flex flex-col bg-white rounded-3xl border border-light-400 shadow-sm overflow-hidden", "lg:top-24")}>
+                <aside className={cn("lg:sticky flex flex-col bg-surface rounded-3xl border border-light-400 shadow-sm overflow-hidden", "lg:top-24")}>
                     <figure className="relative h-44">
                         <img src={image} alt="" className="size-full object-cover" />
                         <span className="absolute inset-0 bg-linear-to-t from-black/70 via-black/10 to-transparent" />
@@ -578,8 +578,8 @@ const CreateTripForm = ({ basePath }: Props) => {
 
             {/* Progress while the AI works */}
             {loading && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-100/50 backdrop-blur-sm px-4" role="status" aria-live="polite">
-                    <div className="w-full max-w-sm bg-white rounded-3xl shadow-2xl p-7 flex flex-col items-center gap-5 text-center">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 backdrop-blur-sm px-4" role="status" aria-live="polite">
+                    <div className="w-full max-w-sm bg-surface rounded-3xl shadow-2xl p-7 flex flex-col items-center gap-5 text-center">
                         <span className="relative size-16">
                             <span className="absolute inset-0 rounded-full border-4 border-primary-50 border-t-primary-100 border-r-violet-500 animate-spin" />
                             <Sparkles size={24} className="absolute inset-0 m-auto text-primary-100" />
@@ -614,7 +614,7 @@ const CreateTripForm = ({ basePath }: Props) => {
                                 <button
                                     type="button"
                                     onClick={() => openRecent(p)}
-                                    className="w-full flex items-center gap-3 rounded-2xl border border-light-400 bg-white p-3 pr-10 text-left hover:border-primary-100 transition-colors cursor-pointer"
+                                    className="w-full flex items-center gap-3 rounded-2xl border border-light-400 bg-surface p-3 pr-10 text-left hover:border-primary-100 transition-colors cursor-pointer"
                                 >
                                     <img src={toView(p.trip).imageUrl} alt="" className="size-14 rounded-xl object-cover shrink-0" />
                                     <span className="flex flex-col min-w-0 leading-tight gap-1">
@@ -640,7 +640,7 @@ const CreateTripForm = ({ basePath }: Props) => {
 
             {preview && (
                 <div ref={resultRef} className="flex flex-col gap-6 scroll-mt-24">
-                    <div className="relative overflow-hidden flex flex-col lg:flex-row lg:items-center justify-between gap-5 rounded-3xl bg-white border border-light-400 shadow-sm p-5 md:p-6">
+                    <div className="relative overflow-hidden flex flex-col lg:flex-row lg:items-center justify-between gap-5 rounded-3xl bg-surface border border-light-400 shadow-sm p-5 md:p-6">
                         <span className="absolute inset-y-0 left-0 w-1.5 bg-linear-to-b from-primary-100 to-violet-600" />
                         <span className="flex items-start gap-4 min-w-0">
                             <span className="size-12 shrink-0 rounded-2xl bg-linear-to-br from-primary-100 to-violet-600 text-white flex items-center justify-center shadow-md shadow-primary-100/30">
@@ -676,7 +676,7 @@ const CreateTripForm = ({ basePath }: Props) => {
                     </div>
                     {error && <p className="rounded-2xl bg-red-50 text-red-500 px-5 py-3 text-sm">{error}</p>}
                     <TripDetail trip={preview} backTo={basePath} />
-                    <div className="flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-3 rounded-3xl bg-white border border-light-400 p-4 md:p-5">
+                    <div className="flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-3 rounded-3xl bg-surface border border-light-400 p-4 md:p-5">
                         <button
                             type="button"
                             onClick={() => {

@@ -50,7 +50,7 @@ const ShareButton = ({ title }: { title: string }) => {
         }
     };
     return (
-        <button onClick={share} className="flex items-center gap-2 h-10 px-4 rounded-full border border-light-400 bg-white text-sm font-semibold text-dark-100 hover:border-primary-100 hover:text-primary-100 transition-colors cursor-pointer">
+        <button onClick={share} className="flex items-center gap-2 h-10 px-4 rounded-full border border-light-400 bg-surface text-sm font-semibold text-dark-100 hover:border-primary-100 hover:text-primary-100 transition-colors cursor-pointer">
             {copied ? <Check size={16} className="text-success-700" /> : <Share2 size={16} />} {copied ? "Link copied" : "Share"}
         </button>
     );
@@ -131,7 +131,7 @@ const TripDetail = ({ trip, backTo, showAi = false, actions, notice, showBooking
                 {/* ---------------- Main column ---------------- */}
                 <div className="lg:col-span-2 flex flex-col gap-6">
                     {/* Overview */}
-                    <article className="bg-white rounded-3xl border border-light-400 p-6 md:p-8 flex flex-col gap-4">
+                    <article className="bg-surface rounded-3xl border border-light-400 p-6 md:p-8 flex flex-col gap-4">
                         <h2 className="text-xl font-semibold text-dark-100">About this trip</h2>
                         <p className="text-gray-100 leading-7">{trip.description}</p>
                         {highlights.length > 0 && (
@@ -149,7 +149,7 @@ const TripDetail = ({ trip, backTo, showAi = false, actions, notice, showBooking
                     </article>
 
                     {/* Itinerary timeline */}
-                    <article className="bg-white rounded-3xl border border-light-400 p-6 md:p-8 flex flex-col gap-5">
+                    <article className="bg-surface rounded-3xl border border-light-400 p-6 md:p-8 flex flex-col gap-5">
                         <header className="flex items-center justify-between gap-3">
                             <span className="flex flex-col">
                                 <h2 className="text-xl font-semibold text-dark-100">Day-by-day itinerary</h2>
@@ -194,7 +194,7 @@ const TripDetail = ({ trip, backTo, showAi = false, actions, notice, showBooking
                                                         const [time, text] = splitActivity(a);
                                                         return (
                                                             <li key={a} className="flex items-start gap-3 rounded-xl bg-light-200 px-3 py-2.5">
-                                                                {time && <span className="shrink-0 rounded-md bg-white border border-light-400 px-2 py-0.5 text-[11px] font-semibold text-dark-200 tabular-nums">{time}</span>}
+                                                                {time && <span className="shrink-0 rounded-md bg-surface border border-light-400 px-2 py-0.5 text-[11px] font-semibold text-dark-200 tabular-nums">{time}</span>}
                                                                 <span className="text-sm text-dark-200 leading-6">{text}</span>
                                                             </li>
                                                         );
@@ -210,13 +210,13 @@ const TripDetail = ({ trip, backTo, showAi = false, actions, notice, showBooking
 
                     {/* Season + weather */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <article className="bg-white rounded-3xl border border-light-400 p-6 flex flex-col gap-3">
+                        <article className="bg-surface rounded-3xl border border-light-400 p-6 flex flex-col gap-3">
                             <h2 className="flex items-center gap-2 text-lg font-semibold text-dark-100">
                                 <Sun size={20} className="text-amber-500" /> Best time to visit
                             </h2>
                             <p className="text-sm text-gray-100 leading-6">{trip.bestTime || "Good to visit all year."}</p>
                         </article>
-                        <article className="bg-white rounded-3xl border border-light-400 p-6 flex flex-col gap-3">
+                        <article className="bg-surface rounded-3xl border border-light-400 p-6 flex flex-col gap-3">
                             <h2 className="flex items-center gap-2 text-lg font-semibold text-dark-100">
                                 <CloudSun size={20} className="text-primary-100" /> Weather
                             </h2>
@@ -232,7 +232,7 @@ const TripDetail = ({ trip, backTo, showAi = false, actions, notice, showBooking
                 </div>
 
                 {/* ---------------- Summary card ---------------- */}
-                <aside className="flex flex-col gap-5 bg-white rounded-3xl border border-light-400 shadow-sm p-6 lg:sticky lg:top-24">
+                <aside className="flex flex-col gap-5 bg-surface rounded-3xl border border-light-400 shadow-sm p-6 lg:sticky lg:top-24">
                     <h2 className="text-lg font-semibold text-dark-100">Trip summary</h2>
                     <ul className="flex flex-col gap-3.5">
                         {facts.map(({ Icon, label, value }) => (

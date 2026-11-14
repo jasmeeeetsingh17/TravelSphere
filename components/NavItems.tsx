@@ -60,7 +60,7 @@ const NavItems = ({ handleClick }: { handleClick?: () => void }) => {
     const today = bookings.filter((b) => b.createdAt && dayjs(b.createdAt).isSame(dayjs(), "day"));
 
     return (
-        <section className="flex flex-col h-full bg-white border-r border-light-400 px-5">
+        <section className="flex flex-col h-full bg-surface border-r border-light-400 px-5">
             <Link to="/dashboard" onClick={handleClick} className="flex items-center gap-2 py-7 border-b border-light-400">
                 <img src="/assets/icons/logo.svg" alt="" className="size-8" />
                 <span className="flex flex-col leading-tight">
@@ -89,7 +89,7 @@ const NavItems = ({ handleClick }: { handleClick?: () => void }) => {
                                             title={badge === "pending" ? `${count} waiting for confirmation` : `${count} waiting for admin access`}
                                             className={cn(
                                                 "min-w-6 h-6 px-1.5 rounded-full text-[11px] font-bold flex items-center justify-center",
-                                                on ? "bg-white text-primary-100" : badge === "pending" ? "bg-amber-400 text-dark-100" : "bg-violet-100 text-violet-700"
+                                                on ? "bg-surface text-primary-100" : badge === "pending" ? "bg-amber-400 text-dark-100" : "bg-violet-100 text-violet-700"
                                             )}
                                         >
                                             {count > 99 ? "99+" : count}

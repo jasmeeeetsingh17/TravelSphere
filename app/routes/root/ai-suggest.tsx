@@ -21,7 +21,7 @@ type Pick = { trip: TripView; reason: string };
 const chip = (on: boolean) =>
     cn(
         "rounded-full px-3.5 py-2 text-sm font-medium border transition-colors cursor-pointer",
-        on ? "bg-primary-100 border-primary-100 text-white" : "bg-white border-light-400 text-dark-200 hover:border-primary-100"
+        on ? "bg-primary-100 border-primary-100 text-white" : "bg-surface border-light-400 text-dark-200 hover:border-primary-100"
     );
 
 const Question = ({ title, children }: { title: string; children: ReactNode }) => (
@@ -113,11 +113,11 @@ const AiSuggest = () => {
     return (
         <main className="flex flex-col">
             {/* Header */}
-            <section className="relative overflow-hidden bg-linear-to-br from-primary-50 via-white to-violet-50 border-b border-light-400">
+            <section className="relative overflow-hidden bg-linear-to-br from-primary-50 via-surface to-violet-50 border-b border-light-400">
                 <span className="absolute -right-24 -top-24 size-96 rounded-full bg-primary-100/10 blur-3xl" />
                 <span className="absolute -left-24 bottom-0 size-72 rounded-full bg-violet-500/10 blur-3xl" />
                 <div className="wrapper relative pt-32 pb-12 flex flex-col items-center text-center gap-5">
-                    <span className="flex items-center gap-2 bg-white border border-light-400 shadow-sm rounded-full px-4 py-1.5 text-sm font-semibold text-primary-100">
+                    <span className="flex items-center gap-2 bg-surface border border-light-400 shadow-sm rounded-full px-4 py-1.5 text-sm font-semibold text-primary-100">
                         <Sparkles size={16} /> {ai ? "AI Suggest · Powered by Google Gemini" : "AI Suggest"}
                     </span>
                     <h1 className="text-4xl md:text-6xl font-bold text-dark-100 tracking-tight max-w-3xl">
@@ -131,7 +131,7 @@ const AiSuggest = () => {
 
             <div className="wrapper py-10 flex flex-col gap-10">
                 {/* Questions */}
-                <form ref={formRef} onSubmit={submit} className="bg-white rounded-3xl border border-light-400 shadow-sm p-5 md:p-8 flex flex-col gap-7 scroll-mt-24">
+                <form ref={formRef} onSubmit={submit} className="bg-surface rounded-3xl border border-light-400 shadow-sm p-5 md:p-8 flex flex-col gap-7 scroll-mt-24">
                     <Question title="Where would you like to go?">
                         <Chips value={state} onChange={setState} options={STATES} any="Anywhere" />
                     </Question>
@@ -146,7 +146,7 @@ const AiSuggest = () => {
                                     onClick={() => setGroup(g)}
                                     className={cn(
                                         "flex items-center justify-center gap-2 h-12 rounded-2xl border-2 text-sm font-semibold transition-colors cursor-pointer",
-                                        group === g ? "border-primary-100 bg-primary-50 text-primary-100" : "border-light-400 bg-white text-dark-200 hover:border-primary-100/50"
+                                        group === g ? "border-primary-100 bg-primary-50 text-primary-100" : "border-light-400 bg-surface text-dark-200 hover:border-primary-100/50"
                                     )}
                                 >
                                     <Icon size={17} /> {g || "Anyone"}
@@ -172,7 +172,7 @@ const AiSuggest = () => {
                                     value={month}
                                     onChange={(e) => setMonth(e.target.value)}
                                     aria-label="Travel month"
-                                    className="h-11 w-full rounded-xl border border-light-400 bg-white pl-10 pr-3 text-sm text-dark-100 outline-none focus:border-primary-100 focus:ring-2 focus:ring-primary-100/15 cursor-pointer"
+                                    className="h-11 w-full rounded-xl border border-light-400 bg-surface pl-10 pr-3 text-sm text-dark-100 outline-none focus:border-primary-100 focus:ring-2 focus:ring-primary-100/15 cursor-pointer"
                                 >
                                     <option value="">Not sure yet</option>
                                     {MONTHS.map((m) => <option key={m} value={m}>{m}</option>)}
@@ -196,7 +196,7 @@ const AiSuggest = () => {
                             onChange={(e) => setNotes(e.target.value.slice(0, 300))}
                             placeholder="e.g. love beaches and seafood, travelling with kids, want to avoid long drives"
                             aria-label="Anything else"
-                            className="h-12 w-full rounded-xl border border-light-400 bg-white px-4 text-sm text-dark-100 outline-none focus:border-primary-100 focus:ring-2 focus:ring-primary-100/15"
+                            className="h-12 w-full rounded-xl border border-light-400 bg-surface px-4 text-sm text-dark-100 outline-none focus:border-primary-100 focus:ring-2 focus:ring-primary-100/15"
                         />
                     </Question>
                     <input value={company} onChange={(e) => setCompany(e.target.value)} name="company" tabIndex={-1} autoComplete="off" aria-hidden className="hidden" />
@@ -226,7 +226,7 @@ const AiSuggest = () => {
                                 <Loader2 size={20} className="animate-spin text-primary-100" /> Finding the best trips for you...
                             </h2>
                             {[0, 1, 2].map((i) => (
-                                <div key={i} className="flex flex-col md:flex-row gap-5 bg-white rounded-3xl border border-light-400 p-4 animate-pulse">
+                                <div key={i} className="flex flex-col md:flex-row gap-5 bg-surface rounded-3xl border border-light-400 p-4 animate-pulse">
                                     <span className="h-48 md:h-40 md:w-64 rounded-2xl bg-light-300 shrink-0" />
                                     <span className="flex-1 flex flex-col gap-3 py-2">
                                         <span className="h-5 w-2/3 rounded bg-light-300" />
@@ -254,11 +254,11 @@ const AiSuggest = () => {
                                     <li key={trip.id}>
                                         <Link
                                             to={`/travel/${trip.id}`}
-                                            className="group flex flex-col md:flex-row gap-5 bg-white rounded-3xl border border-light-400 p-4 hover:border-primary-100 hover:shadow-lg transition-all"
+                                            className="group flex flex-col md:flex-row gap-5 bg-surface rounded-3xl border border-light-400 p-4 hover:border-primary-100 hover:shadow-lg transition-all"
                                         >
                                             <span className="relative h-48 md:h-auto md:w-64 rounded-2xl overflow-hidden shrink-0">
                                                 <img src={trip.imageUrl} alt={trip.name} className="size-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                                                <span className={cn("absolute top-3 left-3 rounded-full px-3 py-1 text-xs font-bold", i === 0 ? "bg-amber-400 text-dark-100" : "bg-white/90 text-dark-100")}>
+                                                <span className={cn("absolute top-3 left-3 rounded-full px-3 py-1 text-xs font-bold", i === 0 ? "bg-amber-400 text-dark-100" : "bg-surface/90 text-dark-100")}>
                                                     {i === 0 ? "Best match" : `#${i + 1}`}
                                                 </span>
                                             </span>
@@ -290,11 +290,11 @@ const AiSuggest = () => {
                                 <button
                                     type="button"
                                     onClick={() => formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
-                                    className="h-10 px-5 rounded-full border border-light-400 bg-white font-semibold text-dark-100 hover:border-primary-100 hover:text-primary-100 cursor-pointer"
+                                    className="h-10 px-5 rounded-full border border-light-400 bg-surface font-semibold text-dark-100 hover:border-primary-100 hover:text-primary-100 cursor-pointer"
                                 >
                                     Change answers
                                 </button>
-                                <Link to="/travel" className="h-10 px-5 rounded-full border border-light-400 bg-white font-semibold text-dark-100 hover:border-primary-100 hover:text-primary-100 flex items-center">
+                                <Link to="/travel" className="h-10 px-5 rounded-full border border-light-400 bg-surface font-semibold text-dark-100 hover:border-primary-100 hover:text-primary-100 flex items-center">
                                     Browse all trips
                                 </Link>
                             </div>
