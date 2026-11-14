@@ -1,7 +1,9 @@
 import { Outlet, redirect } from "react-router";
 import { MobileSidebar, NavItems } from "../../../components";
+import AdminTopbar from "../../../components/AdminTopbar";
 import Spinner from "../../../components/Spinner";
 import { getUser, isAdmin, logoutUser } from "~/appwrite/auth";
+import { AdminFeedProvider } from "~/lib/admin-feed";
 
 /**
  * Only admins may open the panel.
@@ -27,6 +29,7 @@ export function HydrateFallback() {
 
 const AdminLayout = () => (
   <div className="admin-layout">
+    <AdminFeedProvider>
     <MobileSidebar />
 
     <aside className="hidden lg:block w-68 shrink-0 h-screen sticky top-0">
@@ -34,8 +37,12 @@ const AdminLayout = () => (
     </aside>
 
     <section className="children">
-      <Outlet />
+      <AdminTopbar />
+      <div className="pt-6 lg:pt-8">
+        <Outlet />
+      </div>
     </section>
+    </AdminFeedProvider>
   </div>
 );
 

@@ -1,5 +1,5 @@
-import { useMemo, useState, type FormEvent } from "react";
-import { Link, useRevalidator } from "react-router";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { Link, useRevalidator, useSearchParams } from "react-router";
 import dayjs from "dayjs";
 import {
     CalendarCheck, CheckCircle2, Clock, DatabaseZap, Globe, Loader2, Mail, Phone, Plus, RotateCcw, Search, Trash2, UserRound, Users, Wallet, XCircle,
@@ -73,8 +73,12 @@ const SetupCard = ({ onDone }: { onDone: () => void }) => {
 };
 
 /* ---------------- Add booking (phone / walk-in) ---------------- */
-const AddBooking = ({ trips, onSaved }: { trips: { id: string; name: string; price: string; group: string }[]; onSaved: (msg: string) => void }) => {
-    const [open, setOpen] = useState(false);
+const AddBooking = ({ trips, onSaved, startOpen = false }: { trips: { id: string; name: string; price: string; group: string }[]; onSaved: (msg: string) => void; startOpen?: boolean }) => {
+    const [open, setOpen] = useState(startOpen);
+    // The sidebar's "Add booking" link opens the form even when already on this page
+    useEffect(() => {
+        if (startOpen) setOpen(true);
+    }, [startOpen]);
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState("");
     const [f, setF] = useState({ tripId: "", customerName: "", phone: "", email: "", travelDate: dayjs().add(14, "day").format("YYYY-MM-DD"), travellers: 2, status: "Confirmed", notes: "" });
@@ -148,7 +152,11 @@ const AddBooking = ({ trips, onSaved }: { trips: { id: string; name: string; pri
 const Bookings = ({ loaderData }: Route.ComponentProps) => {
     const { bookings, ready, error, trips } = loaderData;
     const revalidator = useRevalidator();
-    const [tab, setTab] = useState<Tab>("All");
+    // Sidebar links: /bookings?status=Pending opens that tab, /bookings?new=1 opens "Add booking"
+    const [params] = useSearchParams();
+    const statusParam = TABS.find((t) => t.toLowerCase() === (params.get("status") ?? "").toLowerCase()) ?? "All";
+    const [tab, setTab] = useState<Tab>(statusParam);
+    useEffect(() => setTab(statusParam), [statusParam]);
     const [query, setQuery] = useState("");
     const [busyId, setBusyId] = useState("");
     const [notice, setNotice] = useState("");
@@ -229,7 +237,7 @@ const Bookings = ({ loaderData }: Route.ComponentProps) => {
         <main className="dashboard wrapper">
             <span className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                 <Header title="Bookings" description="Booking requests from the website and bookings you add yourself." />
-                <AddBooking trips={bookable} onSaved={refresh} />
+                <AddBooking trips={bookable} onSaved={refresh} startOpen={params.get("new") === "1"} />
             </span>
 
             {error && <p className="rounded-xl bg-red-50 text-red-500 px-4 py-3 text-sm">Bookings could not be loaded: {error}</p>}

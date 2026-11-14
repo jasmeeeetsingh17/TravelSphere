@@ -1,9 +1,13 @@
-import { Link, NavLink, useNavigate, useRouteLoaderData } from "react-router";
-import { BarChart3, CalendarCheck, ExternalLink, LayoutDashboard, LogOut, Map, PlusCircle, UserCircle, Users, type LucideIcon } from "lucide-react";
+import { Link, useLocation } from "react-router";
+import dayjs from "dayjs";
+import {
+    ArrowRight, BarChart3, CalendarCheck, CalendarPlus, Clock, ExternalLink, LayoutDashboard, Map, PlusCircle, Sparkles, Users, type LucideIcon,
+} from "lucide-react";
+import { useAdminFeed } from "~/lib/admin-feed";
 import { cn } from "~/lib/utils";
-import { logoutUser } from "~/appwrite/auth";
 
-type NavLinkItem = { href: string; label: string; Icon: LucideIcon; end?: boolean };
+type Badge = "pending" | "waiting";
+type NavLinkItem = { href: string; label: string; Icon: LucideIcon; badge?: Badge; external?: boolean };
 
 const sections: { title: string; links: NavLinkItem[] }[] = [
     {
@@ -14,30 +18,47 @@ const sections: { title: string; links: NavLinkItem[] }[] = [
         ],
     },
     {
-        title: "Manage",
+        title: "Bookings",
         links: [
-            { href: "/bookings", label: "Bookings", Icon: CalendarCheck },
-            { href: "/trips", label: "All Trips", Icon: Map, end: true },
-            { href: "/trips/create", label: "Create Trip", Icon: PlusCircle },
-            { href: "/all-users", label: "Users", Icon: Users },
+            { href: "/bookings", label: "All bookings", Icon: CalendarCheck },
+            { href: "/bookings?status=Pending", label: "Pending requests", Icon: Clock, badge: "pending" },
+            { href: "/bookings?new=1", label: "Add booking", Icon: CalendarPlus },
         ],
     },
     {
-        title: "You",
-        links: [{ href: "/account", label: "My Account", Icon: UserCircle }],
+        title: "Trips",
+        links: [
+            { href: "/trips", label: "All trips", Icon: Map },
+            { href: "/trips/create", label: "Create trip", Icon: PlusCircle },
+            { href: "/plan", label: "AI Trip Planner", Icon: Sparkles, external: true },
+        ],
+    },
+    {
+        title: "People",
+        links: [{ href: "/all-users", label: "Users", Icon: Users, badge: "waiting" }],
     },
 ];
 
-type AdminUser = { name?: string; email?: string; imageUrl?: string } | undefined;
+/** Which link is highlighted: matches the path and, for links with a query (e.g. ?status=Pending), that query too. */
+const isActive = (href: string, pathname: string, search: string) => {
+    const [path, query] = href.split("?");
+    const params = new URLSearchParams(search);
+    if (query) {
+        const [k, v] = query.split("=");
+        return pathname === path && params.get(k)?.toLowerCase() === v.toLowerCase();
+    }
+    if (path === "/bookings") return pathname === path && !params.get("status") && !params.get("new");
+    if (path === "/trips") return pathname === "/trips" || (/^\/trips\/(?!create)/.test(pathname));
+    return pathname === path || pathname.startsWith(`${path}/`);
+};
 
+/** Admin sidebar: grouped navigation with live counts (pending requests, people waiting for access) and a one-line "Today" summary. */
 const NavItems = ({ handleClick }: { handleClick?: () => void }) => {
-    const user = useRouteLoaderData("routes/admin/admin-layout") as AdminUser;
-    const navigate = useNavigate();
-
-    const handleLogout = async () => {
-        await logoutUser();
-        navigate("/sign-in");
-    };
+    const { bookings, users, loaded } = useAdminFeed();
+    const { pathname, search } = useLocation();
+    const pending = bookings.filter((b) => b.status === "Pending").length;
+    const waiting = users.filter((u) => u.status !== "admin").length;
+    const today = bookings.filter((b) => b.createdAt && dayjs(b.createdAt).isSame(dayjs(), "day"));
 
     return (
         <section className="flex flex-col h-full bg-white border-r border-light-400 px-5">
@@ -49,65 +70,73 @@ const NavItems = ({ handleClick }: { handleClick?: () => void }) => {
                 </span>
             </Link>
 
-            <nav className="flex-1 flex flex-col gap-6 pt-6 overflow-y-auto">
+            <nav className="flex-1 flex flex-col gap-5 pt-6 overflow-y-auto">
                 {sections.map((section) => (
                     <div key={section.title} className="flex flex-col gap-1.5">
                         <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-gray-100">{section.title}</p>
-                        {section.links.map(({ href, label, Icon, end }) => (
-                            <NavLink
-                                key={href}
-                                to={href}
-                                end={end}
-                                onClick={handleClick}
-                                className={({ isActive }) =>
-                                    cn(
-                                        "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-                                        isActive
-                                            ? "bg-primary-100 text-white shadow-md shadow-primary-100/25"
-                                            : "text-dark-200 hover:bg-primary-50 hover:text-primary-100"
-                                    )
-                                }
-                            >
-                                <Icon size={19} />
-                                {label}
-                            </NavLink>
-                        ))}
+                        {section.links.map(({ href, label, Icon, badge, external }) => {
+                            const on = !external && isActive(href, pathname, search);
+                            const count = badge === "pending" ? pending : badge === "waiting" ? waiting : 0;
+                            const cls = cn(
+                                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                                on ? "bg-primary-100 text-white shadow-md shadow-primary-100/25" : "text-dark-200 hover:bg-primary-50 hover:text-primary-100"
+                            );
+                            const inner = (
+                                <>
+                                    <Icon size={19} />
+                                    <span className="flex-1">{label}</span>
+                                    {external && <ExternalLink size={14} className="opacity-50" />}
+                                    {count > 0 && (
+                                        <span
+                                            title={badge === "pending" ? `${count} waiting for confirmation` : `${count} waiting for admin access`}
+                                            className={cn(
+                                                "min-w-6 h-6 px-1.5 rounded-full text-[11px] font-bold flex items-center justify-center",
+                                                on ? "bg-white text-primary-100" : badge === "pending" ? "bg-amber-400 text-dark-100" : "bg-violet-100 text-violet-700"
+                                            )}
+                                        >
+                                            {count > 99 ? "99+" : count}
+                                        </span>
+                                    )}
+                                </>
+                            );
+                            return external ? (
+                                <a key={href} href={href} target="_blank" rel="noreferrer" onClick={handleClick} className={cls}>
+                                    {inner}
+                                </a>
+                            ) : (
+                                <Link key={href} to={href} onClick={handleClick} aria-current={on ? "page" : undefined} className={cls}>
+                                    {inner}
+                                </Link>
+                            );
+                        })}
                     </div>
                 ))}
-
-                <a
-                    href="/"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-dark-200 hover:bg-primary-50 hover:text-primary-100 transition-colors"
-                >
-                    <ExternalLink size={19} />
-                    View website
-                </a>
             </nav>
 
-            <footer className="flex items-center gap-3 py-5 border-t border-light-400">
-                <Link to="/account" onClick={handleClick} title="My account" className="flex flex-1 min-w-0 items-center gap-3 rounded-xl hover:bg-light-200 -m-1.5 p-1.5 transition-colors">
-                <img
-                    src={user?.imageUrl || "/assets/images/david.webp"}
-                    alt=""
-                    referrerPolicy="no-referrer"
-                    className="size-10 rounded-full object-cover ring-2 ring-primary-50"
-                />
-                <span className="flex-1 min-w-0 flex flex-col leading-tight">
-                    <strong className="text-sm font-semibold text-dark-100 truncate">{user?.name ?? "Admin"}</strong>
-                    <small className="text-xs text-gray-100 truncate">{user?.email}</small>
-                </span>
-                </Link>
-                <button
-                    onClick={handleLogout}
-                    aria-label="Log out"
-                    title="Log out"
-                    className="size-9 rounded-lg flex items-center justify-center text-gray-100 hover:bg-red-50 hover:text-red-500 transition-colors cursor-pointer"
+            {/* Today, in one line */}
+            <div className="py-5 border-t border-light-400">
+                <Link
+                    to="/bookings"
+                    onClick={handleClick}
+                    className="flex items-center justify-between gap-2 rounded-xl bg-light-200 hover:bg-primary-50 px-3 py-3 text-sm transition-colors"
                 >
-                    <LogOut size={18} />
-                </button>
-            </footer>
+                    <span className="flex flex-col leading-tight">
+                        <small className="text-[11px] font-semibold uppercase tracking-wider text-gray-100">Today</small>
+                        <span className="text-dark-100">
+                            {loaded ? (
+                                <>
+                                    <strong>{pending}</strong> pending · <strong>{today.length}</strong> new
+                                </>
+                            ) : (
+                                "Loading..."
+                            )}
+                        </span>
+                    </span>
+                    <span className="flex items-center gap-1 text-xs font-semibold text-primary-100">
+                        Review <ArrowRight size={14} />
+                    </span>
+                </Link>
+            </div>
         </section>
     );
 };

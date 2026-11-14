@@ -22,14 +22,3 @@ export const thisVsLast = (items: Dated[]) => {
 
 export const pctChange = (current: number, last: number) =>
     last === 0 ? (current > 0 ? 100 : 0) : Math.round(((current - last) / last) * 100);
-
-export const countBy = <T,>(items: T[], key: (t: T) => string) =>
-    Object.entries(
-        items.reduce<Record<string, number>>((acc, it) => {
-            const k = key(it) || "Other";
-            acc[k] = (acc[k] ?? 0) + 1;
-            return acc;
-        }, {})
-    )
-        .map(([x, y]) => ({ x, y }))
-        .sort((a, b) => b.y - a.y);
