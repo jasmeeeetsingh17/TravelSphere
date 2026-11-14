@@ -64,7 +64,7 @@ const COLUMNS = [
 ];
 
 const SiteFooter = () => (
-    <footer className="bg-dark-300 text-white">
+    <footer className="bg-ink text-white">
         <div className="wrapper pt-16 pb-8 flex flex-col gap-12">
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-[1.5fr_1fr_1fr_1fr_1.4fr] gap-10">
                 {/* Brand */}

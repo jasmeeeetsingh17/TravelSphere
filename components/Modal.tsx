@@ -30,7 +30,7 @@ const Modal = ({ open, title, onClose, children }: Props) => {
     return createPortal(
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <button aria-label="Close" onClick={onClose} className="absolute inset-0 bg-black/50 cursor-default" />
-            <section role="dialog" aria-modal="true" aria-label={title} className="relative w-full max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto bg-white rounded-3xl shadow-2xl p-6 md:p-8 flex flex-col gap-5">
+            <section role="dialog" aria-modal="true" aria-label={title} className="relative w-full max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto bg-surface rounded-3xl shadow-2xl p-6 md:p-8 flex flex-col gap-5">
                 <header className="flex items-start justify-between gap-4">
                     <h2 className="text-xl font-semibold text-dark-100">{title}</h2>
                     <button onClick={onClose} aria-label="Close dialog" className="size-9 rounded-full hover:bg-light-300 flex items-center justify-center cursor-pointer shrink-0">

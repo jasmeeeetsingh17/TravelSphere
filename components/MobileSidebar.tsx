@@ -13,7 +13,7 @@ const MobileSidebar = () => {
 
     return (
         <div className="lg:hidden sticky top-0 z-40">
-            <header className="flex items-center justify-between bg-white/90 backdrop-blur border-b border-light-400 px-4 h-16">
+            <header className="flex items-center justify-between bg-surface/90 backdrop-blur border-b border-light-400 px-4 h-16">
                 <Link to="/dashboard" className="flex items-center gap-2">
                     <img src="/assets/icons/logo.svg" alt="" className="size-7" />
                     <span className="text-lg font-bold text-dark-100">TravelSphere</span>
@@ -29,7 +29,7 @@ const MobileSidebar = () => {
 
             <div
                 onClick={() => setOpen(false)}
-                className={cn("fixed inset-0 bg-dark-100/40 transition-opacity", open ? "opacity-100" : "opacity-0 pointer-events-none")}
+                className={cn("fixed inset-0 bg-ink/40 transition-opacity", open ? "opacity-100" : "opacity-0 pointer-events-none")}
             />
             <aside
                 className={cn(

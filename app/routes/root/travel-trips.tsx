@@ -16,7 +16,7 @@ const SORTS = { recommended: "Recommended", priceLow: "Price: low to high", pric
 type Sort = keyof typeof SORTS;
 const PAGE = 8;
 
-const select = "h-11 rounded-xl border border-light-400 bg-white px-3 text-sm text-dark-100 outline-none focus:border-primary-100 focus:ring-2 focus:ring-primary-100/15 cursor-pointer";
+const select = "h-11 rounded-xl border border-light-400 bg-surface px-3 text-sm text-dark-100 outline-none focus:border-primary-100 focus:ring-2 focus:ring-primary-100/15 cursor-pointer";
 const states = [...new Set(dummyTrips.map((t) => t.state).filter(Boolean) as string[])].sort();
 
 /** Public "Explore all trips" page: search, quick style chips, filters and sorting over the sample trips. */
@@ -70,7 +70,7 @@ const TravelTrips = () => {
     return (
         <main className="flex flex-col">
             {/* Header with search */}
-            <section className="relative overflow-hidden bg-linear-to-br from-primary-50 via-white to-violet-50 border-b border-light-400">
+            <section className="relative overflow-hidden bg-linear-to-br from-primary-50 via-surface to-violet-50 border-b border-light-400">
                 <span className="absolute -right-24 -top-24 size-96 rounded-full bg-primary-100/10 blur-3xl" />
                 <div className="wrapper relative pt-32 pb-10 flex flex-col items-center text-center gap-5">
                     <h1 className="text-4xl md:text-5xl font-bold text-dark-100 tracking-tight">Explore all trips</h1>
@@ -82,7 +82,7 @@ const TravelTrips = () => {
                             onChange={(e) => setQuery(e.target.value)}
                             placeholder="Try Kerala, beaches, temples, trekking..."
                             aria-label="Search trips"
-                            className="h-14 w-full rounded-full border border-light-400 bg-white pl-13 pr-12 text-dark-100 shadow-lg shadow-dark-100/5 outline-none focus:border-primary-100 focus:ring-4 focus:ring-primary-100/10"
+                            className="h-14 w-full rounded-full border border-light-400 bg-surface pl-13 pr-12 text-dark-100 shadow-lg shadow-dark-100/5 outline-none focus:border-primary-100 focus:ring-4 focus:ring-primary-100/10"
                         />
                         {query && (
                             <button onClick={() => setQuery("")} aria-label="Clear search" className="absolute right-4 top-1/2 -translate-y-1/2 size-8 rounded-full flex items-center justify-center text-gray-100 hover:bg-light-200 cursor-pointer">
@@ -104,7 +104,7 @@ const TravelTrips = () => {
                             onClick={() => setStyle(s)}
                             className={cn(
                                 "shrink-0 rounded-full px-4 py-2 text-sm font-semibold border transition-colors cursor-pointer",
-                                style === s ? "bg-dark-100 border-dark-100 text-white" : "bg-white border-light-400 text-dark-200 hover:border-dark-100"
+                                style === s ? "bg-dark-100 border-dark-100 text-surface" : "bg-surface border-light-400 text-dark-200 hover:border-dark-100"
                             )}
                         >
                             {s}
@@ -162,14 +162,14 @@ const TravelTrips = () => {
                         {results.length > shown && (
                             <button
                                 onClick={() => setShown((n) => n + PAGE)}
-                                className="self-center h-11 px-6 rounded-full border border-light-400 bg-white text-sm font-semibold text-dark-100 hover:border-primary-100 hover:text-primary-100 transition-colors cursor-pointer"
+                                className="self-center h-11 px-6 rounded-full border border-light-400 bg-surface text-sm font-semibold text-dark-100 hover:border-primary-100 hover:text-primary-100 transition-colors cursor-pointer"
                             >
                                 Show more trips ({results.length - shown} more)
                             </button>
                         )}
                     </>
                 ) : (
-                    <div className="flex flex-col items-center gap-3 text-center bg-white rounded-3xl border border-dashed border-light-400 py-16 px-6">
+                    <div className="flex flex-col items-center gap-3 text-center bg-surface rounded-3xl border border-dashed border-light-400 py-16 px-6">
                         <SearchX size={36} className="text-gray-100" />
                         <p className="text-dark-100 font-semibold">No trips match your search</p>
                         <p className="text-sm text-gray-100">Try fewer filters, or answer a few questions and let our AI suggest trips for you.</p>
@@ -191,7 +191,7 @@ const TravelTrips = () => {
                             <strong className="text-xl">Can't find the right trip?</strong>
                             <small className="text-white/80 text-sm">Answer a few quick questions and our AI picks the trips that suit you best.</small>
                         </span>
-                        <Link to="/suggest" className="flex items-center justify-center gap-2 h-11 px-6 rounded-full bg-white text-primary-100 font-semibold hover:scale-105 transition-transform shrink-0">
+                        <Link to="/suggest" className="flex items-center justify-center gap-2 h-11 px-6 rounded-full bg-surface text-primary-100 font-semibold hover:scale-105 transition-transform shrink-0">
                             <Sparkles size={17} /> Get AI suggestions
                         </Link>
                     </div>

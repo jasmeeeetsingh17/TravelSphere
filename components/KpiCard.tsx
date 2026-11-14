@@ -14,7 +14,7 @@ type Props = {
 
 /** Small metric tile used on the dashboard and analytics pages. */
 const KpiCard = ({ label, value, note, Icon, tone, delta }: Props) => (
-    <li className="group relative overflow-hidden bg-white rounded-3xl border border-light-400 shadow-sm p-5 flex flex-col gap-4 hover:-translate-y-0.5 hover:shadow-md transition-all">
+    <li className="group relative overflow-hidden bg-surface rounded-3xl border border-light-400 shadow-sm p-5 flex flex-col gap-4 hover:-translate-y-0.5 hover:shadow-md transition-all">
         <span className={cn("pointer-events-none absolute -right-8 -top-8 size-24 rounded-full opacity-40 blur-2xl transition-opacity group-hover:opacity-70", tone)} />
         <span className="relative flex items-center justify-between">
             <span className={cn("size-11 rounded-2xl flex items-center justify-center", tone)}>

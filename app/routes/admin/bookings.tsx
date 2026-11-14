@@ -29,7 +29,7 @@ const STATUS_STYLE: Record<BookingStatus, string> = {
 const TABS = ["All", "Pending", "Confirmed", "Cancelled"] as const;
 type Tab = (typeof TABS)[number];
 
-const input = "h-11 w-full rounded-xl border border-light-400 bg-white px-4 text-sm text-dark-100 outline-none focus:border-primary-100 focus:ring-2 focus:ring-primary-100/15";
+const input = "h-11 w-full rounded-xl border border-light-400 bg-surface px-4 text-sm text-dark-100 outline-none focus:border-primary-100 focus:ring-2 focus:ring-primary-100/15";
 const label = "flex flex-col gap-1.5 text-sm font-medium text-dark-100";
 const fmt = (d: string) => (d ? dayjs(d).format("D MMM YYYY") : "-");
 
@@ -52,7 +52,7 @@ const SetupCard = ({ onDone }: { onDone: () => void }) => {
         }
     };
     return (
-        <section className="bg-white rounded-3xl border border-light-400 shadow-sm p-8 md:p-12 flex flex-col items-center text-center gap-5">
+        <section className="bg-surface rounded-3xl border border-light-400 shadow-sm p-8 md:p-12 flex flex-col items-center text-center gap-5">
             <span className="size-16 rounded-2xl bg-primary-50 text-primary-100 flex items-center justify-center">
                 <DatabaseZap size={30} />
             </span>
@@ -252,7 +252,7 @@ const Bookings = ({ loaderData }: Route.ComponentProps) => {
             {notice && <p className="rounded-xl bg-success-50 text-success-700 px-4 py-3 text-sm">{notice}</p>}
             {actionError && <p className="rounded-xl bg-red-50 text-red-500 px-4 py-3 text-sm">{actionError}</p>}
 
-            <section className="bg-white rounded-3xl border border-light-400 shadow-sm p-4 md:p-6 flex flex-col gap-5">
+            <section className="bg-surface rounded-3xl border border-light-400 shadow-sm p-4 md:p-6 flex flex-col gap-5">
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                     <div className="flex flex-wrap gap-1 bg-light-200 rounded-full p-1 w-fit" role="tablist">
                         {TABS.map((t) => (
@@ -261,7 +261,7 @@ const Bookings = ({ loaderData }: Route.ComponentProps) => {
                                 role="tab"
                                 aria-selected={tab === t}
                                 onClick={() => setTab(t)}
-                                className={cn("rounded-full px-4 py-1.5 text-sm font-semibold transition-colors cursor-pointer", tab === t ? "bg-white text-dark-100 shadow" : "text-gray-100 hover:text-dark-100")}
+                                className={cn("rounded-full px-4 py-1.5 text-sm font-semibold transition-colors cursor-pointer", tab === t ? "bg-surface text-dark-100 shadow" : "text-gray-100 hover:text-dark-100")}
                             >
                                 {t} <span className="text-xs text-gray-100">{counts[t]}</span>
                             </button>

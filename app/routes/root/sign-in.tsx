@@ -29,11 +29,11 @@ const SignIn = () => {
     const [loading, setLoading] = useState(false);
 
     return (
-        <main className="min-h-screen grid lg:grid-cols-2 bg-white">
+        <main className="min-h-screen grid lg:grid-cols-2 bg-surface">
             {/* Visual side */}
             <section className="relative hidden lg:flex flex-col justify-end p-12 text-white overflow-hidden">
                 <img src="/assets/images/auth-img.webp" alt="" className="absolute inset-0 size-full object-cover" />
-                <span className="absolute inset-0 bg-linear-to-t from-dark-100/90 via-dark-100/30 to-primary-100/20" />
+                <span className="absolute inset-0 bg-linear-to-t from-ink/90 via-ink/30 to-primary-100/20" />
                 <div className="relative flex flex-col gap-6 max-w-md">
                     <h2 className="text-4xl font-bold leading-tight">Run TravelSphere from one place.</h2>
                     <ul className="flex flex-col gap-3">
@@ -51,7 +51,7 @@ const SignIn = () => {
 
             {/* Form side */}
             <section className="flex items-center justify-center px-6 py-16 bg-light-200">
-                <div className="w-full max-w-md bg-white rounded-3xl border border-light-400 shadow-xl shadow-dark-100/5 p-8 md:p-10 flex flex-col gap-7">
+                <div className="w-full max-w-md bg-surface rounded-3xl border border-light-400 shadow-xl shadow-dark-100/5 p-8 md:p-10 flex flex-col gap-7">
                     <Link to="/" className="flex items-center gap-2 w-fit">
                         <img src="/assets/icons/logo.svg" alt="" className="size-8" />
                         <span className="text-2xl font-bold text-dark-100">TravelSphere</span>

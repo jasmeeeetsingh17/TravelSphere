@@ -108,7 +108,7 @@ const Account = ({ loaderData }: Route.ComponentProps) => {
             <div className="grid grid-cols-1 lg:grid-cols-[320px_minmax(0,1fr)] gap-6 items-start">
                 {/* ---------------- Left: profile ---------------- */}
                 <aside className="flex flex-col gap-6 lg:sticky lg:top-24">
-                    <section className="bg-white rounded-3xl border border-light-400 shadow-sm p-6 flex flex-col items-center text-center gap-3">
+                    <section className="bg-surface rounded-3xl border border-light-400 shadow-sm p-6 flex flex-col items-center text-center gap-3">
                         {imageUrl ? (
                             <img src={imageUrl} alt="" referrerPolicy="no-referrer" className="size-24 rounded-full object-cover ring-4 ring-primary-50" />
                         ) : (
@@ -131,7 +131,7 @@ const Account = ({ loaderData }: Route.ComponentProps) => {
                         </button>
                     </section>
 
-                    <section className="bg-white rounded-3xl border border-light-400 shadow-sm p-6 flex flex-col gap-1">
+                    <section className="bg-surface rounded-3xl border border-light-400 shadow-sm p-6 flex flex-col gap-1">
                         <h2 className="text-base font-semibold text-dark-100 mb-2">Account details</h2>
                         <ul className="flex flex-col divide-y divide-light-400">
                             {details.map(({ Icon, label, value, extra }) => (
@@ -158,7 +158,7 @@ const Account = ({ loaderData }: Route.ComponentProps) => {
                     </ul>
 
                     {/* Recent bookings on your trips */}
-                    <section className="bg-white rounded-3xl border border-light-400 shadow-sm p-6 flex flex-col gap-4">
+                    <section className="bg-surface rounded-3xl border border-light-400 shadow-sm p-6 flex flex-col gap-4">
                         <header className="flex items-center justify-between">
                             <h2 className="text-lg font-semibold text-dark-100">Recent bookings on your trips</h2>
                             <Link to="/bookings" className="text-sm font-semibold text-primary-100 hover:underline">All bookings</Link>
@@ -192,7 +192,7 @@ const Account = ({ loaderData }: Route.ComponentProps) => {
                     </section>
 
                     {/* Signed-in devices */}
-                    <section className="bg-white rounded-3xl border border-light-400 shadow-sm p-6 flex flex-col gap-4">
+                    <section className="bg-surface rounded-3xl border border-light-400 shadow-sm p-6 flex flex-col gap-4">
                         <header className="flex flex-wrap items-center justify-between gap-3">
                             <span className="flex flex-col">
                                 <h2 className="text-lg font-semibold text-dark-100">Where you're signed in</h2>
@@ -254,7 +254,7 @@ const Account = ({ loaderData }: Route.ComponentProps) => {
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-center text-sm text-gray-100 bg-white border border-light-400 rounded-3xl py-10">
+                            <p className="text-center text-sm text-gray-100 bg-surface border border-light-400 rounded-3xl py-10">
                                 You have not created any trips yet. <Link to="/trips/create" className="text-primary-100 font-semibold">Create your first trip</Link>
                             </p>
                         )}

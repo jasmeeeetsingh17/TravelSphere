@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router";
 import { LayoutDashboard, Menu, X } from "lucide-react";
+import ThemeToggle from "../../../components/ThemeToggle";
 
 import { cn } from "~/lib/utils";
 import SiteFooter from "../../../components/SiteFooter";
@@ -41,7 +42,7 @@ const TravelLayout = () => {
             <header
                 className={cn(
                     "fixed top-0 left-0 w-full z-30 transition-all duration-300",
-                    menuOpen ? "bg-white shadow-md" : scrolled || pathname !== "/" ? "bg-white/85 backdrop-blur-md shadow-sm" : "bg-transparent"
+                    menuOpen ? "bg-surface shadow-md" : scrolled || pathname !== "/" ? "bg-surface/85 backdrop-blur-md shadow-sm" : "bg-transparent"
                 )}
             >
                 <div className="wrapper">
@@ -62,6 +63,7 @@ const TravelLayout = () => {
                         </ul>
 
                         <div className="flex items-center gap-2 sm:gap-3">
+                            <ThemeToggle className={cn(pathname === "/" && !scrolled && !menuOpen && "bg-surface/70 backdrop-blur")} />
                             <Link
                                 to="/dashboard"
                                 className="flex items-center gap-2 bg-primary-100 hover:bg-primary-500 text-white text-sm font-semibold rounded-full px-4 sm:px-5 py-2.5 shadow-md shadow-primary-100/30 transition-colors"
@@ -74,7 +76,7 @@ const TravelLayout = () => {
                                 onClick={() => setMenuOpen((o) => !o)}
                                 aria-label={menuOpen ? "Close menu" : "Open menu"}
                                 aria-expanded={menuOpen}
-                                className="lg:hidden size-10 rounded-full bg-white/80 hover:bg-white shadow flex items-center justify-center text-dark-100 cursor-pointer"
+                                className="lg:hidden size-10 rounded-full bg-surface/80 hover:bg-surface shadow flex items-center justify-center text-dark-100 cursor-pointer"
                             >
                                 {menuOpen ? <X size={20} /> : <Menu size={20} />}
                             </button>

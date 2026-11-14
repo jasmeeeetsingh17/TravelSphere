@@ -5,6 +5,7 @@ import { logoutUser } from "~/appwrite/auth";
 import { useAdminFeed } from "~/lib/admin-feed";
 import { buildNotices, useNotificationsSeen } from "~/lib/notifications";
 import { cn } from "~/lib/utils";
+import ThemeToggle from "./ThemeToggle";
 import LiveClock from "./LiveClock";
 import { NoticeList } from "./NotificationsPanel";
 
@@ -42,7 +43,7 @@ function useDismiss(open: boolean, close: () => void) {
 const Dropdown = ({ open, children, className }: { open: boolean; children: ReactNode; className?: string }) => (
     <div
         className={cn(
-            "absolute right-0 top-full mt-2 bg-white rounded-2xl border border-light-400 shadow-2xl shadow-dark-100/10 transition-all origin-top-right z-50",
+            "absolute right-0 top-full mt-2 bg-surface rounded-2xl border border-light-400 shadow-2xl shadow-dark-100/10 transition-all origin-top-right z-50",
             open ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none",
             className
         )}
@@ -84,7 +85,7 @@ const AdminTopbar = () => {
     const name = user?.name ?? "Admin";
 
     return (
-        <header className="sticky top-16 lg:top-0 z-30 bg-white/90 backdrop-blur border-b border-light-400">
+        <header className="sticky top-16 lg:top-0 z-30 bg-surface/90 backdrop-blur border-b border-light-400">
             <div className="wrapper h-16 flex items-center justify-between gap-3">
                 <h1 className="hidden sm:block text-lg md:text-xl font-bold text-dark-100 truncate">{title}</h1>
 
@@ -94,6 +95,8 @@ const AdminTopbar = () => {
                     </div>
 
                     <span className="hidden sm:block h-8 w-px bg-light-400" />
+
+                    <ThemeToggle />
 
                     {/* Notifications */}
                     <div ref={bellRef} className="relative">

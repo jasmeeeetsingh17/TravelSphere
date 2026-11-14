@@ -16,7 +16,7 @@ const TripCard = ({ id, name, location, imageUrl, tags, price, bookings, href }:
             </span>
             {price && <span className="tripCard-pill shadow-sm">{price}</span>}
             {bookings !== undefined && (
-                <span className="absolute top-2.5 left-4 flex items-center gap-1 rounded-full bg-dark-100/80 backdrop-blur px-2.5 py-1 text-xs font-semibold text-white">
+                <span className="absolute top-2.5 left-4 flex items-center gap-1 rounded-full bg-ink/80 backdrop-blur px-2.5 py-1 text-xs font-semibold text-white">
                     <Users size={12} /> {bookings} booked
                 </span>
             )}

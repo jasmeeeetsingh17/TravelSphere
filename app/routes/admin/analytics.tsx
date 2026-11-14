@@ -161,7 +161,7 @@ const Analytics = ({ loaderData }: Route.ComponentProps) => {
         <main className="dashboard wrapper">
             <span className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <Header title="Analytics" description="Bookings, customers and profit, from your live data." />
-                <div className="flex items-center gap-1 bg-white border border-light-400 rounded-full p-1 shadow-sm w-fit shrink-0" role="tablist" aria-label="Time range">
+                <div className="flex items-center gap-1 bg-surface border border-light-400 rounded-full p-1 shadow-sm w-fit shrink-0" role="tablist" aria-label="Time range">
                     <CalendarRange size={16} className="text-gray-100 mx-2" />
                     {RANGES.map((r) => (
                         <button
@@ -215,7 +215,7 @@ const Analytics = ({ loaderData }: Route.ComponentProps) => {
 
             {/* ---------------- Funnel + status ---------------- */}
             <section className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                <article className="xl:col-span-2 bg-white rounded-3xl border border-light-400 shadow-sm p-6 flex flex-col gap-5">
+                <article className="xl:col-span-2 bg-surface rounded-3xl border border-light-400 shadow-sm p-6 flex flex-col gap-5">
                     <header className="flex flex-col gap-0.5">
                         <h2 className="flex items-center gap-2 text-lg font-semibold text-dark-100"><Filter size={18} className="text-primary-100" /> Booking funnel</h2>
                         <p className="text-sm text-gray-100">How booking requests turn into confirmed trips, in the selected range</p>
@@ -271,7 +271,7 @@ const Analytics = ({ loaderData }: Route.ComponentProps) => {
                     <KpiCard label="Average group size" value={b.avgGroup.toFixed(1)} note="Travellers per booking" Icon={Users} tone="bg-sky-50 text-sky-600" />
                 </ul>
                 <div className="grid grid-cols-1 gap-6">
-                    <article className="bg-white rounded-3xl border border-light-400 shadow-sm p-6 flex flex-col gap-4">
+                    <article className="bg-surface rounded-3xl border border-light-400 shadow-sm p-6 flex flex-col gap-4">
                         <header className="flex flex-col gap-0.5">
                             <h2 className="text-lg font-semibold text-dark-100">Top customers</h2>
                             <p className="text-sm text-gray-100">By total value of active bookings</p>
@@ -331,7 +331,7 @@ const Analytics = ({ loaderData }: Route.ComponentProps) => {
                 )}
 
                 {/* Make more like this */}
-                <article className="relative overflow-hidden rounded-3xl bg-linear-to-br from-dark-100 to-[#1f2a44] text-white p-6 md:p-8 flex flex-col gap-5">
+                <article className="relative overflow-hidden rounded-3xl bg-linear-to-br from-ink to-[#1f2a44] text-white p-6 md:p-8 flex flex-col gap-5">
                     <span className="absolute -right-12 -top-12 size-48 rounded-full bg-primary-100/20" />
                     <header className="relative flex items-center gap-3">
                         <span className="size-11 rounded-2xl bg-amber-400/20 text-amber-300 flex items-center justify-center">
@@ -358,7 +358,7 @@ const Analytics = ({ loaderData }: Route.ComponentProps) => {
                                     </small>
                                     <Link
                                         to={`/trips/create?state=${encodeURIComponent(idea.state)}&style=${encodeURIComponent(idea.style)}&budget=${encodeURIComponent(idea.budget)}`}
-                                        className="mt-auto flex items-center justify-center gap-2 rounded-xl bg-white text-dark-100 text-sm font-semibold py-2.5 hover:bg-primary-50 transition-colors"
+                                        className="mt-auto flex items-center justify-center gap-2 rounded-xl bg-surface text-dark-100 text-sm font-semibold py-2.5 hover:bg-primary-50 transition-colors"
                                     >
                                         <Plus size={16} /> Create a similar trip
                                     </Link>
@@ -384,7 +384,7 @@ const Analytics = ({ loaderData }: Route.ComponentProps) => {
                 </div>
 
                 {/* Ranking table */}
-                <article className="bg-white rounded-3xl border border-light-400 shadow-sm p-6 flex flex-col gap-4">
+                <article className="bg-surface rounded-3xl border border-light-400 shadow-sm p-6 flex flex-col gap-4">
                     <header className="flex flex-col gap-0.5">
                         <h3 className="text-lg font-semibold text-dark-100">Trip profit ranking</h3>
                         <p className="text-sm text-gray-100">Score mixes number of bookings (40%), profit earned (35%) and profit per booking per day (25%). The best trip scores 100.</p>

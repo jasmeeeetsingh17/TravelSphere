@@ -15,7 +15,7 @@ export const WhyUs = () => (
         <Header title="Why TravelSphere" description="Everything you need to plan a trip you will remember." />
         <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {REASONS.map(({ Icon, title, text }) => (
-                <li key={title} className="bg-white rounded-3xl border border-light-400 p-6 flex flex-col gap-3 hover:shadow-lg hover:-translate-y-1 transition-all">
+                <li key={title} className="bg-surface rounded-3xl border border-light-400 p-6 flex flex-col gap-3 hover:shadow-lg hover:-translate-y-1 transition-all">
                     <span className="size-12 rounded-2xl bg-primary-50 text-primary-100 flex items-center justify-center">
                         <Icon size={24} />
                     </span>

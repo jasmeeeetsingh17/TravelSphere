@@ -58,7 +58,7 @@ const NotificationsPanel = ({ bookings, users, onRefresh, refreshing }: Props) =
     }, [onRefresh]);
 
     return (
-        <article className="bg-white rounded-3xl border border-light-400 shadow-sm p-6 flex flex-col gap-4">
+        <article className="bg-surface rounded-3xl border border-light-400 shadow-sm p-6 flex flex-col gap-4">
             <header className="flex items-center justify-between gap-3">
                 <span className="flex items-center gap-3">
                     <span className="relative size-10 rounded-xl bg-primary-50 text-primary-100 flex items-center justify-center">
