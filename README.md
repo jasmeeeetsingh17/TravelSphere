@@ -36,27 +36,29 @@ TravelSphere has two sides in one codebase:
 | | Feature | Details |
 | --- | --- | --- |
 | 🏠 | **Landing page** | Hero, featured destinations across India, travel deals, reasons to choose us, FAQ and a footer with contact details |
-| 🧭 | **Explore trips** | Search by place or interest, filter by group type, page through results at `/travel` |
-| 🗓️ | **Trip pages** | Day-by-day itinerary, weather, best time to visit, price estimate and a map of the destination |
+| 🧭 | **Explore trips** | Search by place or interest, quick travel-style chips, filters for state, group, budget and trip length, and sorting at `/travel` |
+| 🗓️ | **Trip pages** | Day-by-day itinerary timeline, highlights, weather, best time to visit, price estimate, a share button and similar trips |
 | 🎫 | **Booking requests** | Name, phone, date and travellers. Saved as *Pending* until an admin confirms. No payment step |
-| 🤖 | **AI Trip Planner** | Pick a state, style, interests, budget, group and length at `/plan`. Uses Google Gemini, or a built-in planner without a key. Plans are not saved |
+| 🤖 | **AI Suggest** | Answer a few quick questions (where, who, style, budget, month, length, wishes) at `/suggest` and AI picks the best trips from the catalogue, with a reason for each. Uses Google Gemini, or built-in matching without a key |
 
 ### 🛡️ Admin panel
 
 | | Feature | Details |
 | --- | --- | --- |
-| 📊 | **Dashboard** | Key numbers plus charts for bookings, new trips, budget mix, group types, interests and popular states |
-| 📈 | **Analytics** | Date-range selector and charts for bookings over time, status, travellers by month, group sizes, most booked trips and estimated profit by trip, style and state |
-| 🧳 | **Trips** | Search, create with AI, edit every detail (itinerary, season, price, interests, cover image) or delete |
-| 📞 | **Bookings** | Confirm, cancel or delete requests, and add bookings you take by phone |
+| 🔔 | **Top bar** | Page title, live clock, notifications for new, confirmed and cancelled bookings and users waiting for access, and an account menu |
+| 📊 | **Dashboard** | Key numbers, a growth chart, most booked trips, recent bookings, notifications and the latest trips |
+| 📈 | **Analytics** | Date-range selector, bookings over time, booking funnel and status, top customers, and estimated profit by trip |
+| 🤖 | **AI Trip Planner** | Pick a state, month, group, style, budget, interests and any wishes (or start from a ready idea). Review the plan, try another version or copy it, then save it as a trip. Unsaved plans are kept in the browser |
+| 🧳 | **Trips** | Search, filter, sort, grid or list view, edit every detail (itinerary, season, price, interests, cover image) or delete |
+| 📞 | **Bookings** | Confirm, cancel or delete requests, and add bookings you take by phone. The sidebar links straight to pending requests |
 | 👥 | **Users** | Make or remove admins, delete accounts, and a short guide for adding a new admin |
-| 👤 | **Account** | Your profile and sign-out |
+| 👤 | **Account** | Your profile, booking numbers for your trips, and the devices you are signed in on (sign out of one or all) |
 
 ### 🔧 Built in
 
 - 📱 Responsive layout for phones, tablets and desktops
 - ⏳ Loading indicator between pages
-- 🎨 Consistent charts, cards and tables built with Syncfusion components
+- 🎨 Consistent cards and tables built with Tailwind, and charts built with Syncfusion
 - 🚦 Rate limiting and a hidden spam trap on the public booking and planner forms
 
 ---
@@ -67,7 +69,7 @@ TravelSphere has two sides in one codebase:
 | --- | --- | --- |
 | ⚛️ | Framework | React Router 8 (framework mode, server-side rendering) |
 | 🟦 | Language | TypeScript and React 19 |
-| 🧩 | UI components | Syncfusion: Grid, Charts, Maps, Pager, DropDowns, Buttons, Navigations |
+| 🧩 | UI components | Syncfusion Charts (everything else is plain Tailwind) |
 | 🎨 | Styling | Tailwind CSS 4 |
 | 🔣 | Icons | Lucide |
 | 🗄️ | Backend and auth | Appwrite: database and Google sign-in |
@@ -83,11 +85,13 @@ flowchart LR
     V[Visitor] --> P[Public website]
     A[Admin] --> S[Admin panel]
     P -->|booking request| API1["/api/book"]
-    P -->|plan a trip| API2["/api/plan-trip"]
+    P -->|AI suggestions| API2["/api/suggest"]
+    S -->|AI trip planner| API4["/api/create-trip"]
     S -->|trips, users, bookings| API3["/api/admin"]
     API1 --> AW[(Appwrite)]
     API3 --> AW
     API2 --> G[Google Gemini]
+    API4 --> G
     S -->|sign in| AW
 ```
 
@@ -103,12 +107,12 @@ flowchart LR
 | --- | --- |
 | `/` | Landing page |
 | `/travel`, `/travel/:tripId` | Trip list and trip details with booking form |
-| `/plan` | AI Trip Planner |
+| `/suggest` | AI Suggest |
 | `/sign-in` | Admin sign-in with Google |
 | `/dashboard`, `/analytics` | Admin overview and analytics |
-| `/trips`, `/trips/create`, `/trips/:tripId`, `/trips/:tripId/edit` | Admin trip management |
+| `/trips`, `/trips/create`, `/trips/:tripId`, `/trips/:tripId/edit` | Admin trip management (`/trips/create` is the AI Trip Planner) |
 | `/bookings`, `/all-users`, `/account` | Admin bookings, users and profile |
-| `/api/book`, `/api/plan-trip` | Public server routes (rate limited) |
+| `/api/book`, `/api/suggest` | Public server routes (rate limited) |
 | `/api/create-trip`, `/api/admin` | Admin-only server routes |
 
 </details>
@@ -135,8 +139,7 @@ cd TravelSphere
 # 2. Install dependencies
 npm install
 
-# 3. Create your environment file and fill in the values
-cp .env.example .env.local
+# 3. Create .env.local in the project root and add the variables listed below
 
 # 4. Start the development server
 npm run dev
@@ -225,7 +228,7 @@ From then on, admins can give or remove access for other people on the **Users**
 
 ## 🔐 Environment variables
 
-Copy `.env.example` to `.env.local`.
+Create a file named `.env.local` in the project root and add these variables, one `NAME=value` per line.
 
 > [!WARNING]
 > Never commit `.env.local`. It is listed in `.gitignore`. Variables that start with `VITE_` are included in the browser bundle, so they must never hold secrets.
@@ -240,8 +243,8 @@ Copy `.env.example` to `.env.local`.
 | `VITE_APPWRITE_TRIPS_COLLECTION_ID` | ✅ | Trips collection ID |
 | `VITE_APPWRITE_BOOKINGS_COLLECTION_ID` | ➖ | Bookings collection ID. Defaults to `bookings` |
 | `APPWRITE_API_KEY` | ✅ | 🔒 **Server only.** Used by the admin and booking routes |
-| `GEMINI_API_KEY` | ➖ | 🔒 **Server only.** Enables real AI itineraries. Without it, trips come from a template |
-| `GEMINI_MODEL` | ➖ | Gemini model name. Defaults to `gemini-2.5-flash` |
+| `GEMINI_API_KEY` | ➖ | 🔒 **Server only.** Turns on the AI Trip Planner (admin) and Gemini picks in AI Suggest. Without it the planner shows a setup message and AI Suggest matches trips to the visitor's answers |
+| `GEMINI_MODEL` | ➖ | Optional Gemini model name. When unset, the app picks the newest Flash-Lite model your key can use and falls back to other Flash models if one is busy or retired |
 
 ---
 
@@ -294,9 +297,11 @@ Then open **http://localhost:3000**.
 TravelSphere/
 ├── app/
 │   ├── appwrite/        Browser-side Appwrite calls (auth, trips, users, admin requests)
-│   ├── constants/       Dropdown options, Indian states, map data, sample trips
-│   ├── lib/             Shared helpers, trip generator, profit estimates, stats,
-│   │                    chart theme, and server-only code (*.server.ts)
+│   ├── constants/       index.ts (all form options, Indian states, prices, planner ideas)
+│   │                    and dummyTrips.ts (sample trips for the public site)
+│   ├── lib/             Shared helpers, profit estimates, stats, chart theme and
+│   │                    server-only code (*.server.ts). ai.server.ts holds all the
+│   │                    Gemini code: model picking, the AI Trip Planner and AI Suggest
 │   ├── routes/
 │   │   ├── root/        Public website and sign-in
 │   │   ├── admin/       Admin panel pages
@@ -307,8 +312,7 @@ TravelSphere/
 │                        ChartCard, KpiCard, Modal and Spinner
 ├── public/assets/       Icons and images
 ├── scripts/             Sample data script
-├── Dockerfile
-└── .env.example
+└── Dockerfile
 ```
 
 ---

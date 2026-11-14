@@ -7,3 +7,5 @@
 /build/
 .env.local
 .env*.local
+# Local Claude Code settings
+/.claude/

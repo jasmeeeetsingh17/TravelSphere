@@ -1,5 +1,4 @@
 import { Link, useLocation } from "react-router";
-import { ChipDirective, ChipListComponent, ChipsDirective } from "@syncfusion/ej2-react-buttons";
 import { Users } from "lucide-react";
 import { cn, getFirstWord } from "~/lib/utils";
 
@@ -34,19 +33,19 @@ const TripCard = ({ id, name, location, imageUrl, tags, price, bookings, href }:
             </article>
 
             <div className="mt-5 pl-4.5 pr-3.5 pb-5">
-                <ChipListComponent id={`travel-chip-${id}`}>
-                    <ChipsDirective>
-                        {tags.map((tag, index) => (
-                            <ChipDirective
-                                key={index}
-                                text={getFirstWord(tag)}
-                                cssClass={cn(index === 1
-                                    ? '!bg-pink-50 !text-pink-500'
-                                    : '!bg-success-50 !text-success-700')}
-                            />
-                        ))}
-                    </ChipsDirective>
-                </ChipListComponent>
+                <ul className="flex flex-wrap gap-2">
+                    {tags.map((tag, index) => (
+                        <li
+                            key={`${tag}-${index}`}
+                            className={cn(
+                                "rounded-full px-3 py-1 text-xs font-semibold",
+                                index === 1 ? "bg-pink-50 text-pink-500" : "bg-success-50 text-success-700"
+                            )}
+                        >
+                            {getFirstWord(tag)}
+                        </li>
+                    ))}
+                </ul>
             </div>
 
         </Link>

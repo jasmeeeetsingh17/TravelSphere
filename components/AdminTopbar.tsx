@@ -14,7 +14,7 @@ const TITLES: [RegExp, string][] = [
     [/^\/dashboard/, "Dashboard"],
     [/^\/analytics/, "Analytics"],
     [/^\/bookings/, "Bookings"],
-    [/^\/trips\/create/, "Create trip"],
+    [/^\/trips\/create/, "AI Trip Planner"],
     [/^\/trips\/[^/]+\/edit/, "Edit trip"],
     [/^\/trips\/[^/]+/, "Trip details"],
     [/^\/trips/, "All trips"],

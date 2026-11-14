@@ -1,13 +1,13 @@
 import { Link, useLocation } from "react-router";
 import dayjs from "dayjs";
 import {
-    ArrowRight, BarChart3, CalendarCheck, CalendarPlus, Clock, ExternalLink, LayoutDashboard, Map, PlusCircle, Sparkles, Users, type LucideIcon,
+    ArrowRight, BarChart3, CalendarCheck, CalendarPlus, Clock, LayoutDashboard, Map, Sparkles, Users, type LucideIcon,
 } from "lucide-react";
 import { useAdminFeed } from "~/lib/admin-feed";
 import { cn } from "~/lib/utils";
 
 type Badge = "pending" | "waiting";
-type NavLinkItem = { href: string; label: string; Icon: LucideIcon; badge?: Badge; external?: boolean };
+type NavLinkItem = { href: string; label: string; Icon: LucideIcon; badge?: Badge };
 
 const sections: { title: string; links: NavLinkItem[] }[] = [
     {
@@ -29,8 +29,7 @@ const sections: { title: string; links: NavLinkItem[] }[] = [
         title: "Trips",
         links: [
             { href: "/trips", label: "All trips", Icon: Map },
-            { href: "/trips/create", label: "Create trip", Icon: PlusCircle },
-            { href: "/plan", label: "AI Trip Planner", Icon: Sparkles, external: true },
+            { href: "/trips/create", label: "AI Trip Planner", Icon: Sparkles },
         ],
     },
     {
@@ -74,8 +73,8 @@ const NavItems = ({ handleClick }: { handleClick?: () => void }) => {
                 {sections.map((section) => (
                     <div key={section.title} className="flex flex-col gap-1.5">
                         <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-gray-100">{section.title}</p>
-                        {section.links.map(({ href, label, Icon, badge, external }) => {
-                            const on = !external && isActive(href, pathname, search);
+                        {section.links.map(({ href, label, Icon, badge }) => {
+                            const on = isActive(href, pathname, search);
                             const count = badge === "pending" ? pending : badge === "waiting" ? waiting : 0;
                             const cls = cn(
                                 "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
@@ -85,7 +84,6 @@ const NavItems = ({ handleClick }: { handleClick?: () => void }) => {
                                 <>
                                     <Icon size={19} />
                                     <span className="flex-1">{label}</span>
-                                    {external && <ExternalLink size={14} className="opacity-50" />}
                                     {count > 0 && (
                                         <span
                                             title={badge === "pending" ? `${count} waiting for confirmation` : `${count} waiting for admin access`}
@@ -99,11 +97,7 @@ const NavItems = ({ handleClick }: { handleClick?: () => void }) => {
                                     )}
                                 </>
                             );
-                            return external ? (
-                                <a key={href} href={href} target="_blank" rel="noreferrer" onClick={handleClick} className={cls}>
-                                    {inner}
-                                </a>
-                            ) : (
+                            return (
                                 <Link key={href} to={href} onClick={handleClick} aria-current={on ? "page" : undefined} className={cls}>
                                     {inner}
                                 </Link>

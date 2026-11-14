@@ -1,6 +1,6 @@
 /** Booking shape shared by the browser and the server. */
 import type { TripView } from "~/lib/trip-view";
-import { GROUP_SIZE } from "~/lib/trip-generator";
+import { GROUP_SIZE } from "~/constants";
 import { priceToNumber } from "~/lib/utils";
 
 export type BookingStatus = "Pending" | "Confirmed" | "Cancelled";

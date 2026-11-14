@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router";
-import { LayoutDashboard, Menu, Sparkles, X } from "lucide-react";
+import { LayoutDashboard, Menu, X } from "lucide-react";
 
 import { cn } from "~/lib/utils";
 import SiteFooter from "../../../components/SiteFooter";
+import AiSuggestFab from "../../../components/AiSuggestFab";
 
 const navLinks = [
     { label: "Home", href: "/#hero" },
@@ -11,7 +12,6 @@ const navLinks = [
     { label: "Deals", href: "/#deals" },
     { label: "FAQ", href: "/#faq" },
     { label: "Contact", href: "/#contact" },
-    { label: "AI Planner", href: "/plan", ai: true },
 ];
 
 const TravelLayout = () => {
@@ -54,27 +54,9 @@ const TravelLayout = () => {
                         <ul className="hidden lg:flex items-center gap-5 xl:gap-7">
                             {navLinks.map((l) => (
                                 <li key={l.label}>
-                                    {l.href.includes("#") ? (
-                                        <a href={l.href} className="text-sm font-medium text-dark-100 hover:text-primary-100 transition-colors">
-                                            {l.label}
-                                        </a>
-                                    ) : "ai" in l ? (
-                                        <Link
-                                            to={l.href}
-                                            className={cn(
-                                                "flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-semibold transition-all",
-                                                pathname === l.href
-                                                    ? "bg-linear-to-r from-primary-100 to-violet-600 text-white shadow-md"
-                                                    : "bg-linear-to-r from-primary-50 to-violet-50 text-primary-100 hover:shadow-md"
-                                            )}
-                                        >
-                                            <Sparkles size={15} /> {l.label}
-                                        </Link>
-                                    ) : (
-                                        <Link to={l.href} className="text-sm font-medium text-dark-100 hover:text-primary-100 transition-colors">
-                                            {l.label}
-                                        </Link>
-                                    )}
+                                    <a href={l.href} className="text-sm font-medium text-dark-100 hover:text-primary-100 transition-colors">
+                                        {l.label}
+                                    </a>
                                 </li>
                             ))}
                         </ul>
@@ -124,7 +106,8 @@ const TravelLayout = () => {
             {/* Page Content */}
             <Outlet />
 
-            {/* AI mode popup (slides up / down) */}
+            {/* AI Suggest: floating button in the bottom-right corner of the landing page */}
+            {pathname === "/" && <AiSuggestFab />}
 
             <SiteFooter />
         </div>

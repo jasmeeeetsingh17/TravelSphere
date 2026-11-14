@@ -9,7 +9,7 @@ import { cn } from "~/lib/utils";
 type Props = {
     trip: TripView | null;
     backTo: string;
-    /** Show the "Customise with AI planner" link (public site only) */
+    /** Show the "Find similar trips with AI" link (public site only) */
     showAi?: boolean;
     /** Extra content in the summary card (booking form, admin edit/delete) */
     actions?: React.ReactNode;
@@ -252,10 +252,10 @@ const TripDetail = ({ trip, backTo, showAi = false, actions, notice, showBooking
 
                     {showAi && (
                         <Link
-                            to={`/plan?${new URLSearchParams({ state: trip.state ?? "", style: trip.style ?? "", group: trip.group ?? "", budget: trip.budget ?? "" })}`}
+                            to={`/suggest?${new URLSearchParams({ state: trip.state ?? "", style: trip.style ?? "", group: trip.group ?? "", budget: trip.budget ?? "" })}`}
                             className="flex items-center justify-center gap-2 h-11 rounded-xl border border-primary-100 text-primary-100 font-semibold hover:bg-primary-50 transition-colors"
                         >
-                            <Sparkles size={18} /> Customise with AI planner
+                            <Sparkles size={18} /> Find similar trips with AI
                         </Link>
                     )}
                 </aside>
