@@ -1,4 +1,5 @@
-import { Link } from "react-router";
+import { useCallback } from "react";
+import { Link, useRevalidator } from "react-router";
 import dayjs from "dayjs";
 import {
     Category,
@@ -10,13 +11,14 @@ import {
     SplineAreaSeries,
     Tooltip,
 } from "@syncfusion/ej2-react-charts";
-import { ArrowRight, BarChart3, BellRing, CalendarCheck, Clock, Plus, Sparkles, Wallet } from "lucide-react";
+import { ArrowRight, CalendarCheck, Clock, Plus, Sparkles, Wallet } from "lucide-react";
 import { TripCard } from "../../../components";
 import ChartCard from "../../../components/ChartCard";
 import KpiCard from "../../../components/KpiCard";
+import NotificationsPanel from "../../../components/NotificationsPanel";
 import { loadBookings } from "~/appwrite/admin";
-import { getUser } from "~/appwrite/auth";
 import { getSavedTrips } from "~/appwrite/trips";
+import { getAllUsers } from "~/appwrite/users";
 import { dummyTrips } from "~/constants/dummyTrips";
 import { bookedTrips, withBookingStats } from "~/lib/booking";
 import { categoryAxis, chartArea, COLORS, legend, tooltip, valueAxis } from "~/lib/chart-theme";
@@ -27,19 +29,22 @@ import type { Route } from "./+types/dashboard";
 export const meta = () => [{ title: "Dashboard | TravelSphere Admin" }];
 
 export const clientLoader = async () => {
-    const [user, trips, data] = await Promise.all([getUser(), getSavedTrips(500), loadBookings()]);
-    return { name: (user?.name as string | undefined) ?? "Admin", trips: withBookingStats(trips, data.bookings), ...data };
-};
-
-const greeting = () => {
-    const h = new Date().getHours();
-    return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
+    const [trips, data, users] = await Promise.all([getSavedTrips(500), loadBookings(), getAllUsers(500)]);
+    return {
+        trips: withBookingStats(trips, data.bookings),
+        users: users.map((u) => ({ id: u.id, name: u.name, status: u.status, joinedAt: u.joinedAt })),
+        ...data,
+    };
 };
 
 const STATUS_DOT = { Pending: "bg-amber-400", Confirmed: "bg-success-500", Cancelled: "bg-gray-300" } as const;
 
 const Dashboard = ({ loaderData }: Route.ComponentProps) => {
-    const { name, trips, bookings, ready } = loaderData;
+    const { trips, users, bookings, ready } = loaderData;
+    const revalidator = useRevalidator();
+    const refresh = useCallback(() => {
+        if (revalidator.state === "idle" && document.visibilityState === "visible") revalidator.revalidate();
+    }, [revalidator]);
 
     const bookingDates = bookings.map((b) => ({ date: b.createdAt }));
     const revenueItems = bookings.filter((b) => b.status === "Confirmed").map((b) => ({ date: b.createdAt, value: b.amount }));
@@ -60,38 +65,6 @@ const Dashboard = ({ loaderData }: Route.ComponentProps) => {
 
     return (
         <main className="dashboard wrapper">
-            {/* Welcome banner */}
-            <section className="relative overflow-hidden rounded-3xl bg-linear-to-r from-primary-100 via-primary-500 to-violet-600 text-white p-6 md:p-10">
-                <span className="absolute -right-10 -top-16 size-56 rounded-full bg-white/10" />
-                <span className="absolute right-32 -bottom-24 size-48 rounded-full bg-white/10" />
-                <div className="relative flex flex-col md:flex-row md:items-end justify-between gap-6">
-                    <span className="flex flex-col gap-2">
-                        <small className="text-white/75 font-medium">{dayjs().format("dddd, D MMMM YYYY")}</small>
-                        <h1 className="text-2xl md:text-4xl font-bold">
-                            {greeting()}, {name.split(" ")[0]} 👋
-                        </h1>
-                        <p className="text-white/80 max-w-lg">
-                            {pending.length
-                                ? `You have ${pending.length} booking ${pending.length === 1 ? "request" : "requests"} waiting for confirmation.`
-                                : "Here is what is happening across TravelSphere today."}
-                        </p>
-                    </span>
-                    <span className="flex flex-wrap gap-3">
-                        {pending.length > 0 && (
-                            <Link to="/bookings" className="flex items-center gap-2 bg-amber-400 text-dark-100 font-semibold rounded-full px-5 py-2.5 hover:scale-105 transition-transform">
-                                <BellRing size={18} /> Review requests
-                            </Link>
-                        )}
-                        <Link to="/trips/create" className="flex items-center gap-2 bg-white text-primary-100 font-semibold rounded-full px-5 py-2.5 hover:scale-105 transition-transform">
-                            <Plus size={18} /> Create trip
-                        </Link>
-                        <Link to="/analytics" className="flex items-center gap-2 border border-white/50 text-white font-semibold rounded-full px-5 py-2.5 hover:bg-white/10 transition-colors">
-                            <BarChart3 size={18} /> Analytics
-                        </Link>
-                    </span>
-                </div>
-            </section>
-
             {!ready && (
                 <p className="rounded-2xl bg-amber-50 text-amber-700 px-5 py-3 text-sm">
                     Bookings are not set up yet. <Link to="/bookings" className="font-semibold underline">Set them up</Link> so visitors can book trips from the website.
@@ -157,8 +130,9 @@ const Dashboard = ({ loaderData }: Route.ComponentProps) => {
                 </article>
             </section>
 
-            {/* Recent bookings */}
-            <section className="bg-white rounded-3xl border border-light-400 shadow-sm p-6 flex flex-col gap-4">
+            {/* Recent bookings + notifications */}
+            <section className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
+            <article className="xl:col-span-2 bg-white rounded-3xl border border-light-400 shadow-sm p-6 flex flex-col gap-4">
                 <header className="flex items-center justify-between">
                     <span className="flex flex-col gap-0.5">
                         <h2 className="text-lg font-semibold text-dark-100">Recent bookings</h2>
@@ -192,6 +166,9 @@ const Dashboard = ({ loaderData }: Route.ComponentProps) => {
                 ) : (
                     <p className="text-center text-sm text-gray-100 bg-light-200 rounded-2xl py-10">No bookings yet.</p>
                 )}
+            </article>
+
+            <NotificationsPanel bookings={bookings} users={users} onRefresh={refresh} refreshing={revalidator.state === "loading"} />
             </section>
 
             {/* Latest trips */}

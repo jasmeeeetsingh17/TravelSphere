@@ -142,15 +142,3 @@ export const recommend = (rows: TripProfit[], limit = 3): Recommendation[] => {
         .sort((a, b) => b.score - a.score)
         .slice(0, limit);
 };
-
-/** Average profit per booking for each value of a field (style, budget, state...). */
-export const profitBy = (rows: TripProfit[], key: (r: TripProfit) => string) =>
-    Object.entries(
-        rows.reduce<Record<string, { sum: number; n: number }>>((acc, r) => {
-            const k = key(r);
-            acc[k] = { sum: (acc[k]?.sum ?? 0) + r.unitProfit, n: (acc[k]?.n ?? 0) + 1 };
-            return acc;
-        }, {})
-    )
-        .map(([x, { sum, n }]) => ({ x, y: Math.round(sum / n), trips: n }))
-        .sort((a, b) => b.y - a.y);

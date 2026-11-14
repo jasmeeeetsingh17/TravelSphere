@@ -8,7 +8,6 @@ export const COLORS = {
     gray: "#cbd5e1",
 };
 
-export const PALETTE = [COLORS.blue, COLORS.green, COLORS.amber, COLORS.pink, COLORS.violet];
 
 const label = { color: "#6b7280", size: "12px", fontWeight: "500" };
 
