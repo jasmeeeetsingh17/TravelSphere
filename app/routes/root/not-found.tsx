@@ -1,6 +1,8 @@
 import { Link } from "react-router";
 import { Compass } from "lucide-react";
 
+export const meta = () => [{ title: "Page not found | TravelSphere" }];
+
 const NotFound = () => (
     <main className="wrapper pt-40 pb-32 flex flex-col items-center gap-5 text-center">
         <span className="size-16 rounded-2xl bg-primary-50 text-primary-100 flex items-center justify-center">

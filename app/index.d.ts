@@ -56,4 +56,8 @@ declare interface TripFormData {
   budget: string;
   duration: number;
   groupType: string;
+  /** Travel month, e.g. "December" (optional) */
+  month?: string;
+  /** Free-text wishes from the traveller (optional) */
+  notes?: string;
 }

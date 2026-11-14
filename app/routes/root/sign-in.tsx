@@ -4,6 +4,8 @@ import { ArrowLeft, BarChart3, Loader2, Map, ShieldCheck, Users } from "lucide-r
 import { getUser, isAdmin, loginWithGoogle } from "~/appwrite/auth";
 
 /** Admins who are already signed in go straight to the dashboard. */
+export const meta = () => [{ title: "Admin sign in | TravelSphere" }];
+
 export async function clientLoader() {
     const user = await getUser();
     if (user && isAdmin(user)) return redirect("/dashboard");

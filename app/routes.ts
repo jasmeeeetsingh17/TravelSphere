@@ -5,14 +5,14 @@ export default [
     route('api/create-trip', 'routes/api/create-trip.ts'),
     route('api/admin', 'routes/api/admin.ts'),
     route('api/book', 'routes/api/book.ts'),
-    route('api/plan-trip', 'routes/api/plan-trip.ts'),
+    route('api/suggest', 'routes/api/suggest.ts'),
 
     // Public showcase site (dummy data, no sign-in needed)
     layout("routes/root/travel-layout.tsx", [
         index('routes/root/travel-page.tsx'),
         route('travel', 'routes/root/travel-trips.tsx'),
         route('travel/:tripId', 'routes/root/travel-trip-detail.tsx'),
-        route('plan', 'routes/root/plan-trip.tsx'),
+        route('suggest', 'routes/root/ai-suggest.tsx'),
         route('*', 'routes/root/not-found.tsx'),
     ]),
 

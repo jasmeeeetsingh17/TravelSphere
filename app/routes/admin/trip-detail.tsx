@@ -8,6 +8,8 @@ import { withBookingStats } from "~/lib/booking";
 import { resolveTrip } from "~/appwrite/trips";
 import type { Route } from "./+types/trip-detail";
 
+export const meta = ({ loaderData }: Route.MetaArgs) => [{ title: `${loaderData?.name ?? "Trip"} | TravelSphere Admin` }];
+
 export const clientLoader = async ({ params }: Route.ClientLoaderArgs) => {
     const [trip, { bookings }] = await Promise.all([resolveTrip(params.tripId), loadBookings()]);
     return trip ? withBookingStats([trip], bookings)[0] : null;

@@ -59,7 +59,7 @@ const FAQS = [
     { q: "Do I pay when I send a booking request?", a: "No. Sending a request is free. You pay only after we call you and confirm the details. We accept UPI, debit and credit cards and net banking." },
     { q: "Are the prices per person?", a: "Each trip shows a price for its group (for example a Family trip is priced for 4 people). The booking form shows the price per person and the total for your group." },
     { q: "Can I change or cancel my booking?", a: "Yes. Call or email us and we'll change your dates or cancel. Changes are free up to 15 days before travel." },
-    { q: "Can AI plan a trip for me?", a: "Yes. Open the AI Trip Planner, pick a state, your dates, your group and what you love, and you get a day-by-day plan with an estimated price in seconds. It's free and you don't need an account." },
+    { q: "Can AI help me choose a trip?", a: "Yes. Open AI Suggest, answer a few quick questions about where, when, who and your budget, and our AI picks the trips that suit you best and tells you why. It's free and you don't need an account." },
     { q: "Can you make a custom trip for me?", a: "Of course. Tell us where you want to go, your budget and your interests, and we'll build a day-by-day plan just for you." },
 ];
 
@@ -67,8 +67,8 @@ export const Faq = () => (
     <section id="faq" className="wrapper pt-20 scroll-mt-16 grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-10 items-start">
         <span className="flex flex-col gap-4 lg:sticky lg:top-28">
             <Header title="Questions? Answers." description="Everything you need to know before you book." />
-            <Link to="/plan" className="flex items-center gap-2 w-fit text-primary-100 font-semibold hover:gap-3 transition-all">
-                Try the AI Trip Planner <ArrowRight size={18} />
+            <Link to="/suggest" className="flex items-center gap-2 w-fit text-primary-100 font-semibold hover:gap-3 transition-all">
+                Get AI trip suggestions <ArrowRight size={18} />
             </Link>
             <a href="#contact" className="flex items-center gap-2 w-fit text-primary-100 font-semibold hover:gap-3 transition-all">
                 Still unsure? Talk to us <ArrowRight size={18} />

@@ -1,5 +1,5 @@
 import { HttpError, requireAdmin } from "~/lib/appwrite.server";
-import { generateTrip, readTripForm } from "~/lib/trip-ai.server";
+import { generateTrip, PlannerError, readTripForm } from "~/lib/ai.server";
 import type { Route } from "./+types/create-trip";
 
 export const loader = () => Response.json({ error: "Method not allowed" }, { status: 405 });
@@ -20,5 +20,10 @@ export async function action({ request }: Route.ActionArgs) {
     const form = body && typeof body === "object" ? readTripForm(body) : null;
     if (!form) return Response.json({ error: "Please fill in every field." }, { status: 400 });
 
-    return Response.json(await generateTrip(form));
+    try {
+        return Response.json({ trip: await generateTrip(form) });
+    } catch (error) {
+        const message = error instanceof PlannerError ? error.message : "Could not plan the trip. Please try again.";
+        return Response.json({ error: message }, { status: 503 });
+    }
 }

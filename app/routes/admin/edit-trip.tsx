@@ -4,7 +4,7 @@ import { ArrowLeft, Check, Loader2, MapPin, Plus, Save, Trash2, X } from "lucide
 import { adminCall } from "~/appwrite/admin";
 import { getTripForEdit, type EditableTrip } from "~/appwrite/trips";
 import { budgetOptions, groupTypes, interests as INTERESTS, travelStyles } from "~/constants";
-import { indianStates } from "~/constants/indiaStates";
+import { indianStates } from "~/constants";
 import { cn, money, priceToNumber } from "~/lib/utils";
 import type { Route } from "./+types/edit-trip";
 

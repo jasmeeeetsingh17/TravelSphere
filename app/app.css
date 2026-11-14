@@ -1,7 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
 
-@import "@syncfusion/ej2-material-theme/styles/customized/material.css";
 @import "tailwindcss";
 
 
@@ -132,14 +130,10 @@ body {
   scroll-behavior: smooth;
 }
 
-/* ======== css overrides for syncfusion ========= */
-.e-control {
-  border-radius: 12px !important;
-}
-
-.e-btn,
-.e-css.e-btn {
-  text-transform: none;
+/* Syncfusion charts draw SVG text in "Roboto"; use the site font instead */
+.e-chart text,
+.e-accumulationchart text {
+  font-family: "Figtree", sans-serif !important;
 }
 
 /* Notification bell wiggles when there is something unread */

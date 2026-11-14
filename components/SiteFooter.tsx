@@ -39,7 +39,7 @@ const COLUMNS = [
         links: [
             { label: "Home", to: "/" },
             { label: "All trips", to: "/travel" },
-            { label: "AI Trip Planner", to: "/plan" },
+            { label: "AI Suggest", to: "/suggest" },
             { label: "Featured destinations", to: "/#featured" },
         ],
     },

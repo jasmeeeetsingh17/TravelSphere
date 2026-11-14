@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import { ArrowDownWideNarrow, Search, SearchX, Sparkles, X } from "lucide-react";
 import { TripCard } from "../../../components";
+import { budgetOptions as BUDGETS, fitsLength, TRIP_LENGTHS as LENGTHS, travellerGroups as GROUPS, type TripLength as Length } from "~/constants";
 import { dummyTrips } from "~/constants/dummyTrips";
 import { cn, priceToNumber } from "~/lib/utils";
 
@@ -11,17 +12,12 @@ export const meta = () => [
 ];
 
 const STYLES = ["All", "Adventure", "Cultural", "Relaxed", "Spiritual", "Nature & Outdoors", "Luxury", "City Exploration"];
-const GROUPS = ["Solo", "Couple", "Family", "Friends"];
-const BUDGETS = ["Budget", "Mid-range", "Luxury", "Premium"];
-const LENGTHS = { short: "Up to 3 days", mid: "4 to 5 days", long: "6+ days" } as const;
 const SORTS = { recommended: "Recommended", priceLow: "Price: low to high", priceHigh: "Price: high to low", shortest: "Shortest first", longest: "Longest first" } as const;
-type Length = keyof typeof LENGTHS | "";
 type Sort = keyof typeof SORTS;
 const PAGE = 8;
 
 const select = "h-11 rounded-xl border border-light-400 bg-white px-3 text-sm text-dark-100 outline-none focus:border-primary-100 focus:ring-2 focus:ring-primary-100/15 cursor-pointer";
 const states = [...new Set(dummyTrips.map((t) => t.state).filter(Boolean) as string[])].sort();
-const fitsLength = (days: number, len: Length) => !len || (len === "short" ? days <= 3 : len === "mid" ? days >= 4 && days <= 5 : days >= 6);
 
 /** Public "Explore all trips" page: search, quick style chips, filters and sorting over the sample trips. */
 const TravelTrips = () => {
@@ -176,13 +172,13 @@ const TravelTrips = () => {
                     <div className="flex flex-col items-center gap-3 text-center bg-white rounded-3xl border border-dashed border-light-400 py-16 px-6">
                         <SearchX size={36} className="text-gray-100" />
                         <p className="text-dark-100 font-semibold">No trips match your search</p>
-                        <p className="text-sm text-gray-100">Try fewer filters, or let our AI build a plan for exactly what you want.</p>
+                        <p className="text-sm text-gray-100">Try fewer filters, or answer a few questions and let our AI suggest trips for you.</p>
                         <span className="flex flex-wrap justify-center gap-3 pt-1">
                             <button onClick={clear} className="h-10 px-5 rounded-full border border-light-400 text-sm font-semibold text-dark-100 hover:border-dark-100 cursor-pointer">
                                 Clear filters
                             </button>
-                            <Link to="/plan" className="flex items-center gap-1.5 h-10 px-5 rounded-full bg-primary-100 hover:bg-primary-500 text-white text-sm font-semibold">
-                                <Sparkles size={15} /> Plan with AI
+                            <Link to="/suggest" className="flex items-center gap-1.5 h-10 px-5 rounded-full bg-primary-100 hover:bg-primary-500 text-white text-sm font-semibold">
+                                <Sparkles size={15} /> Ask AI to suggest
                             </Link>
                         </span>
                     </div>
@@ -193,10 +189,10 @@ const TravelTrips = () => {
                     <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-3xl bg-linear-to-r from-primary-100 to-violet-600 text-white p-6 md:p-8">
                         <span className="flex flex-col gap-1">
                             <strong className="text-xl">Can't find the right trip?</strong>
-                            <small className="text-white/80 text-sm">Tell our AI where, when and who, and get a day-by-day plan in seconds.</small>
+                            <small className="text-white/80 text-sm">Answer a few quick questions and our AI picks the trips that suit you best.</small>
                         </span>
-                        <Link to="/plan" className="flex items-center justify-center gap-2 h-11 px-6 rounded-full bg-white text-primary-100 font-semibold hover:scale-105 transition-transform shrink-0">
-                            <Sparkles size={17} /> Plan with AI
+                        <Link to="/suggest" className="flex items-center justify-center gap-2 h-11 px-6 rounded-full bg-white text-primary-100 font-semibold hover:scale-105 transition-transform shrink-0">
+                            <Sparkles size={17} /> Get AI suggestions
                         </Link>
                     </div>
                 )}
